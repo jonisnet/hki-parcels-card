@@ -51,14 +51,12 @@ If you're looking for the original, single-carrier PostNL card, see
 This card displays data — it does not fetch it. You need at least one of
 the following integrations installed and configured first:
 
-- [arjenbos/ha-postnl](https://github.com/arjenbos/ha-postnl) or
-  [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) for
-  PostNL tracking and letterbox mail.
-- A DHL integration following the same
-  `sensor.<user>_dhl_<incoming|delivered|outgoing>_parcels` naming pattern
-  (e.g. `ha-dhl-nl`).
-- A DPD integration following the equivalent `..._dpd_...` pattern, once
-  available.
+- [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) 
+  for PostNL tracking and letterbox mail.
+- [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) 
+  for DHL tracking.
+- [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) 
+  for DPD tracking.
 
 ## Installation
 
