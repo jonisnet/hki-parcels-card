@@ -88,7 +88,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 //     barcode, sender, status (free text), delivery_date. No "delivered"
 //     boolean, no canonical status enum.
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.4.0';
+const CARD_VERSION = 'v1.5.0';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -120,6 +120,14 @@ const CARRIER_ASSETS = {
         van: null,
         banner: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/DPD_banner.png?raw=true'
     },
+    // Uses jimz011's original asset URLs (not this repo's own images/
+    // folder) since postnl_legacy specifically recreates the look of the
+    // original hki-postnl-card, including its exact default assets.
+    postnl_legacy: {
+        logo: 'https://github.com/jimz011/hki-postnl-card/blob/main/images/postnl-logo.png?raw=true',
+        van: 'https://github.com/jimz011/hki-postnl-card/blob/main/images/postnl-van.gif?raw=true',
+        banner: 'https://github.com/jimz011/hki-postnl-card/blob/main/images/postnl-banner.jpg?raw=true'
+    },
     custom: { logo: null, van: null, banner: null }
 };
 
@@ -137,6 +145,13 @@ const CARRIER_PRESETS = {
     postnl: { label: 'PostNL', icon: 'mdi:email-fast', color: '#ed8c00', schema: 'legacy', supports_letters: true, sensor_slug: 'postnl' },
     dhl: { label: 'DHL', icon: 'mdi:truck', color: '#ffcc00', schema: 'canonical', supports_letters: false, sensor_slug: 'dhl' },
     dpd: { label: 'DPD', icon: 'mdi:truck-fast', color: '#dc0032', schema: 'canonical', supports_letters: false, sensor_slug: 'dpd' },
+    // Recreates the original (pre-multi-carrier) hki-postnl-card exactly:
+    // one combined "entity" holding both en-route and delivered parcels
+    // (split by each item's own `delivered` flag, same as the original
+    // getData()/getFilteredShipments() did) plus one "distribution_entity"
+    // for sent parcels. No letters support, no sensor templating — the
+    // original never had either, so this type doesn't either.
+    postnl_legacy: { label: 'Postnl (Legacy)', icon: 'mdi:email-fast', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null },
     custom: { label: 'Anders / Custom', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical', supports_letters: false, sensor_slug: null }
 };
 
@@ -415,7 +430,7 @@ class HkiParcelsCard extends HTMLElement {
         const carriers = this.config.carriers || [];
         if (carriers.length === 0) return null;
 
-        const anyConfigured = carriers.some(c => c.entity_incoming || c.entity_delivered || c.entity_outgoing || c.entity_letters);
+        const anyConfigured = carriers.some(c => c.entity_incoming || c.entity_delivered || c.entity_outgoing || c.entity_letters || c.entity || c.distribution_entity);
         if (!anyConfigured) return null;
 
         const cutoffDate = new Date();
@@ -427,28 +442,48 @@ class HkiParcelsCard extends HTMLElement {
         let post = [];
 
         carriers.forEach(carrier => {
-            const incoming = this._getCarrierSensorItems(carrier, 'entity_incoming').map(i => ({ ...i, delivered: false }));
-            const delivered = this._getCarrierSensorItems(carrier, 'entity_delivered').map(i => ({ ...i, delivered: true }));
+            const isSingleEntity = (CARRIER_PRESETS[carrier.type] || CARRIER_PRESETS.custom).schema === 'single_entity';
 
-            // De-duplicate by key in case a parcel briefly appears in both
-            // sensors during a status transition; keep the delivered version.
-            const byKey = new Map();
-            incoming.concat(delivered).forEach(item => {
-                const key = item.key || JSON.stringify(item);
-                const existing = byKey.get(key);
-                if (!existing || item.delivered) byKey.set(key, item);
-            });
+            let merged;
+            if (isSingleEntity) {
+                // Recreates the original hki-postnl-card's getData(): one
+                // combined entity holding both en-route and delivered
+                // parcels, split by each item's own `delivered` flag rather
+                // than by which sensor it came from.
+                const items = this._getCarrierSensorItems(carrier, 'entity');
+                merged = items.filter(item => {
+                    if (!item.delivered) return true;
+                    const dDate = new Date(item.delivery_date || item.planned_date || 0);
+                    return dDate >= cutoffDate;
+                });
+            } else {
+                const incoming = this._getCarrierSensorItems(carrier, 'entity_incoming').map(i => ({ ...i, delivered: false }));
+                const delivered = this._getCarrierSensorItems(carrier, 'entity_delivered').map(i => ({ ...i, delivered: true }));
 
-            const merged = Array.from(byKey.values()).filter(item => {
-                if (!item.delivered) return true;
-                const dDate = new Date(item.delivery_date || item.planned_date || 0);
-                return dDate >= cutoffDate;
-            });
+                // De-duplicate by key in case a parcel briefly appears in both
+                // sensors during a status transition; keep the delivered version.
+                const byKey = new Map();
+                incoming.concat(delivered).forEach(item => {
+                    const key = item.key || JSON.stringify(item);
+                    const existing = byKey.get(key);
+                    if (!existing || item.delivered) byKey.set(key, item);
+                });
+
+                merged = Array.from(byKey.values()).filter(item => {
+                    if (!item.delivered) return true;
+                    const dDate = new Date(item.delivery_date || item.planned_date || 0);
+                    return dDate >= cutoffDate;
+                });
+            }
 
             onderweg = onderweg.concat(merged.filter(i => !i.delivered));
             bezorgd = bezorgd.concat(merged.filter(i => i.delivered));
 
-            verzonden = verzonden.concat(this._getCarrierSensorItems(carrier, 'entity_outgoing'));
+            verzonden = verzonden.concat(
+                isSingleEntity
+                    ? this._getCarrierSensorItems(carrier, 'distribution_entity')
+                    : this._getCarrierSensorItems(carrier, 'entity_outgoing')
+            );
 
             const carrierLetters = this._getCarrierLetters(carrier);
 
@@ -1166,6 +1201,7 @@ class HkiParcelsCardEditor extends LitElement {
         const carriers = Array.isArray(this._config.carriers) ? [...this._config.carriers] : [];
         const current = carriers[index] || {};
         const templated = buildTemplatedEntities(current.user, type);
+        const isSingleEntity = preset.schema === 'single_entity';
 
         carriers[index] = {
             ...current,
@@ -1174,9 +1210,16 @@ class HkiParcelsCardEditor extends LitElement {
             icon: preset.icon,
             color: preset.color,
             schema: preset.schema,
-            entity_incoming: templated.entity_incoming ?? current.entity_incoming ?? '',
-            entity_delivered: templated.entity_delivered ?? current.entity_delivered ?? '',
-            entity_outgoing: templated.entity_outgoing ?? current.entity_outgoing ?? '',
+            // single_entity (postnl_legacy) uses entity/distribution_entity
+            // instead of the four templated fields — clear those out rather
+            // than inheriting stale values from whatever type this carrier
+            // was before, since they'd otherwise sit there unused but
+            // confusing if the carrier is later switched back.
+            entity_incoming: isSingleEntity ? '' : (templated.entity_incoming ?? current.entity_incoming ?? ''),
+            entity_delivered: isSingleEntity ? '' : (templated.entity_delivered ?? current.entity_delivered ?? ''),
+            entity_outgoing: isSingleEntity ? '' : (templated.entity_outgoing ?? current.entity_outgoing ?? ''),
+            entity: isSingleEntity ? (current.entity ?? '') : '',
+            distribution_entity: isSingleEntity ? (current.distribution_entity ?? '') : '',
             // Carriers without letters support never carry an entity_letters
             // value, so the "Post" tab logic (hasAnyLettersConfigured) can't
             // accidentally pick up a stale value from before a type switch.
@@ -1348,6 +1391,7 @@ class HkiParcelsCardEditor extends LitElement {
                             { value: 'postnl', label: 'PostNL' },
                             { value: 'dhl', label: 'DHL' },
                             { value: 'dpd', label: 'DPD' },
+                            { value: 'postnl_legacy', label: 'Postnl (Legacy)' },
                             { value: 'custom', label: 'Anders / Custom' }
                         ], mode: 'dropdown' } }}
                         .value=${carrier.type || 'postnl'}
@@ -1365,6 +1409,25 @@ class HkiParcelsCardEditor extends LitElement {
                                 @input=${(ev) => this._carrierChanged(index, 'name', ev)}
                             />
                         </div>
+                    ` : carrier.type === 'postnl_legacy' ? html`
+                        <div class="helper-text">
+                            Recreëert de originele hki-postnl-card: één entity met zowel onderweg als bezorgde
+                            pakketten (gesplitst op het delivered-veld), plus een losse entity voor verzonden
+                            pakketten. Geen brieven-ondersteuning, geen automatische sensor-templating — vul de
+                            volledige entity-namen hieronder zelf in, zoals bij de originele kaart.
+                        </div>
+                        ${this._renderEntityPicker(
+                            "PostNL Ontvangst Entity",
+                            carrier.entity,
+                            "bv. sensor.postnl_delivery",
+                            (ev) => this._carrierChanged(index, 'entity', ev)
+                        )}
+                        ${this._renderEntityPicker(
+                            "PostNL Verzending Entity (optioneel)",
+                            carrier.distribution_entity,
+                            "bv. sensor.postnl_distribution",
+                            (ev) => this._carrierChanged(index, 'distribution_entity', ev)
+                        )}
                     ` : html`
                         <div class="plain-field">
                             <label for="hki-carrier-user-${index}">Account / gebruikersdeel van de sensornaam</label>
@@ -1390,6 +1453,7 @@ class HkiParcelsCardEditor extends LitElement {
                         ` : ''}
                     `}
 
+                    ${carrier.type !== 'postnl_legacy' ? html`
                     <details class="advanced-details">
                         <summary>Geavanceerd: sensoren handmatig overschrijven</summary>
                         <div class="helper-text" style="margin-top:12px;">
@@ -1424,6 +1488,7 @@ class HkiParcelsCardEditor extends LitElement {
                             <div class="helper-text">Post/Brieven wordt alleen ondersteund voor PostNL.</div>
                         `}
                     </details>
+                    ` : ''}
 
                     <details class="advanced-details">
                         <summary>Geavanceerd: uiterlijk overschrijven</summary>

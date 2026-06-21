@@ -5,6 +5,30 @@ GitHub release tags follow their own beta counter (`v1.0.bN`), separate
 from the `CARD_VERSION` shown in the in-app console banner, which follows
 semantic versioning.
 
+## v1.5.0
+
+### Added
+- **New carrier type: "Postnl (Legacy)"** (`postnl_legacy`), recreating
+  the original (pre-multi-carrier) `hki-postnl-card` exactly:
+  - One combined `entity` field holding both en-route and delivered
+    parcels, split by each item's own `delivered` flag — the same
+    approach the original `getData()`/`getFilteredShipments()` used —
+    instead of the four separate `entity_incoming` / `entity_delivered` /
+    `entity_outgoing` / `entity_letters` fields the other carrier types
+    use.
+  - One `distribution_entity` field for sent parcels.
+  - No letters/Post tab support and no sensor-name templating (no
+    `user` field) — the original never had either, so this type
+    doesn't either; the full entity_id is entered directly, exactly
+    like the original card's editor.
+  - Default logo/van/banner assets point to **jimz011's original**
+    `hki-postnl-card` images (not this repository's own `images/`
+    folder), since this type specifically recreates that exact look.
+  - The editor hides the sensor-templating and "Geavanceerd: sensoren
+    handmatig overschrijven" sections for this type (neither applies),
+    while still allowing icon/color/logo/van/banner overrides under
+    "Geavanceerd: uiterlijk overschrijven".
+
 ## v1.4.0
 
 ### Changed
