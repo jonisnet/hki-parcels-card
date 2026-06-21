@@ -5,7 +5,61 @@ GitHub release tags follow their own beta counter (`v1.0.bN`), separate
 from the `CARD_VERSION` shown in the in-app console banner, which follows
 semantic versioning.
 
-## v1.2.0 — GitHub release `v1.0.b2` ("Beta2")
+## v1.3.1
+
+### Added
+- **DPD now has a built-in banner asset** (`DPD_banner.png`), shown as
+  the animation panel background when DPD is the only configured
+  carrier — matching the existing PostNL and DHL banners. Only the van
+  GIF remains unavailable for DHL/DPD.
+
+## v1.3.0
+
+### Added
+- **All main editor sections are now collapsible** (Basis Instellingen,
+  Carriers, Layout Volgorde, Weergave Opties, Uiterlijk), via native
+  `<details>` elements with a rotating disclosure arrow.
+- **Carrier logo in the header**, shown when exactly 1 carrier is
+  configured — this existed in the original `hki-postnl-card` but had
+  never actually been wired up in this fork until now.
+- **"Bezorgwijze" (delivery method) detail row for DHL/DPD**, based on
+  the confirmed `pickup` / `pickup_point` fields from the official
+  `ha-dhl-nl` integration: shows "Thuisbezorging" or "Afhaalpunt
+  (<name>)".
+- **Universal "Type" detail row**: every item shows "Pakket" except
+  PostNL letters, which show "Brief" — derived directly from the
+  existing `is_letter` flag rather than a carrier-specific field (no
+  such field exists in any of the supported integrations; the
+  parcel-vs-letter distinction is PostNL-only by definition).
+- **Delivered letters now also appear in the "Bezorgd" tab**, using the
+  same `days_back` cutoff as parcels. The "Post" tab itself keeps
+  showing every letter regardless of date — only the Bezorgd tab applies
+  the time window, so "Bezorgd" consistently means "within the
+  configured window" for both parcels and letters.
+
+### Changed
+- **Letter images no longer appear in the animation panel.** The Post
+  tab's special-cased image display has been removed (the now-dead
+  `_updateLetterImage` method too); the animation panel falls through to
+  the normal no-selection background (carrier banner/logo or
+  `placeholder_image`) for every tab, including Post. Letter images are
+  now shown exclusively as a clickable thumbnail in the expanded list
+  item, as intended.
+
+### Fixed
+- **"Uiterlijk" section showed no fields at all.** Same root cause as
+  the earlier "Basis Instellingen" issue: `ha-textfield` elements failing
+  to render in an environment running many other custom cards. Replaced
+  with plain HTML inputs, consistent with the existing fix.
+- **Placeholder-image letters still showed a thumbnail when a local
+  `image.*` entity was available.** The `is_placeholder_image` check
+  (detecting PostNL's generic `letter_placeholder.png`) only applied to
+  the external `image_url` fallback path — not to the local
+  `image_entity_picture` path that's actually used once a prefix is
+  derived. The check now applies regardless of which image source ends
+  up being used, so letters without a real scan never show a thumbnail.
+
+
 
 ### Fixed
 - **Expanding a parcel in the list did nothing.** Clicking a parcel's

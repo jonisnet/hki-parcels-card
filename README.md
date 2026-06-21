@@ -145,13 +145,13 @@ layout_order:
 
 ## Images
 
-This card ships with built-in logo/van/banner assets for PostNL and DHL
-(DPD only has a logo so far), hosted in this repository's
-[`images/`](images/) folder. They're used automatically whenever a
-carrier's `logo_path` / `van_path` / `banner_path` is left blank — you
-don't need to configure anything for the default look to work, the same
-way the original `hki-postnl-card` always had a working PostNL logo/van/
-banner out of the box.
+This card ships with built-in logo and banner assets for PostNL, DHL, and
+DPD (PostNL additionally has a van GIF; DHL/DPD don't have one yet),
+hosted in this repository's [`images/`](images/) folder. They're used
+automatically whenever a carrier's `logo_path` / `van_path` /
+`banner_path` is left blank — you don't need to configure anything for
+the default look to work, the same way the original `hki-postnl-card`
+always had a working PostNL logo/van/banner out of the box.
 
 If you'd rather use your own images (a different style, or assets for a
 `custom` carrier type), just set `logo_path` / `van_path` / `banner_path`
