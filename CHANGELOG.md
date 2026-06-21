@@ -5,6 +5,24 @@ GitHub release tags follow their own beta counter (`v1.0.bN`), separate
 from the `CARD_VERSION` shown in the in-app console banner, which follows
 semantic versioning.
 
+## v1.4.0
+
+### Changed
+- **Letters now move from "Post" to "Bezorgd" once their date has
+  passed**, instead of the Post tab always showing every letter
+  regardless of date. Post now shows only letters dated today or in the
+  future; past letters appear in Bezorgd (subject to the same
+  `days_back` cutoff as parcels), consistent with how the original
+  request was meant to work.
+- **Layout Volgorde's up/down buttons moved to the left** of each row,
+  before the label — matching the left-aligned icon/chevron pattern used
+  in the Carriers section, instead of being right-aligned.
+- **"Geavanceerd: ..." sections and "+ Carrier toevoegen" are now styled
+  as clear buttons** with a thin border, instead of looking like plain
+  text. The unreliable `mwc-button` for "+ Carrier toevoegen" was also
+  replaced with a plain HTML `<button>`, consistent with the earlier
+  `ha-textfield` reliability fixes.
+
 ## v1.3.1
 
 ### Added

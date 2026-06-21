@@ -88,7 +88,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 //     barcode, sender, status (free text), delivery_date. No "delivered"
 //     boolean, no canonical status enum.
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.3.1';
+const CARD_VERSION = 'v1.4.0';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -451,15 +451,27 @@ class HkiParcelsCard extends HTMLElement {
             verzonden = verzonden.concat(this._getCarrierSensorItems(carrier, 'entity_outgoing'));
 
             const carrierLetters = this._getCarrierLetters(carrier);
-            post = post.concat(carrierLetters);
 
-            // Letters are always "delivered" (no onderweg concept), so they
-            // also show up in the Bezorgd tab — using the same days_back
-            // cutoff as parcels, so "Bezorgd" consistently means "delivered
-            // within the configured window" for both. The Post tab itself
-            // keeps showing every letter regardless of date (handled by not
-            // applying any cutoff when building `post` above).
-            const lettersWithinCutoff = carrierLetters.filter(letter => {
+            // Post tab: only letters dated today or in the future — once a
+            // letter's date has passed, it moves to Bezorgd instead (where
+            // the usual days_back cutoff applies, same as parcels).
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+
+            const upcomingLetters = [];
+            const pastLetters = [];
+            carrierLetters.forEach(letter => {
+                const dDate = new Date(letter.delivery_date || 0);
+                if (!isNaN(dDate) && dDate >= todayStart) {
+                    upcomingLetters.push(letter);
+                } else {
+                    pastLetters.push(letter);
+                }
+            });
+
+            post = post.concat(upcomingLetters);
+
+            const lettersWithinCutoff = pastLetters.filter(letter => {
                 const dDate = new Date(letter.delivery_date || 0);
                 return !isNaN(dDate) && dDate >= cutoffDate;
             });
@@ -1271,7 +1283,8 @@ class HkiParcelsCardEditor extends LitElement {
             .switch-row { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; width: 100%; }
             .switch-row ha-switch { flex-shrink: 0; margin-bottom: 0; }
             .switch-row span { font-size: 14px; color: var(--primary-text-color); flex: 1; line-height: 1.4; }
-            .sort-item { display: flex; align-items: center; justify-content: space-between; background: var(--secondary-background-color); border: 1px solid var(--divider-color); padding: 8px 12px; margin-bottom: 8px; border-radius: 4px; }
+            .sort-item { display: flex; align-items: center; gap: 8px; background: var(--secondary-background-color); border: 1px solid var(--divider-color); padding: 8px 12px; margin-bottom: 8px; border-radius: 4px; }
+            .sort-actions { display: flex; align-items: center; flex-shrink: 0; }
             .sort-label { font-weight: 500; text-transform: capitalize; }
             .carrier-card { border: 1px solid var(--divider-color); border-radius: 8px; padding: 12px; margin-bottom: 16px; background: var(--secondary-background-color); }
             .carrier-card-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; cursor: pointer; user-select: none; }
@@ -1280,11 +1293,13 @@ class HkiParcelsCardEditor extends LitElement {
             .carrier-card-header-title .chevron.expanded { transform: rotate(90deg); }
             .carrier-card-body { margin-top: 12px; }
             .advanced-details { margin-top: 8px; }
-            .advanced-details summary { cursor: pointer; font-size: 13px; color: var(--secondary-text-color); padding: 8px 0; user-select: none; }
+            .advanced-details summary { cursor: pointer; font-size: 13px; color: var(--secondary-text-color); padding: 6px 12px; user-select: none; border: 1px solid var(--divider-color); border-radius: 4px; display: inline-block; }
+            .advanced-details summary:hover { background: var(--card-background-color, white); color: var(--primary-text-color); }
             .templated-preview { background: var(--card-background-color, white); border: 1px solid var(--divider-color); border-radius: 4px; padding: 8px 12px; margin-bottom: 16px; font-family: monospace; font-size: 11px; color: var(--secondary-text-color); line-height: 1.6; }
             .inline-fields-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
             ha-icon-button.danger { color: var(--error-color, red); }
-            mwc-button.add-carrier { margin-top: 4px; }
+            .plain-button { margin-top: 4px; padding: 8px 16px; font-size: 14px; font-weight: 500; color: var(--primary-color, #03a9f4); background: transparent; border: 1px solid var(--primary-color, #03a9f4); border-radius: 4px; cursor: pointer; font-family: inherit; }
+            .plain-button:hover { background: rgba(3, 169, 244, 0.08); }
             .warning-box-details { background-color: var(--secondary-background-color); border: 1px solid var(--divider-color); border-left: 4px solid #ed8c00; padding: 12px; margin-bottom: 24px; font-size: 13px; line-height: 1.4; border-radius: 4px; color: var(--primary-text-color); }
             .warning-title { font-weight: bold; font-size: 14px; cursor: pointer; user-select: none; }
             .warning-box-details a { color: var(--primary-color, #03a9f4); text-decoration: underline; }
@@ -1511,9 +1526,9 @@ class HkiParcelsCardEditor extends LitElement {
                 <details class="section-details" open>
                 <summary class="section">Carriers</summary>
                 ${carriers.map((carrier, index) => this._renderCarrier(carrier, index))}
-                <mwc-button class="add-carrier" outlined @click=${() => this._addCarrier()}>
+                <button class="plain-button" @click=${() => this._addCarrier()}>
                     + Carrier toevoegen
-                </mwc-button>
+                </button>
                 </details>
 
                 <details class="section-details">
@@ -1521,8 +1536,7 @@ class HkiParcelsCardEditor extends LitElement {
                 <div class="helper-text">Gebruik de pijltjes om de blokken te herschikken</div>
                 ${currentLayout.map((item, index) => html`
                     <div class="sort-item">
-                        <span class="sort-label">${layoutLabels[item] || item}</span>
-                        <div>
+                        <div class="sort-actions">
                             <ha-icon-button
                                 .path=${"M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z"}
                                 @click=${() => this._moveBlock(index, 'up')}
@@ -1534,6 +1548,7 @@ class HkiParcelsCardEditor extends LitElement {
                                 ?disabled=${index === currentLayout.length - 1}
                             ></ha-icon-button>
                         </div>
+                        <span class="sort-label">${layoutLabels[item] || item}</span>
                     </div>
                 `)}
                 </details>
