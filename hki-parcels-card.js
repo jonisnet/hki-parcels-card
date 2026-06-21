@@ -88,12 +88,40 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 //     barcode, sender, status (free text), delivery_date. No "delivered"
 //     boolean, no canonical status enum.
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.0.0';
+const CARD_VERSION = 'v1.2.0';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
 const DEFAULT_CARRIER_COLOR = '#ed8c00';
-const DEFAULT_PLACEHOLDER_IMAGE = '/hacsfiles/hki-elements/dutch-parcels.png';
+const DEFAULT_PLACEHOLDER_IMAGE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/dutch-parcels.png?raw=true';
+
+// Per-carrier-type default assets (logo, van GIF, banner) hosted in this
+// repository's own images/ folder, mirroring how the original
+// hki-postnl-card hardcoded DEFAULT_LOGO/DEFAULT_VAN/DEFAULT_BANNER as
+// always-working fallbacks. These are used whenever a carrier's own
+// logo_path/van_path/banner_path field is left blank, so PostNL/DHL/DPD
+// work visually out of the box without the user having to supply any URLs.
+// DPD currently only has a logo asset available; its van/banner fields are
+// left null until those assets exist, in which case the card simply shows
+// no image for that slot rather than guessing a wrong URL.
+const CARRIER_ASSETS = {
+    postnl: {
+        logo: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/postnl-logo.png?raw=true',
+        van: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/postnl-van.gif?raw=true',
+        banner: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/postnl-banner.jpg?raw=true'
+    },
+    dhl: {
+        logo: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/DHL_logo.png?raw=true',
+        van: null,
+        banner: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/DHL_banner.png?raw=true'
+    },
+    dpd: {
+        logo: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/DPD_logo.png?raw=true',
+        van: null,
+        banner: null
+    },
+    custom: { logo: null, van: null, banner: null }
+};
 
 // Per-carrier-type defaults used to auto-fill icon/color/schema when the
 // user picks a carrier type in the editor. supports_letters controls
@@ -209,8 +237,9 @@ class HkiParcelsCard extends HTMLElement {
                     icon: 'mdi:email-fast',
                     color: '#ed8c00',
                     schema: 'legacy',
-                    logo_path: 'https://github.com/jimz011/hki-postnl-card/blob/main/images/postnl-logo.png?raw=true',
-                    van_path: 'https://github.com/jimz011/hki-postnl-card/blob/main/images/postnl-van.gif?raw=true',
+                    logo_path: '',
+                    van_path: '',
+                    banner_path: '',
                     entity_incoming: 'sensor.postnl_incoming_parcels',
                     entity_delivered: 'sensor.postnl_delivered_parcels',
                     entity_outgoing: 'sensor.postnl_outgoing_parcels',
@@ -224,6 +253,7 @@ class HkiParcelsCard extends HTMLElement {
                     schema: 'canonical',
                     logo_path: '',
                     van_path: '',
+                    banner_path: '',
                     entity_incoming: 'sensor.dhl_incoming_parcels',
                     entity_delivered: 'sensor.dhl_delivered_parcels',
                     entity_outgoing: 'sensor.dhl_outgoing_parcels',
@@ -278,13 +308,21 @@ class HkiParcelsCard extends HTMLElement {
     // sites (canonical parcels, legacy parcels, letters) stay in sync when a
     // new branding field is added, instead of repeating the same fallbacks
     // in three places.
+    //
+    // logo/van/banner fall back to this carrier type's built-in asset (see
+    // CARRIER_ASSETS) when the user hasn't set their own — the same
+    // always-works-out-of-the-box behaviour the original hki-postnl-card
+    // had via its hardcoded DEFAULT_LOGO/DEFAULT_VAN/DEFAULT_BANNER, just
+    // applied per carrier type instead of being a single global default.
     _carrierBranding(carrier) {
+        const assets = CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom;
         return {
             carrier_name: carrier.name,
             carrier_icon: carrier.icon || DEFAULT_CARRIER_ICON,
             carrier_color: carrier.color || DEFAULT_CARRIER_COLOR,
-            carrier_logo: carrier.logo_path || '',
-            carrier_van: carrier.van_path || ''
+            carrier_logo: carrier.logo_path || assets.logo || '',
+            carrier_van: carrier.van_path || assets.van || '',
+            carrier_banner: carrier.banner_path || assets.banner || ''
         };
     }
 
@@ -552,6 +590,19 @@ class HkiParcelsCard extends HTMLElement {
         return (this.config.carriers || []).some(c => !!c.entity_letters);
     }
 
+    // Counts letters whose delivery_date (the "date" field from the letters
+    // sensor) matches today's date, comparing only year/month/day so the
+    // time-of-day on either side never causes a false mismatch.
+    _countLettersToday(data) {
+        const post = data?.post || [];
+        const todayStr = new Date().toDateString();
+        return post.filter(letter => {
+            if (!letter.delivery_date) return false;
+            const d = new Date(letter.delivery_date);
+            return !isNaN(d) && d.toDateString() === todayStr;
+        }).length;
+    }
+
     getFilteredShipments(data) {
         if (!data) return [];
         const list = data[this._activeTab] || [];
@@ -596,17 +647,20 @@ class HkiParcelsCard extends HTMLElement {
     // Determines what the animation panel's background should show when
     // nothing is selected: with 2+ configured carriers there's no single
     // "the" carrier to represent, so the generic placeholder_image is always
-    // used. With exactly 1 carrier, that carrier's own logo takes priority
-    // (more specific/relevant than the generic image); only falls back to
-    // placeholder_image if that carrier has no logo configured.
+    // used. With exactly 1 carrier, that carrier's own banner takes priority
+    // (a wide/landscape asset purpose-built for this background role, same
+    // idea as the original hki-postnl-card's DEFAULT_BANNER) — falls back to
+    // the carrier's logo if no banner is set, then to placeholder_image if
+    // neither is available.
     _getNoSelectionBackground() {
         const carriers = this.config.carriers || [];
         if (carriers.length >= 2) {
             return { image: this.config.placeholder_image || '', showText: !this.config.placeholder_image };
         }
         if (carriers.length === 1) {
-            const logo = carriers[0].logo_path;
-            if (logo) return { image: logo, showText: false };
+            const branding = this._carrierBranding(carriers[0]);
+            const image = branding.carrier_banner || branding.carrier_logo;
+            if (image) return { image, showText: false };
             return { image: this.config.placeholder_image || '', showText: !this.config.placeholder_image };
         }
         return { image: this.config.placeholder_image || '', showText: !this.config.placeholder_image };
@@ -660,10 +714,11 @@ class HkiParcelsCard extends HTMLElement {
         const displayedShipments = this.getFilteredShipments(data);
         const activeCount = data.onderweg.length;
         const recentCount = data.bezorgd.length;
+        const lettersToday = this.hasAnyLettersConfigured() ? this._countLettersToday(data) : null;
 
         const statsEl = this.shadowRoot.querySelector('.header-stats');
         const statsBarEl = this.shadowRoot.querySelector('.stats-text');
-        const statsText = `${activeCount} onderweg • ${recentCount} recent`;
+        const statsText = `${activeCount} onderweg • ${recentCount} recent${lettersToday !== null ? ` • ${lettersToday} brieven` : ''}`;
         if (statsEl) statsEl.textContent = statsText;
         if (statsBarEl) statsBarEl.textContent = statsText;
 
@@ -849,6 +904,12 @@ class HkiParcelsCard extends HTMLElement {
         const statusMsg = item.status_message || (isLetter ? 'Brievenbuspost' : (isDelivered ? 'Bezorgd' : 'Onderweg'));
         const dateLabel = this.formatDate(item.delivery_date || item.planned_date || item.planned_to);
         const statusIcon = isLetter ? 'mdi:email' : (isDelivered ? 'mdi:check-circle' : 'mdi:truck-delivery');
+        // The CSS that expands the details panel and rotates the chevron is
+        // driven entirely by a "selected" class on this wrapper div — it was
+        // never actually applied here, which is why expanding a parcel had
+        // no visible effect despite handleParcelClick() correctly tracking
+        // this._selectedParcel and triggering a re-render.
+        const isSelected = this._selectedParcel === item.key;
 
         // Same image-source priority as the animation panel: once a local
         // image.* entity prefix could be derived, that's the only source
@@ -863,7 +924,7 @@ class HkiParcelsCard extends HTMLElement {
         }
 
         return `
-        <div class="parcel" data-key="${item.key}">
+        <div class="parcel ${isSelected ? 'selected' : ''}" data-key="${item.key}">
             <div class="parcel-header" data-key="${item.key}">
                 <div class="ph-left">
                     <span class="ph-name">${item.name || 'Onbekend'}</span>
@@ -941,6 +1002,8 @@ class HkiParcelsCard extends HTMLElement {
         const displayedShipments = this.getFilteredShipments(data);
         const activeCount = data.onderweg.length;
         const recentCount = data.bezorgd.length;
+        const lettersToday = this.hasAnyLettersConfigured() ? this._countLettersToday(data) : null;
+        const statsText = `${activeCount} onderweg • ${recentCount} recent${lettersToday !== null ? ` • ${lettersToday} brieven` : ''}`;
         const headerColor = this.config.header_color || 'var(--card-background-color)';
         const headerTextColor = this.config.header_text_color || 'var(--primary-text-color)';
         const placeholderImage = this.config.placeholder_image || '';
@@ -1038,12 +1101,12 @@ class HkiParcelsCard extends HTMLElement {
                 <div class="header">
                     <div class="header-info">
                         <span class="header-title">${this.config.title || 'Pakketten'}</span>
-                        <span class="header-stats">${activeCount} onderweg • ${recentCount} recent</span>
+                        <span class="header-stats">${statsText}</span>
                     </div>
                 </div>
                 ` : `
                 <div class="stats-bar">
-                    <span class="stats-text">${activeCount} onderweg • ${recentCount} recent</span>
+                    <span class="stats-text">${statsText}</span>
                 </div>
             `,
             animation: this.config.show_placeholder !== false ? `<div class="header-animation"></div>` : '',
@@ -1225,6 +1288,7 @@ class HkiParcelsCardEditor extends LitElement {
             schema: preset.schema,
             logo_path: '',
             van_path: '',
+            banner_path: '',
             entity_incoming: '',
             entity_delivered: '',
             entity_outgoing: '',
@@ -1437,19 +1501,26 @@ class HkiParcelsCardEditor extends LitElement {
                             <ha-textfield
                                 label="Logo URL (optioneel)"
                                 .value=${carrier.logo_path || ''}
-                                placeholder="https://..."
+                                placeholder=${(CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom).logo || 'https://...'}
                                 @input=${(ev) => this._carrierChanged(index, 'logo_path', ev)}
                             ></ha-textfield>
                             <ha-textfield
                                 label="Voertuig GIF URL (optioneel)"
                                 .value=${carrier.van_path || ''}
-                                placeholder="https://..."
+                                placeholder=${(CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom).van || 'https://...'}
                                 @input=${(ev) => this._carrierChanged(index, 'van_path', ev)}
                             ></ha-textfield>
                         </div>
+                        <ha-textfield
+                            label="Banner URL (optioneel, achtergrond bij 1 carrier)"
+                            .value=${carrier.banner_path || ''}
+                            placeholder=${(CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom).banner || 'https://...'}
+                            @input=${(ev) => this._carrierChanged(index, 'banner_path', ev)}
+                        ></ha-textfield>
                         <div class="helper-text">
-                            Logo en voertuig-animatie zijn per carrier instelbaar. Zonder URL gebruikt de kaart
-                            het icoon en de kleur hierboven als generieke weergave.
+                            Logo, voertuig-animatie en banner hebben al een ingebouwde standaardafbeelding per carrier
+                            (zichtbaar als placeholder-tekst hierboven). Vul hier alleen iets in als je die wilt
+                            overschrijven. Zonder enige afbeelding gebruikt de kaart het icoon en de kleur hierboven.
                         </div>
                     </details>
                 </div>

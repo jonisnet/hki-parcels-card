@@ -101,7 +101,7 @@ show_letters: true
 show_animation: true
 show_header: true
 show_placeholder: true
-placeholder_image: /hacsfiles/hki-parcels-card/dutch-parcels.png
+placeholder_image: https://github.com/jonisnet/hki-parcels-card/blob/main/images/dutch-parcels.png?raw=true
 carriers:
   - type: postnl
     name: PostNL
@@ -137,10 +137,25 @@ layout_order:
 | `user` | The account-specific part of your sensor names. Used to auto-build the four entity_ids below. |
 | `name` | Display name. Auto-filled from `type`, editable for `custom`. |
 | `icon` / `color` | Display icon and accent color. Auto-filled from `type`, can be overridden. |
-| `logo_path` | Optional URL to a carrier logo, shown as the animation panel background when this is the only configured carrier. |
-| `van_path` | Optional URL to an animated vehicle GIF, shown in the animation panel for in-transit/delivered parcels. |
+| `logo_path` | Optional URL to a carrier logo. Defaults to a built-in logo for `postnl`/`dhl`/`dpd` (see [Images](#images) below) when left blank. |
+| `van_path` | Optional URL to an animated vehicle GIF, shown in the animation panel for in-transit/delivered parcels. Defaults to a built-in GIF for `postnl` when left blank (no built-in van asset yet for `dhl`/`dpd`). |
+| `banner_path` | Optional URL to a wide banner image, shown as the animation panel background when this carrier is the only one configured. Defaults to a built-in banner for `postnl`/`dhl` when left blank. |
 | `schema` | `legacy` (current PostNL sensor shape: free-text status) or `canonical` (the shared `normalize_parcel()` shape used by newer carrier integrations). |
 | `entity_incoming` / `entity_delivered` / `entity_outgoing` / `entity_letters` | Sensor entity_ids. Auto-built from `user` + `type`; can be overridden manually for non-standard naming. |
+
+## Images
+
+This card ships with built-in logo/van/banner assets for PostNL and DHL
+(DPD only has a logo so far), hosted in this repository's
+[`images/`](images/) folder. They're used automatically whenever a
+carrier's `logo_path` / `van_path` / `banner_path` is left blank — you
+don't need to configure anything for the default look to work, the same
+way the original `hki-postnl-card` always had a working PostNL logo/van/
+banner out of the box.
+
+If you'd rather use your own images (a different style, or assets for a
+`custom` carrier type), just set `logo_path` / `van_path` / `banner_path`
+on that carrier and your URL takes priority over the built-in default.
 
 ## Known limitations
 
