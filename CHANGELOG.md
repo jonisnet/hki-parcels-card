@@ -5,6 +5,28 @@ GitHub release tags follow their own beta counter (`v1.0.bN`), separate
 from the `CARD_VERSION` shown in the in-app console banner, which follows
 semantic versioning.
 
+## v1.0.b6
+
+### Changed
+- **`CARD_VERSION` now follows the GitHub beta release tag scheme**
+  (`v1.0.bN`) instead of semantic versioning, matching the user's own
+  release numbering. The first stable release will be tagged `v1.0.0`.
+  All prior `v1.x.x` entries below predate this switch and were never
+  published as GitHub releases under those numbers.
+
+## v1.5.1
+
+### Fixed
+- **The "user" account field now slugifies punctuation when building
+  sensor entity_ids**, matching how Home Assistant actually names them.
+  Typing an email address like `dj.jolit@hotmail.com` now correctly
+  builds `sensor.dj_jolit_hotmail_com_postnl_incoming_parcels` instead
+  of a literal (and invalid) entity_id containing dots and `@`. The
+  input field itself keeps showing exactly what was typed — only the
+  generated entity_ids are affected, via a new standalone
+  `slugifyUserSlug()` helper shared by both `_carrierUserChanged` and
+  `_carrierTypeChanged`.
+
 ## v1.5.0
 
 ### Added

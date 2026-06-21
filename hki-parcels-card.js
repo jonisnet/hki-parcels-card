@@ -88,7 +88,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 //     barcode, sender, status (free text), delivery_date. No "delivered"
 //     boolean, no canonical status enum.
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.5.0';
+const CARD_VERSION = 'v1.0.b6';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -155,6 +155,20 @@ const CARRIER_PRESETS = {
     custom: { label: 'Anders / Custom', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical', supports_letters: false, sensor_slug: null }
 };
 
+// Mirrors how Home Assistant slugifies entity names: lowercase, and any
+// run of characters that isn't a-z/0-9 (spaces, dots, @, etc.) becomes a
+// single underscore. Used to turn a raw account string like
+// "dj.jolit@hotmail.com" into the "dj_jolit_hotmail_com" form HA actually
+// uses in sensor entity_ids — without ever touching the editor's stored
+// `user` value itself, which keeps showing exactly what was typed.
+function slugifyUserSlug(text) {
+    return String(text || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+}
+
 // Builds the four standard entity_ids for a carrier from its "user" account
 // slug, following the sensor.<user>_<carrier>_<suffix> pattern used by the
 // ha-postnl / ha-dhl-nl family of integrations. Returns null fields when no
@@ -163,7 +177,7 @@ const CARRIER_PRESETS = {
 function buildTemplatedEntities(user, carrierType) {
     const preset = CARRIER_PRESETS[carrierType] || CARRIER_PRESETS.custom;
     const slug = preset.sensor_slug;
-    const u = String(user || '').trim();
+    const u = slugifyUserSlug(user);
     if (!u || !slug) {
         return { entity_incoming: null, entity_delivered: null, entity_outgoing: null, entity_letters: null };
     }
