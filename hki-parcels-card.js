@@ -88,7 +88,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 //     barcode, sender, status (free text), delivery_date. No "delivered"
 //     boolean, no canonical status enum.
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.0.b6';
+const CARD_VERSION = 'v1.0.0';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -142,16 +142,10 @@ const CARRIER_ASSETS = {
 // "custom" has no fixed pattern (null), so its entities must be entered
 // manually — there's nothing to template against.
 const CARRIER_PRESETS = {
-    postnl: { label: 'PostNL', icon: 'mdi:email-fast', color: '#ed8c00', schema: 'legacy', supports_letters: true, sensor_slug: 'postnl' },
-    dhl: { label: 'DHL', icon: 'mdi:truck', color: '#ffcc00', schema: 'canonical', supports_letters: false, sensor_slug: 'dhl' },
-    dpd: { label: 'DPD', icon: 'mdi:truck-fast', color: '#dc0032', schema: 'canonical', supports_letters: false, sensor_slug: 'dpd' },
-    // Recreates the original (pre-multi-carrier) hki-postnl-card exactly:
-    // one combined "entity" holding both en-route and delivered parcels
-    // (split by each item's own `delivered` flag, same as the original
-    // getData()/getFilteredShipments() did) plus one "distribution_entity"
-    // for sent parcels. No letters support, no sensor templating — the
-    // original never had either, so this type doesn't either.
-    postnl_legacy: { label: 'Postnl (Legacy)', icon: 'mdi:email-fast', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null },
+    postnl: { label: 'PostNL', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'legacy', supports_letters: true, sensor_slug: 'postnl' },
+    dhl: { label: 'DHL', icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical', supports_letters: false, sensor_slug: 'dhl' },
+    dpd: { label: 'DPD', icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical', supports_letters: false, sensor_slug: 'dpd' },
+    postnl_legacy: { label: 'PostNL (Legacy)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null },
     custom: { label: 'Anders / Custom', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical', supports_letters: false, sensor_slug: null }
 };
 
@@ -263,7 +257,7 @@ class HkiParcelsCard extends HTMLElement {
                 {
                     type: 'postnl',
                     name: 'PostNL',
-                    icon: 'mdi:email-fast',
+                    icon: 'mdi:package-variant-closed',
                     color: '#ed8c00',
                     schema: 'legacy',
                     logo_path: '',
@@ -277,7 +271,7 @@ class HkiParcelsCard extends HTMLElement {
                 {
                     type: 'dhl',
                     name: 'DHL',
-                    icon: 'mdi:truck',
+                    icon: 'mdi:package-variant-closed',
                     color: '#ffcc00',
                     schema: 'canonical',
                     logo_path: '',
@@ -330,14 +324,6 @@ class HkiParcelsCard extends HTMLElement {
         return Object.values(attrs).filter((item) => item && typeof item === 'object');
     }
 
-    // "canonical" schema (normalize_parcel() shape from ha-dhl-nl, and any
-    // future carrier aligned to it): fields are already clean, just carry
-    // them through and make sure key/name/status_message exist.
-    // Centralizes the per-carrier branding fields so all three normalization
-    // sites (canonical parcels, legacy parcels, letters) stay in sync when a
-    // new branding field is added, instead of repeating the same fallbacks
-    // in three places.
-    //
     // logo/van/banner fall back to this carrier type's built-in asset (see
     // CARRIER_ASSETS) when the user hasn't set their own — the same
     // always-works-out-of-the-box behaviour the original hki-postnl-card
@@ -533,11 +519,6 @@ class HkiParcelsCard extends HTMLElement {
     // Letters have their own shape entirely (id/title/date/unread/image_url),
     // unrelated to the parcel-oriented legacy/canonical schemas, so they get
     // their own normalization path instead of going through _normalizeItem().
-    // Mirrors how Home Assistant slugifies entity names from a friendly title:
-    // lowercase, spaces become underscores. This is a best-effort approximation
-    // based on observed entity_ids ("18 juni" -> "18_juni") — if a title ever
-    // contains characters HA slugifies differently, the count-check in
-    // _getCarrierLetters will catch the resulting mismatch and fall back safely.
     _slugify(text) {
         return String(text || '')
             .toLowerCase()
@@ -550,9 +531,6 @@ class HkiParcelsCard extends HTMLElement {
     // entity_id, since both are generated by the same ha-postnl integration
     // from the same account name: "sensor.<account>_postnl_letters" becomes
     // "image.<account>_postnl_letter". No manual configuration needed.
-    // Returns null if entityId doesn't match the expected "..._letters"
-    // pattern, so the caller can fall back to the external image_url instead
-    // of guessing a wrong prefix.
     _deriveLetterImagePrefix(entityId) {
         const match = /^sensor\.(.+)_letters$/.exec(entityId || '');
         if (!match) return null;
@@ -582,7 +560,6 @@ class HkiParcelsCard extends HTMLElement {
                 unread: !!item.unread,
                 image_url: item.image_url || '',
                 is_placeholder_image: isPlaceholder,
-                // Filled in below if a matching image.* entity is found.
                 image_entity_picture: '',
                 // When true, the external image_url is never used as a display
                 // fallback — a missing/mismatched local entity shows the
@@ -607,15 +584,6 @@ class HkiParcelsCard extends HTMLElement {
 
     // Attempts to attach a local image.* entity_picture to each letter, grouped
     // by title (HA appends _2, _3, ... for repeated titles on the same day).
-    // Best-effort, per-letter: searches open-ended for "<prefix>_<slug>",
-    // "<prefix>_<slug>_2", "_3", ... until one is missing, then pairs whatever
-    // was found with the letters in that group, in order. If there are more
-    // letters than matching image entities, the leftover letters simply get
-    // no image_entity_picture (the rendering layer shows the "no match"
-    // placeholder for those) — this is the expected, normal case, not an
-    // error, so no warning is logged for it. A warning is only logged when a
-    // group finds zero matches at all, since that's more likely a
-    // misconfigured prefix than a missing scan.
     _matchLetterImageEntities(letters, prefix, carrierName) {
         if (!this._hass) return;
 
@@ -646,9 +614,6 @@ class HkiParcelsCard extends HTMLElement {
                 return;
             }
 
-            // Pair as many letters as possible with the found image entities,
-            // in order. Any leftover letters (more letters than images) are
-            // left without image_entity_picture on purpose.
             group.forEach((letter, i) => {
                 const stateObj = foundStates[i];
                 if (!stateObj) return;
@@ -664,9 +629,7 @@ class HkiParcelsCard extends HTMLElement {
         return (this.config.carriers || []).some(c => !!c.entity_letters);
     }
 
-    // Counts letters whose delivery_date (the "date" field from the letters
-    // sensor) matches today's date, comparing only year/month/day so the
-    // time-of-day on either side never causes a false mismatch.
+    // Counts letters whose delivery_date matches today's date.
     _countLettersToday(data) {
         const post = data?.post || [];
         const todayStr = new Date().toDateString();
@@ -719,13 +682,7 @@ class HkiParcelsCard extends HTMLElement {
     }
 
     // Determines what the animation panel's background should show when
-    // nothing is selected: with 2+ configured carriers there's no single
-    // "the" carrier to represent, so the generic placeholder_image is always
-    // used. With exactly 1 carrier, that carrier's own banner takes priority
-    // (a wide/landscape asset purpose-built for this background role, same
-    // idea as the original hki-postnl-card's DEFAULT_BANNER) — falls back to
-    // the carrier's logo if no banner is set, then to placeholder_image if
-    // neither is available.
+    // nothing is selected.
     _getNoSelectionBackground() {
         const carriers = this.config.carriers || [];
         if (carriers.length >= 2) {
@@ -740,9 +697,6 @@ class HkiParcelsCard extends HTMLElement {
         return { image: this.config.placeholder_image || '', showText: !this.config.placeholder_image };
     }
 
-    // Opens the letter image popup. stopPropagation prevents this click from
-    // also bubbling to the parcel-header click handler, which would otherwise
-    // collapse the details panel the thumbnail lives in.
     handleLetterThumbClick(e) {
         e.stopPropagation();
         const { letterName, letterDate, letterSrc } = e.currentTarget.dataset;
@@ -812,9 +766,6 @@ class HkiParcelsCard extends HTMLElement {
             ? displayedShipments.find(s => s.key === this._selectedParcel)
             : null;
 
-        // Clear any background image set by the no-selection branch below —
-        // the parcel-selected states render their own content/background via
-        // animation-active and must not inherit a leftover inline style.
         animationEl.style.backgroundImage = '';
 
         if (this.config.show_animation && selectedParcelData?.delivered) {
@@ -882,20 +833,8 @@ class HkiParcelsCard extends HTMLElement {
         const statusMsg = item.status_message || (isLetter ? 'Brievenbuspost' : (isDelivered ? 'Bezorgd' : 'Onderweg'));
         const dateLabel = this.formatDate(item.delivery_date || item.planned_date || item.planned_to);
         const statusIcon = isLetter ? 'mdi:email' : (isDelivered ? 'mdi:check-circle' : 'mdi:truck-delivery');
-        // The CSS that expands the details panel and rotates the chevron is
-        // driven entirely by a "selected" class on this wrapper div — it was
-        // never actually applied here, which is why expanding a parcel had
-        // no visible effect despite handleParcelClick() correctly tracking
-        // this._selectedParcel and triggering a re-render.
         const isSelected = this._selectedParcel === item.key;
 
-        // Same image-source priority as the animation panel: once a local
-        // image.* entity prefix could be derived, that's the only source
-        // ever shown (no falling back to the unreliable external URL).
-        // is_placeholder_image (detected from the external image_url ending
-        // in "letter_placeholder.png") applies regardless of which source
-        // ends up being used — the local image.* entity shows the same
-        // generic placeholder when PostNL has no real scan for a letter.
         let letterThumb = '';
         if (isLetter && !item.is_placeholder_image) {
             letterThumb = item.has_image_prefix ? (item.image_entity_picture || '') : (item.image_url || '');
@@ -1121,8 +1060,6 @@ class HkiParcelsCard extends HTMLElement {
             el.addEventListener('click', this.handleLetterThumbClick.bind(this));
         });
 
-        // The animation block above was rendered empty — fill it immediately
-        // instead of waiting for the first tab click or parcel selection.
         this.updateAnimation(displayedShipments);
     }
 }
@@ -1203,11 +1140,6 @@ class HkiParcelsCardEditor extends LitElement {
         this._emit();
     }
 
-    // When the carrier type dropdown changes, fill in icon/color/schema from
-    // the matching preset, and rebuild the four entity_ids from the
-    // "user" field if one is already set. Manual entity overrides in the
-    // "Geavanceerd" section are intentionally replaced here — user/type are
-    // meant to be the source of truth once a user value is entered.
     _carrierTypeChanged(index, ev) {
         ev.stopPropagation();
         const type = this._val(ev);
@@ -1224,30 +1156,17 @@ class HkiParcelsCardEditor extends LitElement {
             icon: preset.icon,
             color: preset.color,
             schema: preset.schema,
-            // single_entity (postnl_legacy) uses entity/distribution_entity
-            // instead of the four templated fields — clear those out rather
-            // than inheriting stale values from whatever type this carrier
-            // was before, since they'd otherwise sit there unused but
-            // confusing if the carrier is later switched back.
             entity_incoming: isSingleEntity ? '' : (templated.entity_incoming ?? current.entity_incoming ?? ''),
             entity_delivered: isSingleEntity ? '' : (templated.entity_delivered ?? current.entity_delivered ?? ''),
             entity_outgoing: isSingleEntity ? '' : (templated.entity_outgoing ?? current.entity_outgoing ?? ''),
             entity: isSingleEntity ? (current.entity ?? '') : '',
             distribution_entity: isSingleEntity ? (current.distribution_entity ?? '') : '',
-            // Carriers without letters support never carry an entity_letters
-            // value, so the "Post" tab logic (hasAnyLettersConfigured) can't
-            // accidentally pick up a stale value from before a type switch.
             entity_letters: preset.supports_letters ? (templated.entity_letters ?? current.entity_letters ?? '') : ''
         };
         this._config = { ...this._config, carriers };
         this._emit();
     }
 
-    // The "user" field is the account slug from the sensor naming pattern
-    // (sensor.<user>_<carrier>_incoming_parcels, etc). Every keystroke
-    // rebuilds all four entity_ids from the current type's pattern — no
-    // separate "apply" step needed, and it stays in sync if the type is
-    // changed afterwards too (handled in _carrierTypeChanged above).
     _carrierUserChanged(index, ev) {
         ev.stopPropagation();
         const user = this._val(ev);
@@ -1298,11 +1217,6 @@ class HkiParcelsCardEditor extends LitElement {
         this._emit();
     }
 
-    // Collapsing/expanding a carrier section is purely a UI convenience and
-    // doesn't need to round-trip through config-changed/setConfig, so it's
-    // stored directly on the config object as _expanded but emitted like any
-    // other change for simplicity (it's prefixed with _ to signal it's not a
-    // meaningful card setting, just editor UI state).
     _toggleCarrierExpanded(index) {
         const existing = Array.isArray(this._config.carriers) ? this._config.carriers : [];
         const carriers = [...existing];
@@ -1405,7 +1319,7 @@ class HkiParcelsCardEditor extends LitElement {
                             { value: 'postnl', label: 'PostNL' },
                             { value: 'dhl', label: 'DHL' },
                             { value: 'dpd', label: 'DPD' },
-                            { value: 'postnl_legacy', label: 'Postnl (Legacy)' },
+                            { value: 'postnl_legacy', label: 'PostNL (Legacy)' },
                             { value: 'custom', label: 'Anders / Custom' }
                         ], mode: 'dropdown' } }}
                         .value=${carrier.type || 'postnl'}
@@ -1425,10 +1339,11 @@ class HkiParcelsCardEditor extends LitElement {
                         </div>
                     ` : carrier.type === 'postnl_legacy' ? html`
                         <div class="helper-text">
-                            Recreëert de originele hki-postnl-card: één entity met zowel onderweg als bezorgde
-                            pakketten (gesplitst op het delivered-veld), plus een losse entity voor verzonden
-                            pakketten. Geen brieven-ondersteuning, geen automatische sensor-templating — vul de
-                            volledige entity-namen hieronder zelf in, zoals bij de originele kaart.
+                            <strong>⚠ PostNL (Legacy)</strong> — Gebaseerd op de integratie van
+                            <a href="https://github.com/arjenbos/ha-postnl" target="_blank">arjenbos/ha-postnl</a>.
+                            Deze modus krijgt geen verdere updates zolang die repository niet wordt bijgewerkt.
+                            Gebruik de standaard PostNL-optie hierboven als je
+                            <a href="https://github.com/peternijssen/ha-postnl" target="_blank">peternijssen/ha-postnl</a> gebruikt.
                         </div>
                         ${this._renderEntityPicker(
                             "PostNL Ontvangst Entity",
@@ -1542,7 +1457,7 @@ class HkiParcelsCardEditor extends LitElement {
                         <div class="helper-text">
                             Logo, voertuig-animatie en banner hebben al een ingebouwde standaardafbeelding per carrier
                             (zichtbaar als placeholder-tekst hierboven). Vul hier alleen iets in als je die wilt
-                            overschrijven. Zonder enige afbeelding gebruikt de kaart het icoon en de kleur hierboven.
+                            overschrijven.
                         </div>
                     </details>
                 </div>
@@ -1553,12 +1468,6 @@ class HkiParcelsCardEditor extends LitElement {
 
     render() {
         if (!this._config) return html``;
-        // Defensive guard: Lit can call render() before setConfig() has run
-        // (observed in practice via getConfigElement() → constructor →
-        // initial render), so this._config may not have a carriers array yet
-        // even though setConfig() always sets one. Without this check,
-        // this._config.carriers.map() below throws and the whole editor
-        // silently fails to render anything past this point.
         const carriers = Array.isArray(this._config.carriers) ? this._config.carriers : [];
 
         const layoutLabels = {
@@ -1574,7 +1483,7 @@ class HkiParcelsCardEditor extends LitElement {
                 <details class="warning-box-details" open>
                     <summary class="warning-title">📦 Multi-carrier pakketten kaart</summary>
                     <div style="margin-top:8px;">Voeg hieronder één of meer carriers toe (PostNL, DHL, DPD, ...). Elke carrier kan tot 4 sensoren hebben.</div>
-                    <div style="margin-top:8px;">Gebruik schema <strong>"canonical"</strong> voor integraties die het gedeelde normalize_parcel()-formaat gebruiken (zoals ha-dhl-nl), en <strong>"legacy"</strong> voor de huidige PostNL-sensoren.</div>
+                    <div style="margin-top:8px;">Gebruik schema <strong>"canonical"</strong> voor integraties die het gedeelde normalize_parcel()-formaat gebruiken (zoals ha-dhl-nl en ha-dpd), en <strong>"legacy"</strong> voor de huidige PostNL-sensoren (peternijssen/ha-postnl v3.x).</div>
                 </details>
 
                 <details class="section-details" open>
@@ -1712,7 +1621,7 @@ window.customCards = window.customCards || [];
 window.customCards.push({
     type: "hki-parcels-card",
     name: "HKI Parcels Card",
-    description: "Multi-carrier package tracker (PostNL, DHL, DPD, ...)",
+    description: "Multi-carrier pakket tracker (PostNL, DHL, DPD, ...) — fork van jimz011/hki-elements",
     preview: true
 });
 
