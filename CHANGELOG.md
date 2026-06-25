@@ -2,21 +2,21 @@
 
 ## [1.0.0] — 2026-06-25
 
-Eerste stabiele release.
+First stable release.
 
-### Functies
+### Features
 
-- **Multi-carrier** ondersteuning: PostNL, DHL en DPD in één kaart
-- **Automatische sensor-templating** op basis van het account-veld (`sensor.<user>_<carrier>_incoming_parcels` etc.)
-- **Canonical schema** voor DHL en DPD (geharmoniseerde attribuutstructuur met `status`-enum, `delivered` bool, `planned_from`/`planned_to`, `pickup_point`)
-- **Legacy schema** voor PostNL v3.x (peternijssen/ha-postnl)
-- **PostNL (Legacy) modus** voor arjenbos/ha-postnl — één gecombineerde entity
-- **Tabbladen**: Onderweg / Bezorgd / Verzonden / Post
-- **Pakket-detailpaneel** met Track & Trace nummer, bezorgwijze en trackinglink
-- **Brievenpost tab** (PostNL) met automatisch gekoppelde `image.*`-entiteiten per datum
-- **Popup** voor brief-scan afbeeldingen
-- **Animatieblok** met voertuig-GIF of carrier-chip bij pakket-selectie
-- **Aanpasbaar uiterlijk** per carrier: logo, GIF, banner, icoon, kleur
-- **Layout-volgorde** aanpasbaar via editor
-- **Visuele editor** met automatische sensoren-preview en collapseerbare secties
-- Gebaseerd op [jimz011/hki-elements](https://github.com/jimz011/hki-elements)
+- **Multi-carrier** support: PostNL, DHL and DPD in a single card
+- **Automatic sensor templating** based on the account field (`sensor.<user>_<carrier>_incoming_parcels` etc.)
+- **Canonical schema** for DHL and DPD (harmonised attribute structure with `status` enum, `delivered` bool, `planned_from`/`planned_to`, `pickup_point`)
+- **Legacy schema** for PostNL v3.x (peternijssen/ha-postnl)
+- **PostNL (Legacy) mode** for arjenbos/ha-postnl — single combined entity
+- **Tabs**: In Transit / Delivered / Sent / Letters
+- **Parcel detail panel** with tracking number, delivery method and tracking link
+- **Letters tab** (PostNL) with automatically matched `image.*` entities per date
+- **Letter scan popup** for full-size image view
+- **Animation block** with vehicle GIF or carrier chip when a parcel is selected
+- **Customisable appearance** per carrier: logo, GIF, banner, icon, colour
+- **Layout order** configurable via editor
+- **Visual editor** with automatic sensor preview and collapsible sections
+- Based on [jimz011/hki-elements](https://github.com/jimz011/hki-elements)
