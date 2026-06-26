@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.0.0';
+const CARD_VERSION = 'v1.0.1';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -443,6 +443,7 @@ class HkiParcelsCard extends HTMLElement {
                     entity_letters: ''
                 }
             ],
+            show_tracking_link: true,
             layout_order: ['header', 'animation', 'tabs', 'list']
         };
     }
@@ -1167,11 +1168,16 @@ class HkiParcelsCardEditor extends LitElement {
         const preset  = CARRIER_PRESETS[type] || CARRIER_PRESETS.custom;
         const carriers = [...(this._config.carriers || [])];
         const current = carriers[index] || {};
-        const templated = buildTemplatedEntities(current.user, type);
-        const isSingle  = preset.schema === 'single_entity';
+        const isSingle = preset.schema === 'single_entity';
+        // Auto-detect account when changing type (use existing user if already set).
+        const detected  = !isSingle ? this._detectUsers(type) : [];
+        const autoUser  = current.user || (detected.length === 1 ? detected[0] : '');
+        const templated = !isSingle && autoUser ? buildTemplatedEntities(autoUser, type) : {};
         carriers[index] = {
             ...current, type,
             name: preset.label, icon: preset.icon, color: preset.color, schema: preset.schema,
+            user: autoUser,
+            _manualUser: !!current.user,
             entity_incoming:    isSingle ? '' : (templated.entity_incoming    ?? current.entity_incoming    ?? ''),
             entity_delivered:   isSingle ? '' : (templated.entity_delivered   ?? current.entity_delivered   ?? ''),
             entity_outgoing:    isSingle ? '' : (templated.entity_outgoing    ?? current.entity_outgoing    ?? ''),
@@ -1202,12 +1208,22 @@ class HkiParcelsCardEditor extends LitElement {
     }
 
     _addCarrier() {
-        const preset   = CARRIER_PRESETS.postnl;
+        const type   = 'postnl';
+        const preset = CARRIER_PRESETS[type];
+        // Auto-detect user for the default carrier type immediately.
+        const detected = this._detectUsers(type);
+        const autoUser = detected.length === 1 ? detected[0] : '';
+        const templated = autoUser ? buildTemplatedEntities(autoUser, type) : {};
         const carriers = [...(this._config.carriers || []), {
-            type: 'postnl', name: preset.label, icon: preset.icon, color: preset.color,
+            type, name: preset.label, icon: preset.icon, color: preset.color,
             schema: preset.schema, logo_path: '', van_path: '', banner_path: '',
-            entity_incoming: '', entity_delivered: '', entity_outgoing: '', entity_letters: '',
-            _expanded: true
+            user: autoUser,
+            entity_incoming:  templated.entity_incoming  || '',
+            entity_delivered: templated.entity_delivered || '',
+            entity_outgoing:  templated.entity_outgoing  || '',
+            entity_letters:   preset.supports_letters ? (templated.entity_letters || '') : '',
+            _expanded: true,
+            _manualUser: false
         }];
         this._config = { ...this._config, carriers };
         this._emit();
@@ -1349,7 +1365,7 @@ class HkiParcelsCardEditor extends LitElement {
             .appearance-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
             .appearance-preview { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--card-background-color, white); border: 1px solid var(--divider-color); border-radius: 8px; flex-shrink: 0; }
             .appearance-field-grow { flex: 1; }
-            .appearance-field-grow ha-icon-picker { width: 100%; }
+            .appearance-field-grow ha-selector { width: 100%; }
             .color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
             .color-label { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; }
             .color-input-wrap { display: flex; align-items: center; gap: 8px; }
@@ -1403,7 +1419,8 @@ class HkiParcelsCardEditor extends LitElement {
                             <ha-icon icon="${currentIcon}" style="color:${currentColor}; width:28px; height:28px;"></ha-icon>
                         </div>
                         <div class="appearance-field-grow">
-                            <ha-icon-picker .hass=${this.hass}
+                            <ha-selector .hass=${this.hass}
+                                .selector=${{ icon: {} }}
                                 .value=${currentIcon}
                                 .label=${this._t('label_icon_pick')}
                                 @value-changed=${(ev) => {
@@ -1412,7 +1429,7 @@ class HkiParcelsCardEditor extends LitElement {
                                     carriers[index] = { ...carriers[index], icon: ev.detail.value };
                                     this._config = { ...this._config, carriers };
                                     this._emit();
-                                }}></ha-icon-picker>
+                                }}></ha-selector>
                         </div>
                     </div>
 
@@ -1458,22 +1475,26 @@ class HkiParcelsCardEditor extends LitElement {
             </details>`;
     }
 
-    // Renders the user/account detection block: auto if 1 found, dropdown if multiple, manual if none.
+    // Renders the user/account detection block: badge if 1 found, dropdown if multiple, manual if none.
+    // Never mutates state during render — auto-fill happens in _addCarrier / _carrierTypeChanged.
     _renderUserDetection(carrier, index, preset, supportsLetters) {
-        const detected = this._detectUsers(carrier.type);
+        const detected   = this._detectUsers(carrier.type);
+        const entityPreview = carrier.entity_incoming ? html`
+            <div class="templated-preview">
+                <div>${carrier.entity_incoming}</div>
+                <div>${carrier.entity_delivered}</div>
+                <div>${carrier.entity_outgoing}</div>
+                ${supportsLetters && carrier.entity_letters ? html`<div>${carrier.entity_letters}</div>` : ''}
+            </div>` : '';
 
+        // Single account found and not overridden by user → show auto-detected badge.
         if (detected.length === 1 && !carrier._manualUser) {
-            // Auto-fill when exactly one sensor found (only if user hasn't overridden).
-            if (carrier.user !== detected[0]) {
-                // Trigger auto-fill asynchronously to avoid mutating during render.
-                Promise.resolve().then(() => this._carrierUserSelected(index, detected[0]));
-            }
             return html`
                 <div class="detected-row">
                     <ha-icon icon="mdi:check-circle" class="detected-icon ok"></ha-icon>
                     <div class="detected-info">
                         <div class="detected-label">${this._t('detected_one')}</div>
-                        <div class="detected-value">${detected[0]}</div>
+                        <div class="detected-value">${carrier.user || detected[0]}</div>
                     </div>
                     <button class="detected-override" title="Enter manually"
                         @click=${() => {
@@ -1483,15 +1504,10 @@ class HkiParcelsCardEditor extends LitElement {
                             this._emit();
                         }}>✎</button>
                 </div>
-                ${carrier.entity_incoming ? html`
-                    <div class="templated-preview">
-                        <div>${carrier.entity_incoming}</div>
-                        <div>${carrier.entity_delivered}</div>
-                        <div>${carrier.entity_outgoing}</div>
-                        ${supportsLetters && carrier.entity_letters ? html`<div>${carrier.entity_letters}</div>` : ''}
-                    </div>` : ''}`;
+                ${entityPreview}`;
         }
 
+        // Multiple accounts found and not overridden → show dropdown.
         if (detected.length > 1 && !carrier._manualUser) {
             return html`
                 <div class="detected-row">
@@ -1516,22 +1532,12 @@ class HkiParcelsCardEditor extends LitElement {
                         ev.stopPropagation();
                         this._carrierUserSelected(index, window.HKI.getSelectValue(ev));
                     }}></ha-selector>
-                ${carrier.entity_incoming ? html`
-                    <div class="templated-preview">
-                        <div>${carrier.entity_incoming}</div>
-                        <div>${carrier.entity_delivered}</div>
-                        <div>${carrier.entity_outgoing}</div>
-                        ${supportsLetters && carrier.entity_letters ? html`<div>${carrier.entity_letters}</div>` : ''}
-                    </div>` : ''}`;
+                ${entityPreview}`;
         }
 
-        // 0 detected, or user forced manual entry.
+        // 0 detected OR user chose manual entry → text input with sanitization.
         return html`
-            ${detected.length === 0 ? html`
-                <div class="detected-row">
-                    <ha-icon icon="mdi:help-circle-outline" class="detected-icon none"></ha-icon>
-                    <div class="detected-info detected-label">${this._t('detected_none')}</div>
-                </div>` : html`
+            ${detected.length > 0 ? html`
                 <div class="detected-row">
                     <ha-icon icon="mdi:pencil" class="detected-icon multi"></ha-icon>
                     <div class="detected-info detected-label">${this._t('label_account')}</div>
@@ -1542,6 +1548,10 @@ class HkiParcelsCardEditor extends LitElement {
                             this._config = { ...this._config, carriers };
                             this._emit();
                         }}>↩</button>
+                </div>` : html`
+                <div class="detected-row">
+                    <ha-icon icon="mdi:help-circle-outline" class="detected-icon none"></ha-icon>
+                    <div class="detected-info detected-label">${this._t('detected_none')}</div>
                 </div>`}
             <div class="plain-field" style="margin-top:8px;">
                 <label for="hki-carrier-user-${index}">${this._t('label_account')}</label>
@@ -1550,13 +1560,7 @@ class HkiParcelsCardEditor extends LitElement {
                     @input=${(ev) => this._carrierUserInputChanged(index, ev)} />
             </div>
             <div class="helper-text">"_${preset.sensor_slug}${this._t('account_help_suffix')}</div>
-            ${carrier.entity_incoming ? html`
-                <div class="templated-preview">
-                    <div>${carrier.entity_incoming}</div>
-                    <div>${carrier.entity_delivered}</div>
-                    <div>${carrier.entity_outgoing}</div>
-                    ${supportsLetters && carrier.entity_letters ? html`<div>${carrier.entity_letters}</div>` : ''}
-                </div>` : ''}`;
+            ${entityPreview}`;
     }
 
     _renderEntityPicker(label, value, helper, onChange) {
