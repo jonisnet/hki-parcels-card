@@ -141,6 +141,7 @@ const TRANSLATIONS = {
         show_letters_tab:       'Toon "Post" tab (als minstens 1 carrier brieven ondersteunt)',
         show_animation:         'Toon animatie/detailweergave',
         show_placeholder:       'Toon placeholder',
+        show_tracking_link:     'Toon "Track & Trace" knop (schakel uit voor kiosk/touch)',
         section_appearance:     'Uiterlijk',
         label_header_color:     'Header Kleur',
         label_header_text:      'Header Tekst Kleur',
@@ -167,6 +168,17 @@ const TRANSLATIONS = {
         appearance_help:        'Logo, voertuig-animatie en banner hebben al een ingebouwde standaard per carrier. Vul hier alleen iets in als je die wilt overschrijven.',
         postnl_entity_label:    'PostNL Ontvangst Entity',
         postnl_dist_label:      'PostNL Verzending Entity (optioneel)',
+        detected_one:           'Automatisch gevonden',
+        detected_multiple:      'Meerdere accounts gevonden — kies er één',
+        detected_none:          'Geen sensors gevonden — vul handmatig in',
+        detected_badge:         'gevonden',
+        label_icon_pick:        'Icoon',
+        label_color_pick:       'Kleur',
+        url_logo:               'Logo URL',
+        url_van:                'Voertuig GIF URL',
+        url_banner:             'Banner URL',
+        url_placeholder:        'Laat leeg voor de standaard afbeelding',
+        url_preview_fail:       'Afbeelding niet gevonden',
     },
     en: {
         tab_in_transit:         'In Transit',
@@ -229,6 +241,7 @@ const TRANSLATIONS = {
         show_letters_tab:       'Show "Letters" tab (requires at least 1 carrier with letter support)',
         show_animation:         'Show animation / detail view',
         show_placeholder:       'Show placeholder image',
+        show_tracking_link:     'Show tracking link button (disable for kiosk / touch-only)',
         section_appearance:     'Appearance',
         label_header_color:     'Header color',
         label_header_text:      'Header text color',
@@ -255,6 +268,17 @@ const TRANSLATIONS = {
         appearance_help:        'Logo, vehicle animation and banner already have a built-in default per carrier. Only fill in a value here if you want to override it.',
         postnl_entity_label:    'PostNL Incoming Entity',
         postnl_dist_label:      'PostNL Outgoing Entity (optional)',
+        detected_one:           'Auto-detected',
+        detected_multiple:      'Multiple accounts found — choose one',
+        detected_none:          'No sensors found — enter manually',
+        detected_badge:         'found',
+        label_icon_pick:        'Icon',
+        label_color_pick:       'Color',
+        url_logo:               'Logo URL',
+        url_van:                'Vehicle GIF URL',
+        url_banner:             'Banner URL',
+        url_placeholder:        'Leave empty to use the built-in default',
+        url_preview_fail:       'Image not found',
     }
 };
 
@@ -361,6 +385,7 @@ class HkiParcelsCard extends HTMLElement {
             show_animation: true,
             show_header: true,
             show_placeholder: true,
+            show_tracking_link: true,
             header_color: '',
             header_text_color: '',
             placeholder_image: DEFAULT_PLACEHOLDER_IMAGE,
@@ -903,7 +928,7 @@ class HkiParcelsCard extends HTMLElement {
                 ${item.raw_status ? `<div class="detail-row"><strong>${this._t('label_status')}:</strong> ${item.raw_status}</div>` : ''}
                 ${deliveryDetail}
                 <div class="detail-row"><strong>${this._t('label_type')}:</strong> ${isLetter ? this._t('type_letter') : this._t('type_parcel')}</div>
-                ${item.url ? `<a href="${item.url}" target="_blank" class="btn-track">${this._t('open_tracking')}</a>` : ''}
+                ${item.url && this.config.show_tracking_link !== false ? `<a href="${item.url}" target="_blank" class="btn-track">${this._t('open_tracking')}</a>` : ''}
             </div>
         </div>`;
     }
@@ -1096,6 +1121,7 @@ class HkiParcelsCardEditor extends LitElement {
             show_animation: true,
             show_header: true,
             show_placeholder: true,
+            show_tracking_link: true,
             header_color: '',
             header_text_color: '',
             placeholder_image: DEFAULT_PLACEHOLDER_IMAGE,
@@ -1121,7 +1147,7 @@ class HkiParcelsCardEditor extends LitElement {
         if (!field || !this._config) return;
         let value = this._val(ev);
         if (new Set(['days_back']).has(field)) value = parseInt(value, 10);
-        if (new Set(['show_delivered','show_sent','show_letters','show_animation','show_header','show_placeholder']).has(field))
+        if (new Set(['show_delivered','show_sent','show_letters','show_animation','show_header','show_placeholder','show_tracking_link']).has(field))
             value = !!(ev.target?.checked ?? value);
         this._config = { ...this._config, [field]: value };
         this._emit();
@@ -1210,6 +1236,64 @@ class HkiParcelsCardEditor extends LitElement {
         this._emit();
     }
 
+    // Returns an array of user-slugs detected in hass.states for a carrier type.
+    // e.g. for 'dhl' it matches sensor.*_dhl_incoming_parcels → extracts the prefix.
+    _detectUsers(carrierType) {
+        if (!this.hass) return [];
+        const preset = CARRIER_PRESETS[carrierType];
+        if (!preset?.sensor_slug) return [];
+        const slug = preset.sensor_slug;
+        const pattern = new RegExp(`^sensor\\.(.+)_${slug}_incoming_parcels$`);
+        const users = [];
+        for (const entityId of Object.keys(this.hass.states)) {
+            const match = pattern.exec(entityId);
+            if (match && !users.includes(match[1])) users.push(match[1]);
+        }
+        return users;
+    }
+
+    // Sanitizes free-text account input: lowercase, non-alnum → underscore, trim underscores.
+    _sanitizeUserInput(value) {
+        return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    }
+
+    _carrierUserInputChanged(index, ev) {
+        ev.stopPropagation();
+        const raw  = ev.target?.value ?? '';
+        const user = this._sanitizeUserInput(raw);
+        // Feed sanitized value back into the input so the user sees it live.
+        if (ev.target && ev.target.value !== user) ev.target.value = user;
+        const carriers = [...(this._config.carriers || [])];
+        const current  = carriers[index] || {};
+        const templated = buildTemplatedEntities(user, current.type);
+        const supportsLetters = (CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom).supports_letters;
+        carriers[index] = {
+            ...current, user,
+            entity_incoming:  templated.entity_incoming  ?? current.entity_incoming  ?? '',
+            entity_delivered: templated.entity_delivered ?? current.entity_delivered ?? '',
+            entity_outgoing:  templated.entity_outgoing  ?? current.entity_outgoing  ?? '',
+            entity_letters:   supportsLetters ? (templated.entity_letters ?? current.entity_letters ?? '') : ''
+        };
+        this._config = { ...this._config, carriers };
+        this._emit();
+    }
+
+    _carrierUserSelected(index, user) {
+        const carriers = [...(this._config.carriers || [])];
+        const current  = carriers[index] || {};
+        const templated = buildTemplatedEntities(user, current.type);
+        const supportsLetters = (CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom).supports_letters;
+        carriers[index] = {
+            ...current, user,
+            entity_incoming:  templated.entity_incoming  ?? '',
+            entity_delivered: templated.entity_delivered ?? '',
+            entity_outgoing:  templated.entity_outgoing  ?? '',
+            entity_letters:   supportsLetters ? (templated.entity_letters ?? '') : ''
+        };
+        this._config = { ...this._config, carriers };
+        this._emit();
+    }
+
     static get styles() {
         return css`
             .card-config { padding: 16px; }
@@ -1248,7 +1332,231 @@ class HkiParcelsCardEditor extends LitElement {
             .warning-box-details { background-color: var(--secondary-background-color); border: 1px solid var(--divider-color); border-left: 4px solid #ed8c00; padding: 12px; margin-bottom: 24px; font-size: 13px; line-height: 1.4; border-radius: 4px; color: var(--primary-text-color); }
             .warning-title { font-weight: bold; font-size: 14px; cursor: pointer; user-select: none; }
             .warning-box-details a { color: var(--primary-color, #03a9f4); text-decoration: underline; }
+
+            /* sensor auto-detection */
+            .detected-row { display: flex; align-items: center; gap: 10px; background: var(--card-background-color, white); border: 1px solid var(--divider-color); border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; }
+            .detected-icon { width: 22px; height: 22px; flex-shrink: 0; }
+            .detected-icon.ok   { color: var(--success-color, #4caf50); }
+            .detected-icon.multi{ color: var(--primary-color, #03a9f4); }
+            .detected-icon.none { color: var(--warning-color, #ff9800); }
+            .detected-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+            .detected-label { font-size: 12px; color: var(--secondary-text-color); font-style: italic; }
+            .detected-value { font-size: 13px; font-weight: 600; color: var(--primary-text-color); font-family: monospace; }
+            .detected-override { background: none; border: 1px solid var(--divider-color); border-radius: 4px; padding: 4px 8px; cursor: pointer; color: var(--secondary-text-color); font-size: 14px; flex-shrink: 0; }
+            .detected-override:hover { background: var(--secondary-background-color); color: var(--primary-text-color); }
+
+            /* appearance override */
+            .appearance-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+            .appearance-preview { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--card-background-color, white); border: 1px solid var(--divider-color); border-radius: 8px; flex-shrink: 0; }
+            .appearance-field-grow { flex: 1; }
+            .appearance-field-grow ha-icon-picker { width: 100%; }
+            .color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+            .color-label { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; }
+            .color-input-wrap { display: flex; align-items: center; gap: 8px; }
+            .color-swatch { width: 40px; height: 32px; border: 1px solid var(--divider-color); border-radius: 4px; cursor: pointer; padding: 2px; background: none; }
+            .color-hex { font-family: monospace; font-size: 13px; color: var(--primary-text-color); }
+
+            /* URL field with preview */
+            .url-field { margin-bottom: 8px; }
+            .url-field ha-textfield { width: 100%; margin-bottom: 4px; }
+            .url-preview-wrap { padding: 6px 0 10px; }
+            .url-preview { max-height: 56px; max-width: 120px; object-fit: contain; border-radius: 4px; border: 1px solid var(--divider-color); background: white; padding: 4px; display: block; }
+            .url-preview-error { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--error-color, red); }
         `;
+    }
+
+    // Renders a URL input field with a small live image preview below it.
+    _renderUrlField(label, value, placeholder, onChange) {
+        return html`
+            <div class="url-field">
+                <ha-textfield label="${label}" .value=${value || ''} placeholder="${placeholder}"
+                    @input=${onChange}></ha-textfield>
+                ${value ? html`
+                    <div class="url-preview-wrap">
+                        <img class="url-preview" src="${value}"
+                            alt="${label}"
+                            title="${label}"
+                            @error=${(ev) => { ev.target.style.display = 'none'; ev.target.nextElementSibling?.style.setProperty('display','flex'); }}
+                            @load=${(ev)  => { ev.target.style.display = 'block'; ev.target.nextElementSibling?.style.setProperty('display','none'); }} />
+                        <div class="url-preview-error" style="display:none;">
+                            <ha-icon icon="mdi:image-broken-variant"></ha-icon>
+                            <span>${this._t('url_preview_fail')}</span>
+                        </div>
+                    </div>` : ''}
+            </div>`;
+    }
+
+    // Renders the "Advanced: appearance override" section with icon-picker, color swatch and URL previews.
+    _renderAppearanceOverride(carrier, index, preset) {
+        const assets       = CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom;
+        const currentIcon  = carrier.icon  || preset.icon;
+        const currentColor = carrier.color || preset.color;
+        return html`
+            <details class="advanced-details">
+                <summary>${this._t('adv_appearance')}</summary>
+                <div style="margin-top:12px;">
+                    <div class="helper-text">${this._t('appearance_help')}</div>
+
+                    <!-- Icon picker -->
+                    <div class="appearance-row">
+                        <div class="appearance-preview">
+                            <ha-icon icon="${currentIcon}" style="color:${currentColor}; width:28px; height:28px;"></ha-icon>
+                        </div>
+                        <div class="appearance-field-grow">
+                            <ha-icon-picker .hass=${this.hass}
+                                .value=${currentIcon}
+                                .label=${this._t('label_icon_pick')}
+                                @value-changed=${(ev) => {
+                                    ev.stopPropagation();
+                                    const carriers = [...(this._config.carriers || [])];
+                                    carriers[index] = { ...carriers[index], icon: ev.detail.value };
+                                    this._config = { ...this._config, carriers };
+                                    this._emit();
+                                }}></ha-icon-picker>
+                        </div>
+                    </div>
+
+                    <!-- Color -->
+                    <div class="color-row">
+                        <label class="color-label">${this._t('label_color_pick')}</label>
+                        <div class="color-input-wrap">
+                            <input type="color" class="color-swatch"
+                                .value=${currentColor}
+                                @input=${(ev) => {
+                                    ev.stopPropagation();
+                                    const carriers = [...(this._config.carriers || [])];
+                                    carriers[index] = { ...carriers[index], color: ev.target.value };
+                                    this._config = { ...this._config, carriers };
+                                    this._emit();
+                                }} />
+                            <span class="color-hex">${currentColor}</span>
+                        </div>
+                    </div>
+
+                    <!-- Logo -->
+                    ${this._renderUrlField(
+                        this._t('url_logo'),
+                        carrier.logo_path,
+                        assets.logo || 'https://...',
+                        (ev) => this._carrierChanged(index, 'logo_path', ev)
+                    )}
+                    <!-- Vehicle GIF -->
+                    ${this._renderUrlField(
+                        this._t('url_van'),
+                        carrier.van_path,
+                        assets.van || 'https://...',
+                        (ev) => this._carrierChanged(index, 'van_path', ev)
+                    )}
+                    <!-- Banner -->
+                    ${this._renderUrlField(
+                        this._t('url_banner'),
+                        carrier.banner_path,
+                        assets.banner || 'https://...',
+                        (ev) => this._carrierChanged(index, 'banner_path', ev)
+                    )}
+                </div>
+            </details>`;
+    }
+
+    // Renders the user/account detection block: auto if 1 found, dropdown if multiple, manual if none.
+    _renderUserDetection(carrier, index, preset, supportsLetters) {
+        const detected = this._detectUsers(carrier.type);
+
+        if (detected.length === 1 && !carrier._manualUser) {
+            // Auto-fill when exactly one sensor found (only if user hasn't overridden).
+            if (carrier.user !== detected[0]) {
+                // Trigger auto-fill asynchronously to avoid mutating during render.
+                Promise.resolve().then(() => this._carrierUserSelected(index, detected[0]));
+            }
+            return html`
+                <div class="detected-row">
+                    <ha-icon icon="mdi:check-circle" class="detected-icon ok"></ha-icon>
+                    <div class="detected-info">
+                        <div class="detected-label">${this._t('detected_one')}</div>
+                        <div class="detected-value">${detected[0]}</div>
+                    </div>
+                    <button class="detected-override" title="Enter manually"
+                        @click=${() => {
+                            const carriers = [...(this._config.carriers || [])];
+                            carriers[index] = { ...carriers[index], _manualUser: true };
+                            this._config = { ...this._config, carriers };
+                            this._emit();
+                        }}>✎</button>
+                </div>
+                ${carrier.entity_incoming ? html`
+                    <div class="templated-preview">
+                        <div>${carrier.entity_incoming}</div>
+                        <div>${carrier.entity_delivered}</div>
+                        <div>${carrier.entity_outgoing}</div>
+                        ${supportsLetters && carrier.entity_letters ? html`<div>${carrier.entity_letters}</div>` : ''}
+                    </div>` : ''}`;
+        }
+
+        if (detected.length > 1 && !carrier._manualUser) {
+            return html`
+                <div class="detected-row">
+                    <ha-icon icon="mdi:account-multiple" class="detected-icon multi"></ha-icon>
+                    <div class="detected-info detected-label">${this._t('detected_multiple')}</div>
+                    <button class="detected-override" title="Enter manually"
+                        @click=${() => {
+                            const carriers = [...(this._config.carriers || [])];
+                            carriers[index] = { ...carriers[index], _manualUser: true };
+                            this._config = { ...this._config, carriers };
+                            this._emit();
+                        }}>✎</button>
+                </div>
+                <ha-selector .hass=${this.hass}
+                    .selector=${{ select: {
+                        options: detected.map(u => ({ value: u, label: u })),
+                        mode: 'dropdown'
+                    } }}
+                    .value=${carrier.user || detected[0]}
+                    .label=${this._t('label_account')}
+                    @value-changed=${(ev) => {
+                        ev.stopPropagation();
+                        this._carrierUserSelected(index, window.HKI.getSelectValue(ev));
+                    }}></ha-selector>
+                ${carrier.entity_incoming ? html`
+                    <div class="templated-preview">
+                        <div>${carrier.entity_incoming}</div>
+                        <div>${carrier.entity_delivered}</div>
+                        <div>${carrier.entity_outgoing}</div>
+                        ${supportsLetters && carrier.entity_letters ? html`<div>${carrier.entity_letters}</div>` : ''}
+                    </div>` : ''}`;
+        }
+
+        // 0 detected, or user forced manual entry.
+        return html`
+            ${detected.length === 0 ? html`
+                <div class="detected-row">
+                    <ha-icon icon="mdi:help-circle-outline" class="detected-icon none"></ha-icon>
+                    <div class="detected-info detected-label">${this._t('detected_none')}</div>
+                </div>` : html`
+                <div class="detected-row">
+                    <ha-icon icon="mdi:pencil" class="detected-icon multi"></ha-icon>
+                    <div class="detected-info detected-label">${this._t('label_account')}</div>
+                    <button class="detected-override" title="Back to auto-detect"
+                        @click=${() => {
+                            const carriers = [...(this._config.carriers || [])];
+                            carriers[index] = { ...carriers[index], _manualUser: false };
+                            this._config = { ...this._config, carriers };
+                            this._emit();
+                        }}>↩</button>
+                </div>`}
+            <div class="plain-field" style="margin-top:8px;">
+                <label for="hki-carrier-user-${index}">${this._t('label_account')}</label>
+                <input id="hki-carrier-user-${index}" type="text" placeholder="e.g. my_account"
+                    .value=${carrier.user || ''}
+                    @input=${(ev) => this._carrierUserInputChanged(index, ev)} />
+            </div>
+            <div class="helper-text">"_${preset.sensor_slug}${this._t('account_help_suffix')}</div>
+            ${carrier.entity_incoming ? html`
+                <div class="templated-preview">
+                    <div>${carrier.entity_incoming}</div>
+                    <div>${carrier.entity_delivered}</div>
+                    <div>${carrier.entity_outgoing}</div>
+                    ${supportsLetters && carrier.entity_letters ? html`<div>${carrier.entity_letters}</div>` : ''}
+                </div>` : ''}`;
     }
 
     _renderEntityPicker(label, value, helper, onChange) {
@@ -1303,24 +1611,7 @@ class HkiParcelsCardEditor extends LitElement {
                         </div>
                         ${this._renderEntityPicker(this._t('postnl_entity_label'), carrier.entity, 'e.g. sensor.postnl_delivery', (ev) => this._carrierChanged(index, 'entity', ev))}
                         ${this._renderEntityPicker(this._t('postnl_dist_label'), carrier.distribution_entity, 'e.g. sensor.postnl_distribution', (ev) => this._carrierChanged(index, 'distribution_entity', ev))}
-                    ` : html`
-                        <div class="plain-field">
-                            <label for="hki-carrier-user-${index}">${this._t('label_account')}</label>
-                            <input id="hki-carrier-user-${index}" type="text" placeholder="e.g. my_account"
-                                .value=${carrier.user || ''}
-                                @input=${(ev) => this._carrierUserChanged(index, ev)} />
-                        </div>
-                        <div class="helper-text">
-                            "_${preset.sensor_slug}${this._t('account_help_suffix')}
-                        </div>
-                        ${carrier.entity_incoming ? html`
-                            <div class="templated-preview">
-                                <div>${carrier.entity_incoming}</div>
-                                <div>${carrier.entity_delivered}</div>
-                                <div>${carrier.entity_outgoing}</div>
-                                ${supportsLetters && carrier.entity_letters ? html`<div>${carrier.entity_letters}</div>` : ''}
-                            </div>` : ''}
-                    `}
+                    ` : this._renderUserDetection(carrier, index, preset, supportsLetters)}
 
                     ${carrier.type !== 'postnl_legacy' ? html`
                     <details class="advanced-details">
@@ -1334,27 +1625,7 @@ class HkiParcelsCardEditor extends LitElement {
                             : html`<div class="helper-text">${this._t('no_letters_support')}</div>`}
                     </details>` : ''}
 
-                    <details class="advanced-details">
-                        <summary>${this._t('adv_appearance')}</summary>
-                        <div class="inline-fields-2" style="margin-top:12px;">
-                            <ha-textfield label="${this._t('label_icon')}" .value=${carrier.icon || preset.icon}
-                                @input=${(ev) => this._carrierChanged(index, 'icon', ev)}></ha-textfield>
-                            <ha-textfield label="${this._t('label_color')}" type="color" .value=${carrier.color || preset.color}
-                                @input=${(ev) => this._carrierChanged(index, 'color', ev)}></ha-textfield>
-                        </div>
-                        <div class="inline-fields-2">
-                            <ha-textfield label="${this._t('label_logo')}" .value=${carrier.logo_path || ''}
-                                placeholder=${(CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom).logo || 'https://...'}
-                                @input=${(ev) => this._carrierChanged(index, 'logo_path', ev)}></ha-textfield>
-                            <ha-textfield label="${this._t('label_van')}" .value=${carrier.van_path || ''}
-                                placeholder=${(CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom).van || 'https://...'}
-                                @input=${(ev) => this._carrierChanged(index, 'van_path', ev)}></ha-textfield>
-                        </div>
-                        <ha-textfield label="${this._t('label_banner')}" .value=${carrier.banner_path || ''}
-                            placeholder=${(CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom).banner || 'https://...'}
-                            @input=${(ev) => this._carrierChanged(index, 'banner_path', ev)}></ha-textfield>
-                        <div class="helper-text">${this._t('appearance_help')}</div>
-                    </details>
+                    ${this._renderAppearanceOverride(carrier, index, preset)}
                 </div>` : ''}
             </div>`;
     }
@@ -1421,6 +1692,7 @@ class HkiParcelsCardEditor extends LitElement {
                     <div class="switch-row"><ha-switch .checked=${this._config.show_letters !== false} data-field="show_letters" @change=${this._changed}></ha-switch><span>${this._t('show_letters_tab')}</span></div>
                     <div class="switch-row"><ha-switch .checked=${this._config.show_animation !== false} data-field="show_animation" @change=${this._changed}></ha-switch><span>${this._t('show_animation')}</span></div>
                     <div class="switch-row"><ha-switch .checked=${this._config.show_placeholder !== false} data-field="show_placeholder" @change=${this._changed}></ha-switch><span>${this._t('show_placeholder')}</span></div>
+                    <div class="switch-row"><ha-switch .checked=${this._config.show_tracking_link !== false} data-field="show_tracking_link" @change=${this._changed}></ha-switch><span>${this._t('show_tracking_link')}</span></div>
                 </details>
 
                 <details class="section-details">

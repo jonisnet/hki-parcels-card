@@ -6,6 +6,22 @@ A Home Assistant Lovelace card for tracking parcels from multiple carriers (Post
 
 ---
 
+## Screenshots
+
+### Dashboard — multiple carriers
+
+![Dashboard with PostNL, DHL and DPD cards](images/screenshot-dashboard.png)
+
+### Visual editor with live preview
+
+![Full editor dialog with card preview](images/screenshot-editor-preview.png)
+
+### Carrier configuration
+
+![Editor — Basic Settings and Carriers panel](images/screenshot-editor-carriers.png)
+
+---
+
 ## Required integrations
 
 This card reads data from Home Assistant sensor entities created by the integrations below. **Install the integrations for the carriers you use before configuring the card.**
