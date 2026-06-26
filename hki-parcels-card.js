@@ -68,12 +68,22 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.0.1';
+const CARD_VERSION = 'v1.0.3';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
 const DEFAULT_CARRIER_COLOR = '#ed8c00';
 const DEFAULT_PLACEHOLDER_IMAGE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/dutch-parcels.png?raw=true';
+
+function hasPhuIcons() {
+    return !!(window.customIconsets && window.customIconsets['phu']);
+}
+
+function getDefaultIcon(carrierType) {
+    const phuMap = { postnl: 'phu:postnl', dhl: 'phu:dhl', dpd: 'phu:dpd', postnl_legacy: 'phu:postnl' };
+    if (hasPhuIcons() && phuMap[carrierType]) return phuMap[carrierType];
+    return 'mdi:package-variant-closed';
+}
 
 // ============================================================
 // Translations
@@ -291,26 +301,28 @@ function getT(lang) {
 // Carrier configuration
 // ============================================================
 
+const REPO_BASE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images';
+
 const CARRIER_ASSETS = {
     postnl: {
-        logo:   'https://github.com/jonisnet/hki-parcels-card/blob/main/images/postnl-logo.png?raw=true',
-        van:    'https://github.com/jonisnet/hki-parcels-card/blob/main/images/postnl-van.gif?raw=true',
-        banner: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/postnl-banner.jpg?raw=true'
+        logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
+        van:    `${REPO_BASE}/postnl-van.gif?raw=true`,
+        banner: `${REPO_BASE}/postnl-banner.jpg?raw=true`
     },
     dhl: {
-        logo:   'https://github.com/jonisnet/hki-parcels-card/blob/main/images/DHL_logo.png?raw=true',
+        logo:   `${REPO_BASE}/DHL_logo.png?raw=true`,
         van:    null,
-        banner: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/DHL_banner.png?raw=true'
+        banner: `${REPO_BASE}/DHL_banner.png?raw=true`
     },
     dpd: {
-        logo:   'https://github.com/jonisnet/hki-parcels-card/blob/main/images/DPD_logo.png?raw=true',
+        logo:   `${REPO_BASE}/DPD_logo.png?raw=true`,
         van:    null,
-        banner: 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/DPD_banner.png?raw=true'
+        banner: `${REPO_BASE}/DPD_banner.png?raw=true`
     },
     postnl_legacy: {
-        logo:   'https://github.com/jimz011/hki-postnl-card/blob/main/images/postnl-logo.png?raw=true',
-        van:    'https://github.com/jimz011/hki-postnl-card/blob/main/images/postnl-van.gif?raw=true',
-        banner: 'https://github.com/jimz011/hki-postnl-card/blob/main/images/postnl-banner.jpg?raw=true'
+        logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
+        van:    `${REPO_BASE}/postnl-van.gif?raw=true`,
+        banner: `${REPO_BASE}/postnl-banner.jpg?raw=true`
     },
     custom: { logo: null, van: null, banner: null }
 };
@@ -1175,7 +1187,7 @@ class HkiParcelsCardEditor extends LitElement {
         const templated = !isSingle && autoUser ? buildTemplatedEntities(autoUser, type) : {};
         carriers[index] = {
             ...current, type,
-            name: preset.label, icon: preset.icon, color: preset.color, schema: preset.schema,
+            name: preset.label, icon: getDefaultIcon(type), color: preset.color, schema: preset.schema,
             user: autoUser,
             _manualUser: !!current.user,
             entity_incoming:    isSingle ? '' : (templated.entity_incoming    ?? current.entity_incoming    ?? ''),
@@ -1215,7 +1227,7 @@ class HkiParcelsCardEditor extends LitElement {
         const autoUser = detected.length === 1 ? detected[0] : '';
         const templated = autoUser ? buildTemplatedEntities(autoUser, type) : {};
         const carriers = [...(this._config.carriers || []), {
-            type, name: preset.label, icon: preset.icon, color: preset.color,
+            type, name: preset.label, icon: getDefaultIcon(type), color: preset.color,
             schema: preset.schema, logo_path: '', van_path: '', banner_path: '',
             user: autoUser,
             entity_incoming:  templated.entity_incoming  || '',
@@ -1451,13 +1463,18 @@ class HkiParcelsCardEditor extends LitElement {
                     </div>
 
                     <!-- Logo -->
-                    ${this._renderUrlField(
-                        this._t('url_logo'),
-                        carrier.logo_path,
-                        assets.logo || 'https://...',
-                        (ev) => this._carrierChanged(index, 'logo_path', ev)
-                    )}
-                    <!-- Vehicle GIF -->
+                    <ha-selector .hass=${this.hass}
+                        .selector=${{ image: {} }}
+                        .value=${carrier.logo_path || ''}
+                        .label=${this._t('url_logo')}
+                        @value-changed=${(ev) => {
+                            ev.stopPropagation();
+                            const carriers = [...(this._config.carriers || [])];
+                            carriers[index] = { ...carriers[index], logo_path: ev.detail.value };
+                            this._config = { ...this._config, carriers };
+                            this._emit();
+                        }}></ha-selector>
+                    <!-- Vehicle GIF (URL only — GIFs are not in the media library) -->
                     ${this._renderUrlField(
                         this._t('url_van'),
                         carrier.van_path,
@@ -1465,12 +1482,17 @@ class HkiParcelsCardEditor extends LitElement {
                         (ev) => this._carrierChanged(index, 'van_path', ev)
                     )}
                     <!-- Banner -->
-                    ${this._renderUrlField(
-                        this._t('url_banner'),
-                        carrier.banner_path,
-                        assets.banner || 'https://...',
-                        (ev) => this._carrierChanged(index, 'banner_path', ev)
-                    )}
+                    <ha-selector .hass=${this.hass}
+                        .selector=${{ image: {} }}
+                        .value=${carrier.banner_path || ''}
+                        .label=${this._t('url_banner')}
+                        @value-changed=${(ev) => {
+                            ev.stopPropagation();
+                            const carriers = [...(this._config.carriers || [])];
+                            carriers[index] = { ...carriers[index], banner_path: ev.detail.value };
+                            this._config = { ...this._config, carriers };
+                            this._emit();
+                        }}></ha-selector>
                 </div>
             </details>`;
     }

@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.3] — 2026-06-26
+
+### Added
+
+- **PHU icon auto-detection** — if the [custom-brand-icons](https://github.com/elax46/custom-brand-icons) HACS integration is installed, carrier icons default to `phu:postnl`, `phu:dhl` and `phu:dpd`. Falls back to MDI icons when PHU is not available.
+- **Image selector for logo and banner** — the appearance override section now uses the Home Assistant image selector (`ha-selector` with `{ image: {} }`) for Logo and Banner. This adds a Browse button that opens the local HA media library, in addition to manual URL input. The vehicle GIF field remains a URL-only input since GIF animations are typically not stored in the media library.
+
+---
+
+## [1.0.2] — 2026-06-26
+
+### Fixed
+
+- Minor bug fixes.
+
+---
+
 ## [1.0.1] — 2026-06-26
 
 ### Added
