@@ -141,7 +141,7 @@ const TRANSLATIONS = {
         show_letters_tab:       'Toon "Post" tab (als minstens 1 carrier brieven ondersteunt)',
         show_animation:         'Toon animatie/detailweergave',
         show_placeholder:       'Toon placeholder',
-        show_tracking_link:     'Toon "Track & Trace" knop (schakel uit voor kiosk/touch)',
+        show_tracking_link:     'Toon "Track & Trace" knop',
         section_appearance:     'Uiterlijk',
         label_header_color:     'Header Kleur',
         label_header_text:      'Header Tekst Kleur',
