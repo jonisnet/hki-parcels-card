@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.4] — 2026-06-28
+
+### Added
+
+- **Split "Letters" tab** — the Letters tab is now divided into two clearly labelled sections: *Still to be delivered* and *Delivered*. Previously, once a letter was marked as delivered it moved out of the Letters tab entirely and into the general "Delivered" tab alongside parcels. Delivered letters now stay in the Letters tab, in their own section, while still respecting `days_back` for how long they remain visible.
+- **Split "Sent" tab** — the Sent tab now has the same two-section layout (*Still to be delivered* / *Delivered*) as Letters. This introduces a new optional sensor field per carrier, `entity_outgoing_delivered`, alongside the existing `entity_outgoing`. Unlike Letters, the split here is based purely on which sensor reports the parcel (active vs. delivered), not on a date cutoff — so a delivered outgoing parcel stays visible for as long as the sensor itself reports it, regardless of age.
+  - Auto-templated as `sensor.<user>_<carrier>_outgoing_delivered_parcels` when using the account field, same as the other sensors.
+  - Configurable manually via the editor's "Advanced: override sensors" section, or via YAML.
+  - `postnl_legacy` (single-entity / arjenbos/ha-postnl) mode is unaffected — it has no concept of a separate delivered-outgoing sensor and keeps its previous combined behaviour.
+
+### Fixed
+
+- **Carrier colors no longer default to orange for every carrier** — appearance fields (carrier section headers, status chips, icons) now fall back to each carrier's own preset colour (PostNL orange `#ed8c00`, DHL yellow `#ffcc00`, DPD red `#dc0032`) when no custom `color` is set on the carrier. Previously, any carrier without an explicit `color` override fell back to a single hardcoded orange default, so DHL and DPD looked identical to PostNL out of the box. The visual editor already showed the correct preset colour in its preview; the card itself did not.
+
+---
+
 ## [1.0.3] — 2026-06-26
 
 ### Added
