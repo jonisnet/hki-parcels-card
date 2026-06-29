@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.0.6';
+const CARD_VERSION = 'v1.0.8';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -184,6 +184,7 @@ const TRANSLATIONS = {
         detected_one:           'Automatisch gevonden',
         detected_multiple:      'Meerdere accounts gevonden — kies er één',
         detected_none:          'Geen sensors gevonden — vul handmatig in',
+        no_prefix:              '(geen gebruikersnaam-prefix)',
         detected_badge:         'gevonden',
         label_icon_pick:        'Icoon',
         label_color_pick:       'Kleur',
@@ -287,6 +288,7 @@ const TRANSLATIONS = {
         detected_one:           'Auto-detected',
         detected_multiple:      'Multiple accounts found — choose one',
         detected_none:          'No sensors found — enter manually',
+        no_prefix:              '(no account prefix)',
         detected_badge:         'found',
         label_icon_pick:        'Icon',
         label_color_pick:       'Color',
@@ -352,16 +354,18 @@ function slugifyUserSlug(text) {
 function buildTemplatedEntities(user, carrierType) {
     const preset = CARRIER_PRESETS[carrierType] || CARRIER_PRESETS.custom;
     const slug = preset.sensor_slug;
-    const u = slugifyUserSlug(user);
-    if (!u || !slug) {
+    if (!slug) {
         return { entity_incoming: null, entity_delivered: null, entity_outgoing: null, entity_outgoing_delivered: null, entity_letters: null };
     }
+    const u = slugifyUserSlug(user);
+    // Support both "sensor.<user>_<slug>_*" (with prefix) and "sensor.<slug>_*" (no prefix).
+    const prefix = u ? `${u}_` : '';
     return {
-        entity_incoming: `sensor.${u}_${slug}_incoming_parcels`,
-        entity_delivered: `sensor.${u}_${slug}_delivered_parcels`,
-        entity_outgoing: `sensor.${u}_${slug}_outgoing_parcels`,
-        entity_outgoing_delivered: `sensor.${u}_${slug}_outgoing_delivered_parcels`,
-        entity_letters: preset.supports_letters ? `sensor.${u}_${slug}_letters` : null
+        entity_incoming:          `sensor.${prefix}${slug}_incoming_parcels`,
+        entity_delivered:         `sensor.${prefix}${slug}_delivered_parcels`,
+        entity_outgoing:          `sensor.${prefix}${slug}_outgoing_parcels`,
+        entity_outgoing_delivered:`sensor.${prefix}${slug}_outgoing_delivered_parcels`,
+        entity_letters: preset.supports_letters ? `sensor.${prefix}${slug}_letters` : null
     };
 }
 
@@ -647,16 +651,29 @@ class HkiParcelsCard extends HTMLElement {
             todayStart.setHours(0, 0, 0, 0);
 
             carrierLetters.forEach(letter => {
-                const d = new Date(letter.delivery_date || 0);
-                if (!isNaN(d) && d >= todayStart) {
+                if (!letter.delivery_date) {
+                    // No date: treat as upcoming (still to be delivered / unknown)
                     postUpcoming.push(letter);
-                } else if (!isNaN(d) && d >= cutoffDate) {
-                    postDelivered.push(letter);
-                } else if (isNaN(d)) {
-                    postUpcoming.push(letter);
+                    return;
                 }
+                const d = new Date(letter.delivery_date);
+                if (isNaN(d)) {
+                    postUpcoming.push(letter);
+                } else if (d >= todayStart) {
+                    postUpcoming.push(letter);
+                } else if (d >= cutoffDate) {
+                    postDelivered.push(letter);
+                }
+                // Older than cutoff: silently drop
             });
         });
+
+        // If a letter appears in both entity_delivered (parcels flow → bezorgd) and entity_letters
+        // (post flow → postDelivered), remove the duplicate from bezorgd.
+        const postKeys = new Set([...postUpcoming, ...postDelivered].map(l => l.key).filter(Boolean));
+        if (postKeys.size > 0) {
+            bezorgd = bezorgd.filter(i => !postKeys.has(i.key));
+        }
 
         return {
             onderweg, bezorgd,
@@ -1240,8 +1257,9 @@ class HkiParcelsCardEditor extends LitElement {
         const isSingle = preset.schema === 'single_entity';
         // Auto-detect account when changing type (use existing user if already set).
         const detected  = !isSingle ? this._detectUsers(type) : [];
-        const autoUser  = current.user || (detected.length === 1 ? detected[0] : '');
-        const templated = !isSingle && autoUser ? buildTemplatedEntities(autoUser, type) : {};
+        const detectedUser = detected.length === 1 ? detected[0] : null;
+        const autoUser  = current.user != null ? current.user : (detectedUser !== null ? detectedUser : '');
+        const templated = !isSingle && detectedUser !== null ? buildTemplatedEntities(autoUser, type) : {};
         carriers[index] = {
             ...current, type,
             name: preset.label, icon: getDefaultIcon(type), color: preset.color, schema: preset.schema,
@@ -1283,12 +1301,12 @@ class HkiParcelsCardEditor extends LitElement {
         const preset = CARRIER_PRESETS[type];
         // Auto-detect user for the default carrier type immediately.
         const detected = this._detectUsers(type);
-        const autoUser = detected.length === 1 ? detected[0] : '';
-        const templated = autoUser ? buildTemplatedEntities(autoUser, type) : {};
+        const autoUser = detected.length === 1 ? detected[0] : null;
+        const templated = autoUser !== null ? buildTemplatedEntities(autoUser, type) : {};
         const carriers = [...(this._config.carriers || []), {
             type, name: preset.label, icon: getDefaultIcon(type), color: preset.color,
             schema: preset.schema, logo_path: '', van_path: '', banner_path: '',
-            user: autoUser,
+            user: autoUser ?? '',
             entity_incoming:  templated.entity_incoming  || '',
             entity_delivered: templated.entity_delivered || '',
             entity_outgoing:  templated.entity_outgoing  || '',
@@ -1331,11 +1349,17 @@ class HkiParcelsCardEditor extends LitElement {
         const preset = CARRIER_PRESETS[carrierType];
         if (!preset?.sensor_slug) return [];
         const slug = preset.sensor_slug;
-        const pattern = new RegExp(`^sensor\\.(.+)_${slug}_incoming_parcels$`);
+        // Match "sensor.<user>_<slug>_incoming_parcels" (with prefix) or "sensor.<slug>_incoming_parcels" (no prefix).
+        const patternWithPrefix = new RegExp(`^sensor\\.(.+)_${slug}_incoming_parcels$`);
+        const patternNoPrefix   = new RegExp(`^sensor\\.${slug}_incoming_parcels$`);
         const users = [];
         for (const entityId of Object.keys(this.hass.states)) {
-            const match = pattern.exec(entityId);
-            if (match && !users.includes(match[1])) users.push(match[1]);
+            const match = patternWithPrefix.exec(entityId);
+            if (match) {
+                if (!users.includes(match[1])) users.push(match[1]);
+            } else if (patternNoPrefix.test(entityId) && !users.includes('')) {
+                users.push('');
+            }
         }
         return users;
     }
@@ -1579,7 +1603,7 @@ class HkiParcelsCardEditor extends LitElement {
                     <ha-icon icon="mdi:check-circle" class="detected-icon ok"></ha-icon>
                     <div class="detected-info">
                         <div class="detected-label">${this._t('detected_one')}</div>
-                        <div class="detected-value">${carrier.user || detected[0]}</div>
+                        <div class="detected-value">${(carrier.user != null ? carrier.user : detected[0]) || this._t('no_prefix')}</div>
                     </div>
                     <button class="detected-override" title="Enter manually"
                         @click=${() => {

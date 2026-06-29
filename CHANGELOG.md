@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.8] — 2026-06-29
+
+### Fixed
+
+- **Delivered letters no longer appear in the Bezorgd tab** — if ha-postnl reports the same letter in both `entity_delivered` (parcels sensor) and `entity_letters`, the duplicate is now removed from the Bezorgd tab. Letters are exclusively shown in the Post tab (upcoming section or delivered section). The same deduplication also prevents any sent items that appear in multiple sensors from leaking into the Bezorgd tab.
+- **Letters without a delivery date are no longer silently dropped** — previously, a letter with no `delivery_date` was converted to epoch (1 Jan 1970) which is older than the cutoff, so it was discarded entirely. Letters without a date are now placed in the Post → upcoming section.
+
+---
+
+## [1.0.7] — 2026-06-29
+
+### Fixed
+
+- **Auto account detection now works without a username prefix** — sensors named `sensor.postnl_incoming_parcels` (without a `<user>_` prefix) are now correctly detected and the card generates matching entity names (`sensor.postnl_incoming_parcels`, `sensor.postnl_delivered_parcels`, etc.). Previously the auto-detect regex required a username prefix and silently returned nothing for prefix-free sensor setups, causing the editor to show "No sensors found" and leaving all entity fields empty.
+
+---
+
 ## [1.0.6] — 2026-06-29
 
 ### Fixed
