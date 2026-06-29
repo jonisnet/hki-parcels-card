@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.0.5';
+const CARD_VERSION = 'v1.0.6';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -1650,9 +1650,12 @@ class HkiParcelsCardEditor extends LitElement {
 
     _renderEntityPicker(label, value, helper, onChange) {
         return html`
-            <ha-selector .hass=${this.hass} .selector=${{ entity: {} }}
-                .value=${value || ""} .label=${label} .helper=${helper}
-                @value-changed=${onChange}></ha-selector>`;
+            <ha-textfield
+                .label=${label}
+                .value=${value || ''}
+                .helper=${helper || ''}
+                helperPersistent
+                @change=${onChange}></ha-textfield>`;
     }
 
     _renderCarrier(carrier, index) {

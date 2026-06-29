@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.6] — 2026-06-29
+
+### Fixed
+
+- **Advanced sensor fields now accept free text** — the entity pickers in "Advanced: override sensors" are replaced with text fields so you can type any entity name, including sensors that do not yet exist in Home Assistant. Previously the `ha-selector entity` picker only allowed selecting from entities already present in HA.
+- **Carrier colors applied to individual parcel items** — the status icon, "Open Tracking" button, expand chevron and delivery-complete icon in the animation block now use the carrier's own colour. Previously these elements always used the global orange accent colour regardless of carrier.
+- **PHU icons apply to existing configurations** — carrier icons are now resolved at render time. If the [custom-brand-icons](https://github.com/elax46/custom-brand-icons) integration is installed after the card was already configured, `phu:postnl` / `phu:dhl` / `phu:dpd` now activate automatically without reconfiguring the carrier.
+
+---
+
 ## [1.0.5] — 2026-06-28
 
 ### Added
