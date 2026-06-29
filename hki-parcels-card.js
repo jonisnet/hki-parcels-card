@@ -503,7 +503,7 @@ class HkiParcelsCard extends HTMLElement {
         const assets  = CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom;
         return {
             carrier_name:   carrier.name,
-            carrier_icon:   carrier.icon   || preset.icon  || DEFAULT_CARRIER_ICON,
+            carrier_icon:   (carrier.icon && carrier.icon !== DEFAULT_CARRIER_ICON) ? carrier.icon : getDefaultIcon(carrier.type),
             carrier_color:  carrier.color  || preset.color || DEFAULT_CARRIER_COLOR,
             carrier_logo:   carrier.logo_path   || assets.logo   || '',
             carrier_van:    carrier.van_path    || assets.van    || '',
@@ -890,7 +890,7 @@ class HkiParcelsCard extends HTMLElement {
             animationEl.classList.add('animation-active');
             animationEl.innerHTML = `
                 <div class="delivery-complete">
-                    <div class="delivery-complete-icon">
+                    <div class="delivery-complete-icon" style="color:${selected.carrier_color || DEFAULT_CARRIER_COLOR};">
                         <ha-icon icon="${isLetter ? 'mdi:email-check' : 'mdi:package-check'}"></ha-icon>
                     </div>
                     <div class="delivery-complete-text">
@@ -950,7 +950,7 @@ class HkiParcelsCard extends HTMLElement {
             : (item.pickup_point ? `<div class="detail-row"><strong>${this._t('label_pickup_point')}:</strong> ${item.pickup_point}</div>` : '');
 
         return `
-        <div class="parcel ${isSelected ? 'selected' : ''}" data-key="${item.key}">
+        <div class="parcel ${isSelected ? 'selected' : ''}" data-key="${item.key}" style="--carrier-color:${item.carrier_color || DEFAULT_CARRIER_COLOR};">
             <div class="parcel-header" data-key="${item.key}">
                 <div class="ph-left">
                     <span class="ph-name">${item.name || this._t('unknown')}</span>
@@ -1093,17 +1093,17 @@ class HkiParcelsCard extends HTMLElement {
             .ph-left { display: flex; flex-direction: column; flex: 1; }
             .ph-name { font-weight: 600; font-size: 1em; margin-bottom: 4px; }
             .ph-status { font-size: 0.85em; color: var(--secondary-text-color); display: flex; align-items: center; gap: 10px; }
-            .ph-status-icon { color: var(--accent); flex-shrink: 0; display: flex; align-items: center; }
+            .ph-status-icon { color: var(--carrier-color, var(--accent)); flex-shrink: 0; display: flex; align-items: center; }
             .ph-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
             .ph-date { font-size: 0.85em; color: var(--secondary-text-color); }
             .chevron { transition: transform 0.3s; margin-left: 8px; }
-            .selected .chevron { transform: rotate(180deg); color: var(--accent); }
+            .selected .chevron { transform: rotate(180deg); color: var(--carrier-color, var(--accent)); }
             .details-panel { padding: 12px 16px; background: var(--secondary-background-color); border-top: 1px solid var(--divider-color); font-size: 0.9em; color: var(--secondary-text-color); display: none; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
             .selected .details-panel { display: block; max-height: 200px; }
             .detail-row { margin-bottom: 6px; }
             .detail-row strong { color: var(--primary-text-color); }
-            .btn-track { background: var(--accent); color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9em; font-weight: 600; display: inline-block; margin-top: 8px; transition: all 0.2s; }
-            .btn-track:hover { box-shadow: 0 2px 8px rgba(237,140,0,0.3); }
+            .btn-track { background: var(--carrier-color, var(--accent)); color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9em; font-weight: 600; display: inline-block; margin-top: 8px; transition: all 0.2s; }
+            .btn-track:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
             .list::-webkit-scrollbar { width: 6px; }
             .list::-webkit-scrollbar-track { background: transparent; }
             .list::-webkit-scrollbar-thumb { background: var(--divider-color); border-radius: 3px; }

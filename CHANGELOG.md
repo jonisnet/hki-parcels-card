@@ -13,6 +13,8 @@
 ### Fixed
 
 - **Carrier colors no longer default to orange for every carrier** — appearance fields (carrier section headers, status chips, icons) now fall back to each carrier's own preset colour (PostNL orange `#ed8c00`, DHL yellow `#ffcc00`, DPD red `#dc0032`) when no custom `color` is set on the carrier. Previously, any carrier without an explicit `color` override fell back to a single hardcoded orange default, so DHL and DPD looked identical to PostNL out of the box. The visual editor already showed the correct preset colour in its preview; the card itself did not.
+- **Carrier colors applied to individual parcel items** — the status icon, "Open Tracking" button, expand chevron and delivery-complete icon in the animation block now all use the carrier's own colour. Previously these elements always used the global accent colour (orange) regardless of carrier.
+- **PHU icons now apply to existing configurations** — previously, `phu:postnl` / `phu:dhl` / `phu:dpd` were only selected at the moment a carrier was added in the editor. If PHU icons were installed after the card was already configured, the saved `mdi:package-variant-closed` value would always win. The card now resolves the icon at render time, so PHU icons activate automatically without reconfiguring the carrier.
 
 ---
 
