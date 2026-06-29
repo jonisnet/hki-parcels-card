@@ -8,35 +8,34 @@ A Home Assistant Lovelace card for tracking parcels from multiple carriers (Post
 
 ## Required integrations
 
-This card reads data from Home Assistant sensor entities created by the integrations below. **Install the integrations for the carriers you use before configuring the card.**
+Install the integrations for the carriers you use **before** configuring the card.
 
-| Carrier    | Integration                                                         | Schema                                  |
-| ---------- | ------------------------------------------------------------------- | --------------------------------------- |
-| **PostNL** | [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) | `legacy` (≤ v3.x) · `canonical` (v4.0.0+) |
-| **DHL**    | [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) | `canonical`                             |
-| **DPD**    | [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd)       | `canonical`                             |
+### PostNL
 
-> **PostNL v4.0.0:** As of ha-postnl 4.0.0, the integration's sensors and attributes are aligned with DHL and DPD (canonical `ParcelStatus`, `status`/`raw_status`, `delivered_at`, parcel events, etc.). When using v4.0.0 or later, set `schema: canonical` in your card configuration. If you're still on the 3.x series, keep `schema: legacy`.
+The card supports three PostNL variants. Pick the one that matches your integration:
+
+| Card type | Integration | When to use |
+| --------- | ----------- | ------------ |
+| **PostNL (peternijssen v4.x)** | [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) ≥ 4.0.0 | New installations, canonical sensor schema |
+| **PostNL (peternijssen v3.x)** | [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) ≤ 3.x | Older installations, legacy sensor schema |
+| **PostNL (arjenbos)** | [arjenbos/ha-postnl](https://github.com/arjenbos/ha-postnl) | Single-entity legacy mode — no further updates |
+
+> **Upgrading from peternijssen v3.x to v4.x?** Change the card type from `postnl` to `postnl_v4` after upgrading the integration. Existing sensor entity IDs stay the same.
+
+### DHL and DPD
+
+| Carrier | Integration |
+| ------- | ----------- |
+| **DHL** | [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) |
+| **DPD** | [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) |
 
 ### Tested versions
 
-[#tested-versions](#tested-versions)
-
-This card is verified against the following versions of the carrier integrations. Other versions — especially much older or much newer ones — may behave differently until explicitly re-verified here.
-
-| Integration | Tested version | Release date |
-| ----------- | --------------- | ------------ |
-| [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) | 4.0.0 | June 27, 2026 |
-| [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) | 2.2.0 | June 27, 2026 |
-| [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) | 2.2.0 | June 27, 2026 |
-
-> **Note:** All three integrations now share the same canonical parcel shape (`carrier`, `barcode`, `sender`, `status`, `raw_status`, `delivered`, `delivered_at`, `planned_from`, `planned_to`, `pickup`, `pickup_point`, `url`, `raw`). If you're upgrading from an older PostNL release (≤ 3.2.x), set `schema: canonical` for PostNL once you're on 4.0.0 — see the breaking changes in the [ha-postnl 4.0.0 release notes](https://github.com/peternijssen/ha-postnl/releases/tag/4.0.0).
-
----
-
-## PostNL Legacy — no further updates
-
-The card includes a **PostNL (Legacy)** mode based on the [arjenbos/ha-postnl](https://github.com/arjenbos/ha-postnl) integration. **This mode will not receive further updates as long as that repository is not actively maintained.** Use the standard PostNL option (peternijssen/ha-postnl) for new installations.
+| Integration | Tested version |
+| ----------- | --------------- |
+| [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) | 4.1.0 |
+| [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) | 2.2.0 |
+| [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) | 2.2.0 |
 
 ---
 
@@ -73,11 +72,11 @@ The card includes a **PostNL (Legacy)** mode based on the [arjenbos/ha-postnl](h
 type: custom:hki-parcels-card
 title: My Parcels
 carriers:
-  - type: dhl
+  - type: postnl_v4
     user: my_account
 ```
 
-The `user` field is the part of your sensor name before `_dhl_incoming_parcels`. The card builds the sensor names automatically.
+The `user` field is the account part of your sensor name (the part before `_postnl_incoming_parcels`). The card builds all sensor names automatically. If your sensors have no user prefix (e.g. `sensor.postnl_incoming_parcels`), leave `user` empty.
 
 ### Multiple carriers
 
@@ -85,7 +84,7 @@ The `user` field is the part of your sensor name before `_dhl_incoming_parcels`.
 type: custom:hki-parcels-card
 title: Parcels
 carriers:
-  - type: postnl
+  - type: postnl_v4
     user: your_name
   - type: dhl
     user: your_name
@@ -98,25 +97,24 @@ carriers:
 ```yaml
 type: custom:hki-parcels-card
 title: Parcels
-days_back: 90               # How many days to show delivered parcels
-show_delivered: true        # Show "Delivered" tab
+days_back: 90                # How many days to show delivered parcels
+show_delivered: true         # Show "Delivered" tab
 show_sent: true              # Show "Sent" tab (split into "Still to be delivered" / "Delivered" sections)
-show_letters: true          # Show "Letters" tab (PostNL letterbox mail, split into "Still to be delivered" / "Delivered" sections)
-show_animation: true        # Show animation block when a parcel is selected
-show_header: true           # Show header with title and statistics
-show_placeholder: true      # Show background image
-header_color: ''            # Header background color
-header_text_color: ''       # Header text color
-placeholder_image: ''       # URL to a custom background image
-layout_order:                # Order of the blocks
+show_letters: true           # Show "Letters" tab (PostNL letterbox mail, split into sections)
+show_animation: true         # Show animation block when a parcel is selected
+show_header: true            # Show header with title and statistics
+show_placeholder: true       # Show background image
+header_color: ''             # Header background color
+header_text_color: ''        # Header text color
+placeholder_image: ''        # URL to a custom background image
+layout_order:
   - header
   - animation
   - tabs
   - list
 carriers:
-  - type: postnl            # postnl · dhl · dpd · postnl_legacy · custom
-    user: your_name         # Account part of the sensor name
-    schema: canonical       # legacy (PostNL ≤3.x) · canonical (PostNL 4.0.0+, DHL, DPD)
+  - type: postnl_v4          # postnl_v4 · postnl · dhl · dpd · postnl_legacy · custom
+    user: your_name          # Account part of the sensor name (may be empty)
     # Optional appearance overrides:
     name: PostNL
     icon: mdi:package-variant-closed
@@ -128,11 +126,11 @@ carriers:
     entity_incoming: sensor.your_name_postnl_incoming_parcels
     entity_delivered: sensor.your_name_postnl_delivered_parcels
     entity_outgoing: sensor.your_name_postnl_outgoing_parcels
-    entity_outgoing_delivered: sensor.your_name_postnl_outgoing_delivered_parcels  # optional — see "Sent tab" below
+    entity_outgoing_delivered: sensor.your_name_postnl_outgoing_delivered_parcels
     entity_letters: sensor.your_name_postnl_letters
 ```
 
-### PostNL (Legacy) — arjenbos/ha-postnl
+### PostNL (arjenbos) — single-entity mode
 
 ```yaml
 carriers:
@@ -145,35 +143,58 @@ carriers:
 
 ---
 
-## Sensor schemas
+## Carrier types reference
 
-| Schema          | When to use                                                                |
-| --------------- | --------------------------------------------------------------------------- |
-| `legacy`        | PostNL via peternijssen/ha-postnl ≤ v3.x                                    |
-| `canonical`     | DHL, DPD, and PostNL v4.0.0+                                               |
-| `single_entity` | PostNL via arjenbos/ha-postnl (set automatically for type `postnl_legacy`) |
+| Type | Label in editor | Integration | Schema | Letters |
+| ---- | --------------- | ----------- | ------ | ------- |
+| `postnl_v4` | PostNL (peternijssen v4.x) | peternijssen/ha-postnl ≥ 4.0.0 | canonical | ✅ |
+| `postnl` | PostNL (peternijssen v3.x) | peternijssen/ha-postnl ≤ 3.x | legacy | ✅ |
+| `dhl` | DHL | peternijssen/ha-dhl-nl | canonical | — |
+| `dpd` | DPD | peternijssen/ha-dpd | canonical | — |
+| `postnl_legacy` | PostNL (arjenbos) | arjenbos/ha-postnl | single_entity | — |
+| `custom` | Custom | any | canonical | — |
 
 ---
 
-## Letters and Sent tabs: "Still to be delivered" / "Delivered"
+## Letters and Sent tabs
 
-Both the **Letters** tab and the **Sent** tab show two sections, each grouped by carrier as usual:
+Both the **Letters** tab and the **Sent** tab show two sections:
 
 - **Still to be delivered**
 - **Delivered**
 
-The two tabs split items into these sections differently:
+| Tab | How the split works |
+| --- | ------------------- |
+| Letters | Date-based: today or later → "Still to be delivered"; older → "Delivered". Delivered letters remain visible for `days_back` days. |
+| Sent | Sensor-based: items from `entity_outgoing` → "Still to be delivered"; items from `entity_outgoing_delivered` → "Delivered". No date cutoff. |
 
-| Tab     | How the split works                                                                                                                                                                       |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Letters | Date-based: a letter with today's date or later is "Still to be delivered"; anything older is "Delivered". Delivered letters remain visible for `days_back` days, same as parcels.       |
-| Sent    | Sensor-based: items from `entity_outgoing` are "Still to be delivered"; items from `entity_outgoing_delivered` are "Delivered". There is **no** date cutoff — a delivered outgoing parcel stays visible for as long as the sensor itself reports it. |
+`entity_outgoing_delivered` is optional. If not configured, the "Delivered" section under Sent stays empty.
 
-`entity_outgoing_delivered` is optional. If you don't configure it (or your integration doesn't expose such a sensor yet), the "Delivered" section under Sent simply stays empty — your existing `entity_outgoing` setup keeps working exactly as before.
+---
 
-> **Note:** none of the three carrier integrations (ha-postnl, ha-dhl-nl, ha-dpd) currently ship a dedicated "outgoing delivered" sensor. Until one of them adds it, you can populate `entity_outgoing_delivered` yourself with a Home Assistant template sensor that filters `entity_outgoing`'s parcel list down to delivered items.
+## Sensor schemas
 
-`postnl_legacy` (arjenbos/ha-postnl) is unaffected by this — it has no concept of a separate delivered-outgoing sensor and keeps showing everything from `distribution_entity` in a single list.
+| Schema | Used by |
+| ------ | ------- |
+| `canonical` | PostNL v4.x, DHL, DPD — shared parcel shape with `status` enum, `delivered` bool, `delivered_at`, `planned_from`/`planned_to` |
+| `legacy` | PostNL v3.x — Dutch free-text status, date fields vary per version |
+| `single_entity` | arjenbos/ha-postnl — one combined entity for all parcels |
+
+---
+
+## Attribute support per schema
+
+| Attribute | canonical (PostNL v4.x, DHL, DPD) | legacy (PostNL v3.x) |
+| --------- | ---------------------------------- | --------------------- |
+| `barcode` | ✅ | ✅ |
+| `sender` | ✅ | ✅ |
+| `status` (enum) | ✅ | — (free text) |
+| `raw_status` | ✅ | ✅ |
+| `delivered` (bool) | ✅ | derived from status text |
+| `delivered_at` | ✅ | — |
+| `planned_from` / `planned_to` | ✅ | — |
+| `pickup` / `pickup_point` | ✅ | — |
+| `url` | ✅ | ✅ |
 
 ---
 
@@ -182,27 +203,12 @@ The two tabs split items into these sections differently:
 - **Multi-carrier** — PostNL, DHL and DPD side by side in one card
 - **Automatic sensor names** — enter only the account part, the rest is built automatically
 - **Tabs** — In Transit / Delivered / Sent / Letters
-- **Sent and Letters split into sections** — "Still to be delivered" and "Delivered" shown separately, see [above](#letters-and-sent-tabs-still-to-be-delivered--delivered)
+- **Sent and Letters split into sections** — "Still to be delivered" and "Delivered" shown separately
 - **Parcel details** — click a parcel for tracking number, delivery method and direct tracking link
 - **Letterbox mail** — PostNL letters with scan images from `image.*` entities
 - **Animation** — vehicle animation for the selected parcel
 - **Customisable appearance** — custom logo, GIF, banner and colours per carrier
-
----
-
-## Attribute support per schema
-
-| Attribute                     | canonical (DHL/DPD/PostNL v4+) | legacy (PostNL ≤v3)       |
-| ----------------------------- | ------------------------------- | -------------------------- |
-| `barcode`                     | ✅                              | ✅                          |
-| `sender`                      | ✅                              | ✅                          |
-| `status` (enum)               | ✅                              | — (free text)              |
-| `raw_status`                  | ✅                              | ✅                          |
-| `delivered` (bool)            | ✅                              | derived from status text   |
-| `delivered_at`                | ✅                              | —                           |
-| `planned_from` / `planned_to` | ✅                              | `delivery_date`             |
-| `pickup` / `pickup_point`     | ✅                              | —                           |
-| `url`                         | ✅                              | ✅                          |
+- **PHU icons** — automatic carrier icons via [custom-brand-icons](https://github.com/elax46/custom-brand-icons) when installed
 
 ---
 
@@ -214,7 +220,7 @@ See the [LICENSE](https://github.com/jonisnet/hki-parcels-card/blob/main/LICENSE
 
 ## Credits
 
-- [jimz011/hki-elements](https://github.com/jimz011/hki-elements) — original PostNL card and visual design this fork is based on
+- [jimz011/hki-elements](https://github.com/jimz011/hki-elements) — original PostNL card and visual design
 - [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) — PostNL integration
 - [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) — DHL integration
 - [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) — DPD integration

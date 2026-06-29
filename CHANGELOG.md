@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.1.0] — 2026-06-29
+
+### Added
+
+- **Three distinct PostNL carrier types** — the single `postnl` type has been split into three explicitly labelled options to eliminate schema guesswork:
+
+  | Type | Label | Integration | Schema |
+  |---|---|---|---|
+  | `postnl_v4` | PostNL (peternijssen v4.x) | peternijssen/ha-postnl ≥ 4.0.0 | canonical |
+  | `postnl` | PostNL (peternijssen v3.x) | peternijssen/ha-postnl ≤ 3.x | legacy |
+  | `postnl_legacy` | PostNL (arjenbos) | arjenbos/ha-postnl | single_entity |
+
+  **Existing configurations are not broken** — `type: postnl` still maps to the v3.x legacy preset. To use the v4.x canonical schema, change `type` to `postnl_v4`.
+
+- **Default carrier in the editor is now PostNL (v4.x)** — clicking "Add carrier" opens the v4.x preset by default, since that is the current recommended integration.
+
+### Changed
+
+- Editor dropdown now shows all three PostNL options with explicit version labels.
+- Editor intro text updated to guide users to the correct PostNL type.
+
+---
+
+## [1.0.9] — 2026-06-29
+
+### Fixed — ha-postnl v4.1.0 compatibility
+
+- **Status labels now show correctly for PostNL v4.x** — ha-postnl v4.x returns uppercase status enums (`IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`, etc.). The card's status label map used lowercase keys, so every status fell through and displayed as raw enum text. Fixed by lowercasing the enum before lookup; DHL and DPD are unaffected.
+- **Delivered PostNL parcels no longer disappear** — with `schema: legacy`, the cutoff filter looked for `delivery_date` or `planned_date` fields that do not exist in ha-postnl v4.x data (which uses `delivered_at` and `planned_from` instead). The result was epoch (1 Jan 1970), older than any cutoff, causing all delivered parcels to be silently discarded. The legacy normalizer now maps `delivered_at → delivery_date` and `planned_from → planned_date` as a fallback.
+- **Dutch status message shown in detail panel** — ha-postnl v4.x provides a `raw_status` field with the original Dutch status text. This is now used as `status_message` in the legacy normalizer instead of the enum string.
+- **`CANONICAL_DELIVERED_STATUSES` extended** — added uppercase `'DELIVERED'` alongside lowercase `'delivered'` so the enum-based delivered fallback works correctly for both ha-postnl v4.x (uppercase) and other integrations (lowercase).
+
+---
+
 ## [1.0.8] — 2026-06-29
 
 ### Fixed

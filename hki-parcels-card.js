@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.0.8';
+const CARD_VERSION = 'v1.1.0';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -80,7 +80,7 @@ function hasPhuIcons() {
 }
 
 function getDefaultIcon(carrierType) {
-    const phuMap = { postnl: 'phu:postnl', dhl: 'phu:dhl', dpd: 'phu:dpd', postnl_legacy: 'phu:postnl' };
+    const phuMap = { postnl: 'phu:postnl', postnl_v4: 'phu:postnl', dhl: 'phu:dhl', dpd: 'phu:dpd', postnl_legacy: 'phu:postnl' };
     if (hasPhuIcons() && phuMap[carrierType]) return phuMap[carrierType];
     return 'mdi:package-variant-closed';
 }
@@ -134,7 +134,7 @@ const TRANSLATIONS = {
         // editor
         editor_title:           '📦 Multi-carrier pakketten kaart',
         editor_intro1:          'Voeg hieronder één of meer carriers toe (PostNL, DHL, DPD, ...). Elke carrier kan tot 4 sensoren hebben.',
-        editor_intro2:          'Gebruik schema "canonical" voor ha-dhl-nl en ha-dpd, en "legacy" voor PostNL v3.x (peternijssen/ha-postnl).',
+        editor_intro2:          'Kies het juiste PostNL-type: v4.x (peternijssen ≥4.0), v3.x (peternijssen ≤3.x) of arjenbos voor de oude single-entity integratie.',
         section_basic:          'Basis Instellingen',
         label_card_title:       'Kaartnaam',
         label_days_back:        'Aantal dagen geschiedenis (bezorgd)',
@@ -238,7 +238,7 @@ const TRANSLATIONS = {
         // editor
         editor_title:           '📦 Multi-carrier parcel card',
         editor_intro1:          'Add one or more carriers below (PostNL, DHL, DPD, ...). Each carrier can have up to 4 sensors.',
-        editor_intro2:          'Use schema "canonical" for ha-dhl-nl and ha-dpd, and "legacy" for PostNL v3.x (peternijssen/ha-postnl).',
+        editor_intro2:          'Pick the right PostNL type: v4.x (peternijssen ≥4.0), v3.x (peternijssen ≤3.x), or arjenbos for the legacy single-entity integration.',
         section_basic:          'Basic Settings',
         label_card_title:       'Card title',
         label_days_back:        'Days to show delivery history',
@@ -312,6 +312,11 @@ function getT(lang) {
 const REPO_BASE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images';
 
 const CARRIER_ASSETS = {
+    postnl_v4: {
+        logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
+        van:    `${REPO_BASE}/postnl-van.gif?raw=true`,
+        banner: `${REPO_BASE}/postnl-banner.jpg?raw=true`
+    },
     postnl: {
         logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
         van:    `${REPO_BASE}/postnl-van.gif?raw=true`,
@@ -336,11 +341,12 @@ const CARRIER_ASSETS = {
 };
 
 const CARRIER_PRESETS = {
-    postnl:       { label: 'PostNL',          icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'legacy',        supports_letters: true,  sensor_slug: 'postnl' },
-    dhl:          { label: 'DHL',             icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl'    },
-    dpd:          { label: 'DPD',             icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd'    },
-    postnl_legacy:{ label: 'PostNL (Legacy)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null     },
-    custom:       { label: 'Custom',          icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: false, sensor_slug: null     }
+    postnl_v4:    { label: 'PostNL (peternijssen v4.x)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: true,  sensor_slug: 'postnl' },
+    postnl:       { label: 'PostNL (peternijssen v3.x)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'legacy',        supports_letters: true,  sensor_slug: 'postnl' },
+    dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl'    },
+    dpd:          { label: 'DPD',                        icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd'    },
+    postnl_legacy:{ label: 'PostNL (arjenbos)',          icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null     },
+    custom:       { label: 'Custom',                     icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: false, sensor_slug: null     }
 };
 
 function slugifyUserSlug(text) {
@@ -369,7 +375,8 @@ function buildTemplatedEntities(user, carrierType) {
     };
 }
 
-const CANONICAL_DELIVERED_STATUSES = new Set(['delivered']);
+// Both lowercase (DHL/DPD) and uppercase (ha-postnl v4.x) enum values are accepted.
+const CANONICAL_DELIVERED_STATUSES = new Set(['delivered', 'DELIVERED']);
 
 // ============================================================
 // Card
@@ -527,7 +534,8 @@ class HkiParcelsCard extends HTMLElement {
             problem:          t('status_problem'),
             unknown:          t('status_unknown')
         };
-        return labels[statusEnum] || statusEnum;
+        // ha-postnl v4.x uses UPPERCASE enums; normalise before lookup.
+        return labels[String(statusEnum).toLowerCase()] || statusEnum;
     }
 
     _normalizeCanonical(item, carrier) {
@@ -563,8 +571,12 @@ class HkiParcelsCard extends HTMLElement {
             ...item,
             key,
             name: name || this._t('unknown'),
-            status_message: statusMessage,
+            status_message: item.raw_status || statusMessage,
             delivered: !!delivered,
+            // Map ha-postnl v4.x field names so the cutoff filter and date display work
+            // even when the carrier preset is still set to schema: legacy.
+            delivery_date: item.delivery_date || item.delivered_at || item.planned_from || null,
+            planned_date:  item.planned_date  || item.planned_from || null,
             ...this._carrierBranding(carrier)
         };
     }
@@ -1297,7 +1309,7 @@ class HkiParcelsCardEditor extends LitElement {
     }
 
     _addCarrier() {
-        const type   = 'postnl';
+        const type   = 'postnl_v4';
         const preset = CARRIER_PRESETS[type];
         // Auto-detect user for the default carrier type immediately.
         const detected = this._detectUsers(type);
@@ -1704,13 +1716,14 @@ class HkiParcelsCardEditor extends LitElement {
                 <div class="carrier-card-body">
                     <ha-selector .hass=${this.hass}
                         .selector=${{ select: { options: [
-                            { value: 'postnl',        label: 'PostNL' },
+                            { value: 'postnl_v4',     label: 'PostNL (peternijssen v4.x)' },
+                            { value: 'postnl',        label: 'PostNL (peternijssen v3.x)' },
                             { value: 'dhl',           label: 'DHL' },
                             { value: 'dpd',           label: 'DPD' },
-                            { value: 'postnl_legacy', label: 'PostNL (Legacy)' },
+                            { value: 'postnl_legacy', label: 'PostNL (arjenbos)' },
                             { value: 'custom',        label: 'Custom' }
                         ], mode: 'dropdown' } }}
-                        .value=${carrier.type || 'postnl'} .label=${"Carrier"}
+                        .value=${carrier.type || 'postnl_v4'} .label=${"Carrier"}
                         @value-changed=${(ev) => this._carrierTypeChanged(index, ev)}></ha-selector>
 
                     ${carrier.type === 'custom' ? html`
@@ -1722,8 +1735,7 @@ class HkiParcelsCardEditor extends LitElement {
                     ` : carrier.type === 'postnl_legacy' ? html`
                         <div class="helper-text">
                             ⚠ ${this._t('legacy_warning')}
-                            (<a href="https://github.com/arjenbos/ha-postnl" target="_blank">arjenbos/ha-postnl</a> /
-                            <a href="https://github.com/peternijssen/ha-postnl" target="_blank">peternijssen/ha-postnl</a>)
+                            (<a href="https://github.com/arjenbos/ha-postnl" target="_blank">arjenbos/ha-postnl</a>)
                         </div>
                         ${this._renderEntityPicker(this._t('postnl_entity_label'), carrier.entity, 'e.g. sensor.postnl_delivery', (ev) => this._carrierChanged(index, 'entity', ev))}
                         ${this._renderEntityPicker(this._t('postnl_dist_label'), carrier.distribution_entity, 'e.g. sensor.postnl_distribution', (ev) => this._carrierChanged(index, 'distribution_entity', ev))}
