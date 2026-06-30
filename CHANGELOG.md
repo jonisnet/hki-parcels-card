@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.4] — 2026-06-30
+
+### Fixed
+
+- **Letter image matching rewritten — now works across all ha-postnl versions** — the previous approach derived an image entity prefix from the letters sensor name and matched by slugified date title. This broke in ha-postnl v4.1.0 which changed the image entity naming scheme from `image.<user>_postnl_letter_<date>` to `image.postnl_<user>_brief_<date>` (different order, Dutch "brief" instead of English "letter"). The matching now uses the unique `id` attribute (`mailitem-xxx`) that ha-postnl sets on both the letter item and its image entity, making it version-independent. Placeholder entities (`unavailable` state or "placeholder" in entity ID) are still excluded.
+
+---
+
 ## [1.1.3] — 2026-06-30
 
 ### Fixed

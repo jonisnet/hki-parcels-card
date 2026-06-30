@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.1.3';
+const CARD_VERSION = 'v1.1.4';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -737,40 +737,27 @@ class HkiParcelsCard extends HTMLElement {
             };
         });
 
-        if (imagePrefix) {
-            this._matchLetterImageEntities(letters, imagePrefix, carrier.name);
-        } else {
-            console.warn(`[hki-parcels-card] Could not derive image prefix from "${entityId}".`);
-        }
+        this._matchLetterImageEntities(letters);
         return letters;
     }
 
-    _matchLetterImageEntities(letters, prefix, carrierName) {
+    _matchLetterImageEntities(letters) {
         if (!this._hass) return;
-        const groupsByTitle = new Map();
+        // Match by mail item id (present in image entity attributes since ha-postnl v4.1.0).
+        // The naming convention of image entities changed across versions so pattern matching
+        // is unreliable — id-based matching works for any naming scheme.
+        const idMap = new Map();
+        for (const [entityId, stateObj] of Object.entries(this._hass.states)) {
+            if (!entityId.startsWith('image.')) continue;
+            if (entityId.toLowerCase().includes('placeholder')) continue;
+            if (stateObj.state === 'unavailable') continue;
+            const mailId  = stateObj.attributes?.id;
+            const picture = stateObj.attributes?.entity_picture;
+            if (mailId && picture) idMap.set(mailId, picture);
+        }
         letters.forEach(letter => {
-            if (!groupsByTitle.has(letter.name)) groupsByTitle.set(letter.name, []);
-            groupsByTitle.get(letter.name).push(letter);
-        });
-        groupsByTitle.forEach((group, title) => {
-            const slug = this._slugify(title);
-            if (!slug) return;
-            const foundStates = [];
-            for (let i = 0; ; i++) {
-                const id = i === 0 ? `${prefix}_${slug}` : `${prefix}_${slug}_${i + 1}`;
-                const s = this._hass.states[id];
-                if (!s) break;
-                // Skip placeholder image entities — only use real scan images.
-                if (!id.toLowerCase().includes('placeholder')) foundStates.push(s);
-            }
-            if (foundStates.length === 0) {
-                console.warn(`[hki-parcels-card] No image entity for "${carrierName}" / "${title}" (expected "${prefix}_${slug}").`);
-                return;
-            }
-            group.forEach((letter, i) => {
-                const picture = foundStates[i]?.attributes?.entity_picture;
-                if (picture) letter.image_entity_picture = picture;
-            });
+            const picture = idMap.get(letter.key);
+            if (picture) letter.image_entity_picture = picture;
         });
     }
 
