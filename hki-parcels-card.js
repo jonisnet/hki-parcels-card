@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.1.1';
+const CARD_VERSION = 'v1.1.2';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -829,12 +829,14 @@ class HkiParcelsCard extends HTMLElement {
         if (tab === this._activeTab) return;
         this._activeTab = tab;
         this._selectedParcel = null;
+        this._lastListFingerprint = null; // force re-render on tab switch
         this.updateContent();
     }
 
     handleParcelClick(e) {
         const key = e.currentTarget.dataset.key;
         this._selectedParcel = (this._selectedParcel === key) ? null : key;
+        this._lastListFingerprint = null; // force re-render on selection change
         this.updateContent();
     }
 
@@ -882,6 +884,15 @@ class HkiParcelsCard extends HTMLElement {
     // updateContent — partial DOM update (no full re-render)
     // ------------------------------------------------------------------
 
+    // Stable fingerprint for the displayed list — excludes image URLs (their time= param
+    // changes on every HA scan, which would cause constant re-renders and image flickering).
+    _listFingerprint(displayed) {
+        const items = Array.isArray(displayed)
+            ? displayed
+            : [...(displayed.upcoming || []), ...(displayed.delivered || [])];
+        return items.map(i => `${i.key}|${i.delivered}|${i.status_message || ''}`).join(',');
+    }
+
     updateContent() {
         if (!this._isRendered) return;
         const data = this.getData();
@@ -900,7 +911,14 @@ class HkiParcelsCard extends HTMLElement {
             tab.classList.toggle('active', tab.dataset.tab === this._activeTab)
         );
         this.updateAnimation(displayed);
-        this.renderList(displayed);
+
+        // Only rebuild the list DOM when items actually changed — avoids destroying
+        // <img> elements on every hass tick, which causes letter images to flicker.
+        const fp = this._listFingerprint(displayed);
+        if (fp !== this._lastListFingerprint) {
+            this._lastListFingerprint = fp;
+            this.renderList(displayed);
+        }
     }
 
     updateAnimation(displayed) {

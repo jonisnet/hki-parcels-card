@@ -1,10 +1,11 @@
 # Changelog
 
-## [1.1.1] — 2026-06-30
+## [1.1.2] — 2026-06-30
 
 ### Fixed
 
-- **Letter images now display correctly** — when a HA `image.*` entity for a letter could not be matched (e.g. because the integration names its image entities differently), the card returned an empty thumbnail instead of falling back to the `image_url` that ha-postnl v4.x provides directly in the sensor attributes. The card now always falls back to `image_url` when `image_entity_picture` is unavailable.
+- **Letter images no longer flicker** — ha-postnl v4.x stores letter images as HA `image.*` entities whose `entity_picture` URL contains a `time=` timestamp that changes on every HA scan. Previously, `updateContent()` rebuilt the entire list DOM on every hass tick, destroying and recreating `<img>` elements even when no parcel data changed. The list is now only rebuilt when items actually change (key, delivered status, or status message). Tab switches and parcel selection always force a re-render as before.
+- **Letter images now display correctly** — when a HA `image.*` entity for a letter could not be matched, the card returned an empty thumbnail instead of falling back to the `image_url` that ha-postnl v4.x provides directly in the sensor attributes. The card now always falls back to `image_url` when `image_entity_picture` is unavailable.
 
 ---
 
