@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1] — 2026-06-30
+
+### Fixed
+
+- **Letter images now display correctly** — when a HA `image.*` entity for a letter could not be matched (e.g. because the integration names its image entities differently), the card returned an empty thumbnail instead of falling back to the `image_url` that ha-postnl v4.x provides directly in the sensor attributes. The card now always falls back to `image_url` when `image_entity_picture` is unavailable.
+
+---
+
 ## [1.1.0] — 2026-06-29
 
 ### Added
