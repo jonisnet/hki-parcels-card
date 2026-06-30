@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.1.2';
+const CARD_VERSION = 'v1.1.3';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -760,7 +760,8 @@ class HkiParcelsCard extends HTMLElement {
                 const id = i === 0 ? `${prefix}_${slug}` : `${prefix}_${slug}_${i + 1}`;
                 const s = this._hass.states[id];
                 if (!s) break;
-                foundStates.push(s);
+                // Skip placeholder image entities — only use real scan images.
+                if (!id.toLowerCase().includes('placeholder')) foundStates.push(s);
             }
             if (foundStates.length === 0) {
                 console.warn(`[hki-parcels-card] No image entity for "${carrierName}" / "${title}" (expected "${prefix}_${slug}").`);
@@ -987,9 +988,11 @@ class HkiParcelsCard extends HTMLElement {
         const statusIcon  = isLetter ? 'mdi:email' : (isDelivered ? 'mdi:check-circle' : 'mdi:truck-delivery');
         const isSelected  = this._selectedParcel === item.key;
 
+        // For placeholder letters: never show an image, always show "no image" text.
+        // For real letters: prefer HA image entity picture, fall back to image_url.
+        const letterIsPlaceholder = isLetter && !!item.is_placeholder_image;
         let letterThumb = '';
-        if (isLetter && !item.is_placeholder_image) {
-            // Prefer the HA image entity picture (authenticated URL); fall back to direct image_url.
+        if (isLetter && !letterIsPlaceholder) {
             letterThumb = item.image_entity_picture || item.image_url || '';
         }
 
@@ -1015,8 +1018,8 @@ class HkiParcelsCard extends HTMLElement {
             <div class="details-panel">
                 ${letterThumb ? `<img class="letter-thumb" src="${letterThumb}" alt="${item.name || ''}"
                      data-letter-name="${item.name || ''}" data-letter-date="${dateLabel || ''}" data-letter-src="${letterThumb}"
-                     onerror="this.style.display='none';" />` : ''}
-                ${isLetter && !letterThumb ? `<div class="detail-row letter-no-image"><ha-icon icon="mdi:email-outline"></ha-icon> ${this._t('no_image')}</div>` : ''}
+                     onerror="this.style.display='none';this.nextElementSibling&&(this.nextElementSibling.style.display='flex');" />` : ''}
+                ${isLetter && (!letterThumb || true) ? `<div class="detail-row letter-no-image" style="${letterThumb ? 'display:none;' : ''}"><ha-icon icon="mdi:email-outline"></ha-icon> ${this._t('no_image')}</div>` : ''}
                 ${!isLetter && item.key ? `<div class="detail-row"><strong>${this._t('label_tracking')}:</strong> ${item.key}</div>` : ''}
                 ${item.raw_status ? `<div class="detail-row"><strong>${this._t('label_status')}:</strong> ${item.raw_status}</div>` : ''}
                 ${deliveryDetail}

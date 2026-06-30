@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.3] — 2026-06-30
+
+### Fixed
+
+- **Placeholder image entities are now skipped when matching letter images** — ha-postnl v4.x creates both a real scan image and a placeholder image entity per letter (e.g. `image.postnl_letter_30_juni` and `image.postnl_letter_30_juni_placeholder`). The matching loop now skips any entity whose ID contains "placeholder", so only the real scan image is assigned to the letter.
+- **"Geen afbeelding" text now always shows when a letter image fails to load** — previously, if `letterThumb` was set to a URL that failed to load in the browser, `onerror` hid the `<img>` element but the "geen afbeelding" fallback text was never shown (because `letterThumb` was truthy). The "geen afbeelding" div is now always rendered for letters and hidden via CSS; `onerror` on the image makes it visible when the image fails.
+
+---
+
 ## [1.1.2] — 2026-06-30
 
 ### Fixed
