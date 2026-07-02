@@ -1,0 +1,51 @@
+site_name: HKI Parcels Card Documentation
+site_url: https://jonisnet.github.io/hki-parcels-card/
+repo_url: https://github.com/jonisnet/hki-parcels-card
+repo_name: jonisnet/hki-parcels-card
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.instant
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - HKI Parcels Card:
+      - Overview: card/overview.md
+      - Basic Usage: card/basic-usage.md
+      - Configuration: card/configuration.md
+      - Tips & Tricks: card/tips.md
+      - Examples: card/examples.md
+      - Screenshots: card/screenshots.md
+      - Troubleshooting: card/troubleshooting.md
+  - Changelog: changelog.md
