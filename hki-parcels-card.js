@@ -157,7 +157,9 @@ const TRANSLATIONS = {
         section_appearance:     'Uiterlijk',
         label_header_color:     'Header Kleur',
         label_header_text:      'Header Tekst Kleur',
-        label_placeholder_img:  'Placeholder Afbeelding (URL, optioneel)',
+        label_placeholder_img:  'Placeholder Afbeelding',
+        color_default:          'Standaard',
+        color_custom:           'Aangepast',
         btn_remove_carrier:     'Verwijder carrier',
         label_carrier_name:     'Naam',
         legacy_warning:         'Recreëert de originele hki-postnl-card: één entity met onderweg én bezorgde pakketten, plus een losse entity voor verzonden. Geen brieven, geen sensor-templating. Deze modus krijgt geen verdere updates zolang arjenbos/ha-postnl niet wordt bijgehouden.',
@@ -262,7 +264,9 @@ const TRANSLATIONS = {
         section_appearance:     'Appearance',
         label_header_color:     'Header color',
         label_header_text:      'Header text color',
-        label_placeholder_img:  'Placeholder image (URL, optional)',
+        label_placeholder_img:  'Placeholder image',
+        color_default:          'Default',
+        color_custom:           'Custom',
         btn_remove_carrier:     'Remove carrier',
         label_carrier_name:     'Name',
         legacy_warning:         'Recreates the original hki-postnl-card: one entity with both in-transit and delivered parcels, plus a separate entity for sent parcels. No letter support, no sensor templating. This mode will not receive further updates as long as arjenbos/ha-postnl is not actively maintained.',
@@ -1220,6 +1224,7 @@ class HkiParcelsCardEditor extends LitElement {
     constructor() {
         super();
         this._config = { carriers: [], layout_order: ['header', 'animation', 'tabs', 'list'] };
+        this._openSections = {}; // tracks open state of advanced sections per carrier
     }
 
     // Shorthand: resolve a translation key using hass.language.
@@ -1464,9 +1469,13 @@ class HkiParcelsCardEditor extends LitElement {
             .carrier-card-header-title .chevron { transition: transform 0.2s ease; flex-shrink: 0; }
             .carrier-card-header-title .chevron.expanded { transform: rotate(90deg); }
             .carrier-card-body { margin-top: 12px; }
-            .advanced-details { margin-top: 8px; }
-            .advanced-details summary { cursor: pointer; font-size: 13px; color: var(--secondary-text-color); padding: 6px 12px; user-select: none; border: 1px solid var(--divider-color); border-radius: 4px; display: inline-block; }
-            .advanced-details summary:hover { background: var(--card-background-color, white); color: var(--primary-text-color); }
+            .advanced-toggle { margin-top: 8px; margin-bottom: 4px; cursor: pointer; font-size: 13px; color: var(--secondary-text-color); padding: 6px 12px; user-select: none; border: 1px solid var(--divider-color); border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; }
+            .advanced-toggle:hover { background: var(--card-background-color, white); color: var(--primary-text-color); }
+            .advanced-toggle .adv-chevron { font-size: 10px; transition: transform 0.15s ease; }
+            .advanced-toggle.open .adv-chevron { transform: rotate(90deg); }
+            .advanced-body { padding: 12px 0 4px 0; }
+            .color-default-btn { background: none; border: 1px solid var(--divider-color); border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; color: var(--secondary-text-color); white-space: nowrap; }
+            .color-default-btn:hover { background: var(--secondary-background-color); }
             .templated-preview { background: var(--card-background-color, white); border: 1px solid var(--divider-color); border-radius: 4px; padding: 8px 12px; margin-bottom: 16px; font-family: monospace; font-size: 11px; color: var(--secondary-text-color); line-height: 1.6; }
             .inline-fields-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
             ha-icon-button.danger { color: var(--error-color, red); }
@@ -1512,8 +1521,10 @@ class HkiParcelsCardEditor extends LitElement {
     _renderUrlField(label, value, placeholder, onChange) {
         return html`
             <div class="url-field">
-                <ha-textfield label="${label}" .value=${value || ''} placeholder="${placeholder}"
-                    @input=${onChange}></ha-textfield>
+                <div class="plain-field" style="margin-bottom:4px;">
+                    <label>${label}</label>
+                    <input type="text" .value=${value || ''} placeholder="${placeholder}" @input=${onChange} />
+                </div>
                 ${value ? html`
                     <div class="url-preview-wrap">
                         <img class="url-preview" src="${value}"
@@ -1529,87 +1540,108 @@ class HkiParcelsCardEditor extends LitElement {
             </div>`;
     }
 
-    // Renders the "Advanced: appearance override" section with icon-picker, color swatch and URL previews.
+    // Renders the "Advanced: appearance override" section with icon-picker, color swatch and image selectors.
     _renderAppearanceOverride(carrier, index, preset) {
         const assets       = CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom;
         const currentIcon  = carrier.icon  || preset.icon;
         const currentColor = carrier.color || preset.color;
+        const hasCustomColor = !!carrier.color && carrier.color !== preset.color;
+        const sectionKey   = `appearance-${index}`;
+        const isOpen       = !!this._openSections[sectionKey];
+
         return html`
-            <details class="advanced-details">
-                <summary>${this._t('adv_appearance')}</summary>
-                <div style="margin-top:12px;">
-                    <div class="helper-text">${this._t('appearance_help')}</div>
+            <div class="advanced-toggle ${isOpen ? 'open' : ''}"
+                @click=${() => { this._openSections = { ...this._openSections, [sectionKey]: !isOpen }; this.requestUpdate(); }}>
+                <span class="adv-chevron">▶</span>
+                ${this._t('adv_appearance')}
+            </div>
+            ${isOpen ? html`
+            <div class="advanced-body">
+                <div class="helper-text">${this._t('appearance_help')}</div>
 
-                    <!-- Icon picker -->
-                    <div class="appearance-row">
-                        <div class="appearance-preview">
-                            <ha-icon icon="${currentIcon}" style="color:${currentColor}; width:28px; height:28px;"></ha-icon>
-                        </div>
-                        <div class="appearance-field-grow">
-                            <ha-selector .hass=${this.hass}
-                                .selector=${{ icon: {} }}
-                                .value=${currentIcon}
-                                .label=${this._t('label_icon_pick')}
-                                @value-changed=${(ev) => {
-                                    ev.stopPropagation();
-                                    const carriers = [...(this._config.carriers || [])];
-                                    carriers[index] = { ...carriers[index], icon: ev.detail.value };
-                                    this._config = { ...this._config, carriers };
-                                    this._emit();
-                                }}></ha-selector>
-                        </div>
+                <!-- Icon picker -->
+                <div class="appearance-row">
+                    <div class="appearance-preview">
+                        <ha-icon icon="${currentIcon}" style="color:${currentColor}; width:28px; height:28px;"></ha-icon>
                     </div>
-
-                    <!-- Color -->
-                    <div class="color-row">
-                        <label class="color-label">${this._t('label_color_pick')}</label>
-                        <div class="color-input-wrap">
-                            <input type="color" class="color-swatch"
-                                .value=${currentColor}
-                                @input=${(ev) => {
-                                    ev.stopPropagation();
-                                    const carriers = [...(this._config.carriers || [])];
-                                    carriers[index] = { ...carriers[index], color: ev.target.value };
-                                    this._config = { ...this._config, carriers };
-                                    this._emit();
-                                }} />
-                            <span class="color-hex">${currentColor}</span>
-                        </div>
+                    <div class="appearance-field-grow">
+                        <ha-selector .hass=${this.hass}
+                            .selector=${{ icon: {} }}
+                            .value=${currentIcon}
+                            .label=${this._t('label_icon_pick')}
+                            @value-changed=${(ev) => {
+                                ev.stopPropagation();
+                                const carriers = [...(this._config.carriers || [])];
+                                carriers[index] = { ...carriers[index], icon: ev.detail.value };
+                                this._config = { ...this._config, carriers };
+                                this._emit();
+                            }}></ha-selector>
                     </div>
-
-                    <!-- Logo -->
-                    <ha-selector .hass=${this.hass}
-                        .selector=${{ image: {} }}
-                        .value=${carrier.logo_path || ''}
-                        .label=${this._t('url_logo')}
-                        @value-changed=${(ev) => {
-                            ev.stopPropagation();
-                            const carriers = [...(this._config.carriers || [])];
-                            carriers[index] = { ...carriers[index], logo_path: ev.detail.value };
-                            this._config = { ...this._config, carriers };
-                            this._emit();
-                        }}></ha-selector>
-                    <!-- Vehicle GIF (URL only — GIFs are not in the media library) -->
-                    ${this._renderUrlField(
-                        this._t('url_van'),
-                        carrier.van_path,
-                        assets.van || 'https://...',
-                        (ev) => this._carrierChanged(index, 'van_path', ev)
-                    )}
-                    <!-- Banner -->
-                    <ha-selector .hass=${this.hass}
-                        .selector=${{ image: {} }}
-                        .value=${carrier.banner_path || ''}
-                        .label=${this._t('url_banner')}
-                        @value-changed=${(ev) => {
-                            ev.stopPropagation();
-                            const carriers = [...(this._config.carriers || [])];
-                            carriers[index] = { ...carriers[index], banner_path: ev.detail.value };
-                            this._config = { ...this._config, carriers };
-                            this._emit();
-                        }}></ha-selector>
                 </div>
-            </details>`;
+
+                <!-- Color -->
+                <div class="color-row">
+                    <label class="color-label">${this._t('label_color_pick')}</label>
+                    <div class="color-input-wrap">
+                        <input type="color" class="color-swatch"
+                            .value=${currentColor}
+                            @input=${(ev) => {
+                                ev.stopPropagation();
+                                const carriers = [...(this._config.carriers || [])];
+                                carriers[index] = { ...carriers[index], color: ev.target.value };
+                                this._config = { ...this._config, carriers };
+                                this._emit();
+                            }} />
+                        <span class="color-hex">${currentColor}</span>
+                        ${hasCustomColor ? html`
+                            <button class="color-default-btn"
+                                @click=${(ev) => {
+                                    ev.stopPropagation();
+                                    const carriers = [...(this._config.carriers || [])];
+                                    carriers[index] = { ...carriers[index], color: undefined };
+                                    this._config = { ...this._config, carriers };
+                                    this._emit();
+                                }}>${this._t('color_default')}</button>` : html`
+                            <span style="font-size:11px;color:var(--secondary-text-color);">(${this._t('color_default')})</span>`}
+                    </div>
+                </div>
+
+                <!-- Logo (media library + URL) -->
+                <ha-selector .hass=${this.hass}
+                    .selector=${{ image: {} }}
+                    .value=${carrier.logo_path || ''}
+                    .label=${this._t('url_logo')}
+                    style="display:block;margin-bottom:16px;"
+                    @value-changed=${(ev) => {
+                        ev.stopPropagation();
+                        const carriers = [...(this._config.carriers || [])];
+                        carriers[index] = { ...carriers[index], logo_path: ev.detail.value };
+                        this._config = { ...this._config, carriers };
+                        this._emit();
+                    }}></ha-selector>
+
+                <!-- Vehicle GIF (URL only — GIFs are not in the media library) -->
+                ${this._renderUrlField(
+                    this._t('url_van'),
+                    carrier.van_path,
+                    assets.van || 'https://...',
+                    (ev) => this._carrierChanged(index, 'van_path', ev)
+                )}
+
+                <!-- Banner (media library + URL) -->
+                <ha-selector .hass=${this.hass}
+                    .selector=${{ image: {} }}
+                    .value=${carrier.banner_path || ''}
+                    .label=${this._t('url_banner')}
+                    style="display:block;margin-bottom:16px;"
+                    @value-changed=${(ev) => {
+                        ev.stopPropagation();
+                        const carriers = [...(this._config.carriers || [])];
+                        carriers[index] = { ...carriers[index], banner_path: ev.detail.value };
+                        this._config = { ...this._config, carriers };
+                        this._emit();
+                    }}></ha-selector>
+            </div>` : ''}`;
     }
 
     // Renders the user/account detection block: badge if 1 found, dropdown if multiple, manual if none.
@@ -1725,12 +1757,10 @@ class HkiParcelsCardEditor extends LitElement {
 
     _renderEntityPicker(label, value, helper, onChange) {
         return html`
-            <ha-textfield
-                .label=${label}
-                .value=${value || ''}
-                .helper=${helper || ''}
-                helperPersistent
-                @change=${onChange}></ha-textfield>`;
+            <div class="plain-field">
+                <label>${label}</label>
+                <input type="text" .value=${value || ''} placeholder="${helper || ''}" @change=${onChange} />
+            </div>`;
     }
 
     _renderCarrier(carrier, index) {
@@ -1780,18 +1810,27 @@ class HkiParcelsCardEditor extends LitElement {
                         ${this._renderEntityPicker(this._t('postnl_dist_label'), carrier.distribution_entity, 'e.g. sensor.postnl_distribution', (ev) => this._carrierChanged(index, 'distribution_entity', ev))}
                     ` : this._renderUserDetection(carrier, index, preset, supportsLetters)}
 
-                    ${carrier.type !== 'postnl_legacy' ? html`
-                    <details class="advanced-details">
-                        <summary>${this._t('adv_sensors')}</summary>
-                        <div class="helper-text" style="margin-top:12px;">${this._t('adv_sensors_help')}</div>
-                        ${this._renderEntityPicker(this._t('entity_incoming'), carrier.entity_incoming, 'e.g. sensor.dhl_incoming_parcels', (ev) => this._carrierChanged(index, 'entity_incoming', ev))}
-                        ${this._renderEntityPicker(this._t('entity_delivered'), carrier.entity_delivered, 'e.g. sensor.dhl_delivered_parcels', (ev) => this._carrierChanged(index, 'entity_delivered', ev))}
-                        ${this._renderEntityPicker(this._t('entity_outgoing'), carrier.entity_outgoing, 'e.g. sensor.dhl_outgoing_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing', ev))}
-                        ${this._renderEntityPicker(this._t('entity_outgoing_delivered'), carrier.entity_outgoing_delivered, 'e.g. sensor.dhl_outgoing_delivered_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing_delivered', ev))}
-                        ${supportsLetters
-                            ? this._renderEntityPicker(this._t('entity_letters'), carrier.entity_letters, this._t('letters_entity_help'), (ev) => this._carrierChanged(index, 'entity_letters', ev))
-                            : html`<div class="helper-text">${this._t('no_letters_support')}</div>`}
-                    </details>` : ''}
+                    ${carrier.type !== 'postnl_legacy' ? (() => {
+                        const sk = `sensors-${index}`;
+                        const open = !!this._openSections[sk];
+                        return html`
+                        <div class="advanced-toggle ${open ? 'open' : ''}"
+                            @click=${() => { this._openSections = { ...this._openSections, [sk]: !open }; this.requestUpdate(); }}>
+                            <span class="adv-chevron">▶</span>
+                            ${this._t('adv_sensors')}
+                        </div>
+                        ${open ? html`
+                        <div class="advanced-body">
+                            <div class="helper-text">${this._t('adv_sensors_help')}</div>
+                            ${this._renderEntityPicker(this._t('entity_incoming'), carrier.entity_incoming, 'e.g. sensor.dhl_incoming_parcels', (ev) => this._carrierChanged(index, 'entity_incoming', ev))}
+                            ${this._renderEntityPicker(this._t('entity_delivered'), carrier.entity_delivered, 'e.g. sensor.dhl_delivered_parcels', (ev) => this._carrierChanged(index, 'entity_delivered', ev))}
+                            ${this._renderEntityPicker(this._t('entity_outgoing'), carrier.entity_outgoing, 'e.g. sensor.dhl_outgoing_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing', ev))}
+                            ${this._renderEntityPicker(this._t('entity_outgoing_delivered'), carrier.entity_outgoing_delivered, 'e.g. sensor.dhl_outgoing_delivered_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing_delivered', ev))}
+                            ${supportsLetters
+                                ? this._renderEntityPicker(this._t('entity_letters'), carrier.entity_letters, this._t('letters_entity_help'), (ev) => this._carrierChanged(index, 'entity_letters', ev))
+                                : html`<div class="helper-text">${this._t('no_letters_support')}</div>`}
+                        </div>` : ''}`;
+                    })() : ''}
 
                     ${this._renderAppearanceOverride(carrier, index, preset)}
                 </div>` : ''}
@@ -1867,21 +1906,46 @@ class HkiParcelsCardEditor extends LitElement {
                     <summary class="section">${this._t('section_appearance')}</summary>
                     <div class="inline-fields-2">
                         <div class="plain-field">
-                            <label for="hki-header-color-input">${this._t('label_header_color')}</label>
-                            <input id="hki-header-color-input" type="color" .value=${this._config.header_color || '#f0f0f0'}
-                                data-field="header_color" @input=${this._changed} />
+                            <label>${this._t('label_header_color')}</label>
+                            <div class="color-input-wrap" style="margin-top:4px;">
+                                <input type="color"
+                                    class="color-swatch"
+                                    .value=${this._config.header_color || '#f0f0f0'}
+                                    @input=${(ev) => { this._config = { ...this._config, header_color: ev.target.value }; this._emit(); }} />
+                                <span class="color-hex">${this._config.header_color || ''}</span>
+                                ${this._config.header_color ? html`
+                                    <button class="color-default-btn"
+                                        @click=${() => { this._config = { ...this._config, header_color: '' }; this._emit(); }}>
+                                        ${this._t('color_default')}</button>` : html`
+                                    <span style="font-size:11px;color:var(--secondary-text-color);">(${this._t('color_default')})</span>`}
+                            </div>
                         </div>
                         <div class="plain-field">
-                            <label for="hki-header-text-color-input">${this._t('label_header_text')}</label>
-                            <input id="hki-header-text-color-input" type="color" .value=${this._config.header_text_color || '#000000'}
-                                data-field="header_text_color" @input=${this._changed} />
+                            <label>${this._t('label_header_text')}</label>
+                            <div class="color-input-wrap" style="margin-top:4px;">
+                                <input type="color"
+                                    class="color-swatch"
+                                    .value=${this._config.header_text_color || '#000000'}
+                                    @input=${(ev) => { this._config = { ...this._config, header_text_color: ev.target.value }; this._emit(); }} />
+                                <span class="color-hex">${this._config.header_text_color || ''}</span>
+                                ${this._config.header_text_color ? html`
+                                    <button class="color-default-btn"
+                                        @click=${() => { this._config = { ...this._config, header_text_color: '' }; this._emit(); }}>
+                                        ${this._t('color_default')}</button>` : html`
+                                    <span style="font-size:11px;color:var(--secondary-text-color);">(${this._t('color_default')})</span>`}
+                            </div>
                         </div>
                     </div>
-                    <div class="plain-field">
-                        <label for="hki-placeholder-image-input">${this._t('label_placeholder_img')}</label>
-                        <input id="hki-placeholder-image-input" type="text" .value=${this._config.placeholder_image || ''}
-                            placeholder="https://..." data-field="placeholder_image" @input=${this._changed} />
-                    </div>
+                    <ha-selector .hass=${this.hass}
+                        .selector=${{ image: {} }}
+                        .value=${this._config.placeholder_image || ''}
+                        .label=${this._t('label_placeholder_img')}
+                        style="display:block;margin-bottom:16px;"
+                        @value-changed=${(ev) => {
+                            ev.stopPropagation();
+                            this._config = { ...this._config, placeholder_image: ev.detail.value };
+                            this._emit();
+                        }}></ha-selector>
                 </details>
             </div>`;
     }

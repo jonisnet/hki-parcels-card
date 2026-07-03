@@ -10,10 +10,14 @@
 ### Added
 
 - **Integratie-link bij niet-gevonden carriers** — wanneer de sensoren voor PostNL (v4.x), DHL of DPD niet gevonden worden in Home Assistant, toont de editor nu een directe link naar de bijbehorende integratierepository in plaats van de account- en sensorvelden. Via het ✎-knopje kan alsnog handmatig worden ingevoerd.
+- **"Standaard" kleurknop bij carrier kleur en header kleuren** — wanneer een kleur is aangepast, verschijnt een "Standaard" knop om de standaardkleur te herstellen. Wanneer de standaardkleur actief is, wordt dit zichtbaar aangegeven.
+- **Placeholder afbeelding via mediabibiliotheek** — het veld voor de placeholder afbeelding (onder Uiterlijk) gebruikt nu de Home Assistant afbeeldingskiezer met bladeren- en uploadknop, net als logo en banner bij de carriers.
 
 ### Fixed
 
-- **"Weergave Opties" en "Layout Volgorde" zijn weer standaard gesloten** — deze secties waren per abuis opengezet in een vorige wijziging; dit is teruggedraaid.
+- **Geavanceerde sensorvelden blijven zichtbaar na HA-update** — de velden in "Geavanceerd: sensoren handmatig overschrijven" werden onzichtbaar zodra Home Assistant de editor herrenderde (bijv. bij een sensorupdate), omdat de native `<details>`-element zijn open-toestand verloor bij elke Lit-herrender. De open/dicht-toestand wordt nu beheerd door LitElement zelf.
+- **Geavanceerde sensorvelden zijn altijd invulbaar** — de velden gebruiken nu standaard `<input>`-elementen in plaats van `ha-textfield`, wat in sommige HA-omgevingen niet correct renderde.
+- **Uiterlijk-sectie blijft open na aanpassing** — ook de "Geavanceerd: uiterlijk overschrijven" sectie gebruikt nu LitElement-managed open/dicht-toestand.
 
 ---
 
