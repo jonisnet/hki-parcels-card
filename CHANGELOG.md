@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.5-beta.1] — 2026-07-03
+
+### Changed
+
+- **Carrier label `postnl_v4` vereenvoudigd** — het label "PostNL (peternijssen v4.x)" is gewijzigd naar "PostNL" in zowel de dropdown als de preset-configuratie.
+- **Volgorde carrier dropdown aangepast** — nieuwe volgorde: PostNL · DHL · DPD · PostNL (<v4.x) · PostNL (ArjenBos) · Custom.
+
+### Added
+
+- **Integratie-link bij niet-gevonden carriers** — wanneer de sensoren voor PostNL (v4.x), DHL of DPD niet gevonden worden in Home Assistant, toont de editor nu een directe link naar de bijbehorende integratierepository in plaats van de account- en sensorvelden. Via het ✎-knopje kan alsnog handmatig worden ingevoerd.
+
+### Fixed
+
+- **"Weergave Opties" en "Layout Volgorde" zijn weer standaard gesloten** — deze secties waren per abuis opengezet in een vorige wijziging; dit is teruggedraaid.
+
+---
+
 ## [1.1.4] — 2026-06-30
 
 ### Fixed

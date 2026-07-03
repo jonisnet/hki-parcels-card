@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.1.4';
+const CARD_VERSION = 'v1.1.5-beta.1';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -184,6 +184,7 @@ const TRANSLATIONS = {
         detected_one:           'Automatisch gevonden',
         detected_multiple:      'Meerdere accounts gevonden — kies er één',
         detected_none:          'Geen sensors gevonden — vul handmatig in',
+        integration_not_found:  'Integratie niet gevonden. Installeer de integratie eerst:',
         no_prefix:              '(geen gebruikersnaam-prefix)',
         detected_badge:         'gevonden',
         label_icon_pick:        'Icoon',
@@ -288,6 +289,7 @@ const TRANSLATIONS = {
         detected_one:           'Auto-detected',
         detected_multiple:      'Multiple accounts found — choose one',
         detected_none:          'No sensors found — enter manually',
+        integration_not_found:  'Integration not found. Install the integration first:',
         no_prefix:              '(no account prefix)',
         detected_badge:         'found',
         label_icon_pick:        'Icon',
@@ -310,6 +312,12 @@ function getT(lang) {
 // ============================================================
 
 const REPO_BASE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images';
+
+const CARRIER_REPO_URLS = {
+    postnl_v4: 'https://github.com/peternijssen/ha-postnl',
+    dhl:       'https://github.com/peternijssen/ha-dhl-nl',
+    dpd:       'https://github.com/peternijssen/ha-dpd',
+};
 
 const CARRIER_ASSETS = {
     postnl_v4: {
@@ -341,7 +349,7 @@ const CARRIER_ASSETS = {
 };
 
 const CARRIER_PRESETS = {
-    postnl_v4:    { label: 'PostNL (peternijssen v4.x)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: true,  sensor_slug: 'postnl' },
+    postnl_v4:    { label: 'PostNL',                    icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: true,  sensor_slug: 'postnl' },
     postnl:       { label: 'PostNL (peternijssen v3.x)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'legacy',        supports_letters: true,  sensor_slug: 'postnl' },
     dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl'    },
     dpd:          { label: 'DPD',                        icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd'    },
@@ -1665,6 +1673,28 @@ class HkiParcelsCardEditor extends LitElement {
                 ${entityPreview}`;
         }
 
+        // 0 detected and no manual override yet → if a known repo URL exists, show install link instead of input.
+        if (detected.length === 0 && !carrier._manualUser) {
+            const repoUrl = CARRIER_REPO_URLS[carrier.type];
+            if (repoUrl) {
+                return html`
+                    <div class="detected-row">
+                        <ha-icon icon="mdi:alert-circle-outline" class="detected-icon none"></ha-icon>
+                        <div class="detected-info">
+                            <div class="detected-label">${this._t('integration_not_found')}</div>
+                            <a href="${repoUrl}" target="_blank" rel="noopener" style="font-size:12px;word-break:break-all;">${repoUrl}</a>
+                        </div>
+                        <button class="detected-override" title="Enter manually"
+                            @click=${() => {
+                                const carriers = [...(this._config.carriers || [])];
+                                carriers[index] = { ...carriers[index], _manualUser: true };
+                                this._config = { ...this._config, carriers };
+                                this._emit();
+                            }}>✎</button>
+                    </div>`;
+            }
+        }
+
         // 0 detected OR user chose manual entry → text input with sanitization.
         return html`
             ${detected.length > 0 ? html`
@@ -1725,11 +1755,11 @@ class HkiParcelsCardEditor extends LitElement {
                 <div class="carrier-card-body">
                     <ha-selector .hass=${this.hass}
                         .selector=${{ select: { options: [
-                            { value: 'postnl_v4',     label: 'PostNL (peternijssen v4.x)' },
-                            { value: 'postnl',        label: 'PostNL (peternijssen v3.x)' },
+                            { value: 'postnl_v4',     label: 'PostNL' },
                             { value: 'dhl',           label: 'DHL' },
                             { value: 'dpd',           label: 'DPD' },
-                            { value: 'postnl_legacy', label: 'PostNL (arjenbos)' },
+                            { value: 'postnl',        label: 'PostNL (<v4.x)' },
+                            { value: 'postnl_legacy', label: 'PostNL (ArjenBos)' },
                             { value: 'custom',        label: 'Custom' }
                         ], mode: 'dropdown' } }}
                         .value=${carrier.type || 'postnl_v4'} .label=${"Carrier"}
