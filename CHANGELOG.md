@@ -4,26 +4,26 @@
 
 ### Added
 
-- **Mediabrowser-knop bij URL-velden** — naast elk URL-invoerveld (logo, voertuig GIF, banner, placeholder afbeelding) staat nu een "Bladeren"-knop. Deze opent een eigen mediabrowser-overlay die via de HA WebSocket-API (`media_source/browse_media`) de mediabibliotheek doorzoekbaar maakt. Mappen zijn aanklikbaar; een "Terug"-knop keert terug naar het vorige niveau. Afbeeldingen uit de `www`-map worden via `/local/` ingeladen. Na selectie wordt de URL automatisch ingevuld.
-- **Integratie-link bij niet-gevonden carriers** — wanneer de sensoren voor een carrier niet gevonden worden, toont de editor een directe link naar de bijbehorende integratierepository. Via het ✎-knopje kan alsnog handmatig worden ingevoerd.
-- **"Standaard" kleurknop bij carrier- en headerkleur** — herstelt de standaardkleur per carrier of header. De knop is altijd zichtbaar: actief wanneer een kleur is aangepast, grijs/disabled wanneer de standaard al actief is.
-- **Hex-kleurwaarde direct aanpasbaar** — naast het kleurenpalet staat een bewerkbaar tekstveld met de hex-waarde (`#rrggbb`). Invoer wordt gevalideerd voordat de kleur wordt opgeslagen.
+- **Media browser button on URL fields** — every URL input field (logo, vehicle GIF, banner, placeholder image) now has a Browse button. It opens a custom media browser overlay that uses the HA WebSocket API (`media_source/browse_media`) to browse the media library. Folders are clickable; a Back button navigates up. Images from the `www` folder are served via `/local/`. The selected URL is filled in automatically.
+- **Integration link when carrier not found** — when no sensors are found for a carrier, the editor shows a direct link to the relevant integration repository instead of blank input fields. The ✎ button allows manual entry at any time.
+- **"Default" colour button for carrier and header colours** — resets the colour to the carrier or header default. The button is always visible: active when a custom colour is set, greyed out when the default is already active.
+- **Editable hex colour value** — a text field next to the colour picker shows the current hex value (`#rrggbb`) and accepts direct input. Input is validated before the colour is saved.
 
 ### Changed
 
-- **Carrier label `postnl_v4` vereenvoudigd** — het label "PostNL (peternijssen v4.x)" is gewijzigd naar "PostNL".
-- **Volgorde carrier dropdown aangepast** — nieuwe volgorde: PostNL · DHL · DPD · PostNL (<v4.x) · PostNL (ArjenBos) · Custom.
+- **`postnl_v4` carrier label simplified** — the label "PostNL (peternijssen v4.x)" has been shortened to "PostNL".
+- **Carrier dropdown order updated** — new order: PostNL · DHL · DPD · PostNL (<v4.x) · PostNL (ArjenBos) · Custom.
 
 ### Fixed
 
-- **Dual sensor-naamgeving ondersteund** — de auto-detectie herkent nu zowel `sensor.<carrier>_<user>_*` (DPD-stijl) als `sensor.<user>_<carrier>_*` (PostNL/DHL-stijl). De entiteitvelden worden automatisch gevuld met het juiste patroon.
-- **DPD-sensoren automatisch gevonden** — de DPD-integratie gebruikt Nederlandse sensornamen (`binnenkomende_pakketten`, `bezorgde_pakketten`, `uitgaande_pakketten`). De detectie en entiteitgeneratie gebruiken deze namen voor DPD.
-- **Vrije invoer in het accountveld** — het accountveld accepteert nu vrije invoer (inclusief `.`, `@`, `-`). Sanitisatie naar underscores vindt pas plaats bij verlaten van het veld.
-- **Logo, banner en voertuig GIF-velden altijd zichtbaar** — velden gebruiken nu een gewoon tekstveld met live afbeeldingspreview in plaats van `ha-selector image:{}` dat in de Shadow DOM niet betrouwbaar renderde.
-- **Banner met apostrof in mapnaam wordt correct getoond** — CSS `background-image` gebruikt nu dubbele aanhalingstekens zodat een apostrof in de padnaam (bijv. `Logo's`) de CSS-string niet breekt.
-- **Standaard placeholder bij leeg veld** — wanneer `placeholder_image` niet is ingesteld, wordt automatisch `dutch-parcels.png` uit de repo gebruikt.
-- **Geavanceerde sensorvelden blijven zichtbaar na HA-update** — de open/dicht-toestand van de geavanceerde secties wordt nu beheerd door LitElement in plaats van het native `<details>`-element, zodat de toestand niet verloren gaat bij een herrender.
-- **Geavanceerde sensorvelden altijd invulbaar** — velden gebruiken standaard `<input>`-elementen in plaats van `ha-textfield`.
+- **Dual sensor naming schemes supported** — account auto-detection now recognises both `sensor.<carrier>_<user>_*` (DPD style) and `sensor.<user>_<carrier>_*` (PostNL/DHL style). Entity fields are populated using the correct scheme automatically.
+- **DPD sensors auto-detected** — the DPD integration uses Dutch sensor names (`binnenkomende_pakketten`, `bezorgde_pakketten`, `uitgaande_pakketten`). Detection and entity generation now use these names for DPD.
+- **Free text input in the account field** — the account field now accepts any characters (including `.`, `@`, `-`) while typing; sanitisation to underscores happens only when the field loses focus.
+- **Logo, banner and vehicle GIF fields always visible** — these fields now use a plain text input with a live image preview instead of `ha-selector image:{}`, which did not render reliably inside the card editor Shadow DOM.
+- **Banner with apostrophe in folder name now renders correctly** — `background-image` now uses double quotes so that an apostrophe in the path (e.g. `Logo's`) does not break the CSS string.
+- **Default placeholder image when field is empty** — when `placeholder_image` is not set, the card now falls back to `dutch-parcels.png` from the repository instead of showing nothing.
+- **Advanced sensor fields stay visible after HA re-render** — the open/closed state of the advanced sections is now managed by LitElement instead of the native `<details>` element, preventing the state from being lost on each re-render.
+- **Advanced sensor fields always editable** — fields now use plain `<input>` elements instead of `ha-textfield`, which did not render correctly in some HA environments.
 
 ---
 
