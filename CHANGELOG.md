@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.1] — 2026-07-04
+
+### Added
+
+- **PostNL outgoing delivered parcels** — the "Sent" tab's *Delivered* section now works with
+  peternijssen/ha-postnl ≥ 4.3.1, which adds the `sensor.*_postnl_outgoing_delivered_parcels`
+  sensor. The card was already templating this entity; it now has an actual sensor to connect to.
+  No configuration change required — the sensor is picked up automatically when the account field
+  is filled in.
+
+---
+
 ## [1.2.0] — 2026-07-04
 
 ### Added
