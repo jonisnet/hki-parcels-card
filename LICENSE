@@ -20,11 +20,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-This repository is a derivative work based on the PostNL card from
-jimz011/hki-elements (https://github.com/jimz011/hki-elements),
-licensed under the MIT License. Modifications and additions (multi-carrier
-support, DHL/DPD integration, sensor templating, letter-image matching,
-visual editor improvements) are copyright (c) 2026 jonisnet.
