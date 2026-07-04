@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.1.5-beta.1';
+const CARD_VERSION = 'v1.2.0';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -196,6 +196,7 @@ const TRANSLATIONS = {
         url_banner:             'Banner URL',
         url_placeholder:        'Laat leeg voor de standaard afbeelding',
         url_preview_fail:       'Afbeelding niet gevonden',
+        browse_media:           'Bladeren',
     },
     en: {
         tab_in_transit:         'In Transit',
@@ -303,6 +304,7 @@ const TRANSLATIONS = {
         url_banner:             'Banner URL',
         url_placeholder:        'Leave empty to use the built-in default',
         url_preview_fail:       'Image not found',
+        browse_media:           'Browse',
     }
 };
 
@@ -356,7 +358,8 @@ const CARRIER_PRESETS = {
     postnl_v4:    { label: 'PostNL',                    icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: true,  sensor_slug: 'postnl' },
     postnl:       { label: 'PostNL (peternijssen v3.x)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'legacy',        supports_letters: true,  sensor_slug: 'postnl' },
     dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl'    },
-    dpd:          { label: 'DPD',                        icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd'    },
+    dpd:          { label: 'DPD',                        icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd',
+                    slug_first_suffixes: { incoming: 'binnenkomende_pakketten', delivered: 'bezorgde_pakketten', outgoing: 'uitgaande_pakketten', outgoing_delivered: null, letters: null } },
     postnl_legacy:{ label: 'PostNL (arjenbos)',          icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null     },
     custom:       { label: 'Custom',                     icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: false, sensor_slug: null     }
 };
@@ -369,14 +372,26 @@ function slugifyUserSlug(text) {
         .replace(/^_+|_+$/g, '');
 }
 
-function buildTemplatedEntities(user, carrierType) {
+function buildTemplatedEntities(user, carrierType, slugFirst = false) {
     const preset = CARRIER_PRESETS[carrierType] || CARRIER_PRESETS.custom;
     const slug = preset.sensor_slug;
     if (!slug) {
         return { entity_incoming: null, entity_delivered: null, entity_outgoing: null, entity_outgoing_delivered: null, entity_letters: null };
     }
     const u = slugifyUserSlug(user);
-    // Support both "sensor.<user>_<slug>_*" (with prefix) and "sensor.<slug>_*" (no prefix).
+    // slugFirst: sensor.<slug>_<user>_* (e.g. sensor.dpd_keesb_binnenkomende_pakketten)
+    // userFirst: sensor.<user>_<slug>_* or sensor.<slug>_* when no prefix
+    if (slugFirst && u) {
+        const sf = preset.slug_first_suffixes;
+        const s = (key, fallback) => sf?.[key] != null ? `sensor.${slug}_${u}_${sf[key]}` : (sf?.[key] === null ? null : `sensor.${slug}_${u}_${fallback}`);
+        return {
+            entity_incoming:          s('incoming',          'incoming_parcels'),
+            entity_delivered:         s('delivered',         'delivered_parcels'),
+            entity_outgoing:          s('outgoing',          'outgoing_parcels'),
+            entity_outgoing_delivered:s('outgoing_delivered','outgoing_delivered_parcels'),
+            entity_letters: preset.supports_letters ? s('letters', 'letters') : null
+        };
+    }
     const prefix = u ? `${u}_` : '';
     return {
         entity_incoming:          `sensor.${prefix}${slug}_incoming_parcels`,
@@ -847,14 +862,16 @@ class HkiParcelsCard extends HTMLElement {
     }
 
     _getNoSelectionBackground() {
+        const DEFAULT_PLACEHOLDER = `${REPO_BASE}/dutch-parcels.png?raw=true`;
         const carriers = this.config.carriers || [];
-        if (carriers.length >= 2) return { image: this.config.placeholder_image || '', showText: !this.config.placeholder_image };
+        const placeholderImage = this.config.placeholder_image || DEFAULT_PLACEHOLDER;
+        if (carriers.length >= 2) return { image: placeholderImage, showText: false };
         if (carriers.length === 1) {
             const b = this._carrierBranding(carriers[0]);
             const image = b.carrier_banner || b.carrier_logo;
             if (image) return { image, showText: false };
         }
-        return { image: this.config.placeholder_image || '', showText: !this.config.placeholder_image };
+        return { image: placeholderImage, showText: false };
     }
 
     _openLetterPopup(src, name, dateLabel) {
@@ -972,7 +989,7 @@ class HkiParcelsCard extends HTMLElement {
                 return;
             }
             const bg = this._getNoSelectionBackground();
-            animationEl.style.backgroundImage = bg.image ? `url('${bg.image}')` : '';
+            animationEl.style.backgroundImage = bg.image ? `url("${bg.image.replace(/"/g, '%22')}")` : '';
             animationEl.innerHTML = bg.showText
                 ? `<div class="animation-placeholder"><div class="placeholder-text">${this._t('select_parcel')}</div></div>`
                 : '';
@@ -1290,14 +1307,16 @@ class HkiParcelsCardEditor extends LitElement {
         const current = carriers[index] || {};
         const isSingle = preset.schema === 'single_entity';
         // Auto-detect account when changing type (use existing user if already set).
-        const detected  = !isSingle ? this._detectUsers(type) : [];
-        const detectedUser = detected.length === 1 ? detected[0] : null;
-        const autoUser  = current.user != null ? current.user : (detectedUser !== null ? detectedUser : '');
-        const templated = !isSingle && detectedUser !== null ? buildTemplatedEntities(autoUser, type) : {};
+        const detected     = !isSingle ? this._detectUsers(type) : [];
+        const detectedEntry = detected.length === 1 ? detected[0] : null;
+        const autoUser     = current.user != null ? current.user : (detectedEntry?.user ?? '');
+        const slugFirst    = detectedEntry?.slugFirst ?? false;
+        const templated    = !isSingle && detectedEntry !== null ? buildTemplatedEntities(autoUser, type, slugFirst) : {};
         carriers[index] = {
             ...current, type,
             name: preset.label, icon: getDefaultIcon(type), color: preset.color, schema: preset.schema,
             user: autoUser,
+            _slugFirst: slugFirst,
             _manualUser: !!current.user,
             entity_incoming:    isSingle ? '' : (templated.entity_incoming    ?? current.entity_incoming    ?? ''),
             entity_delivered:   isSingle ? '' : (templated.entity_delivered   ?? current.entity_delivered   ?? ''),
@@ -1334,13 +1353,16 @@ class HkiParcelsCardEditor extends LitElement {
         const type   = 'postnl_v4';
         const preset = CARRIER_PRESETS[type];
         // Auto-detect user for the default carrier type immediately.
-        const detected = this._detectUsers(type);
-        const autoUser = detected.length === 1 ? detected[0] : null;
-        const templated = autoUser !== null ? buildTemplatedEntities(autoUser, type) : {};
+        const detected  = this._detectUsers(type);
+        const autoEntry = detected.length === 1 ? detected[0] : null;
+        const autoUser  = autoEntry?.user ?? null;
+        const slugFirst = autoEntry?.slugFirst ?? false;
+        const templated = autoUser !== null ? buildTemplatedEntities(autoUser, type, slugFirst) : {};
         const carriers = [...(this._config.carriers || []), {
             type, name: preset.label, icon: getDefaultIcon(type), color: preset.color,
             schema: preset.schema, logo_path: '', van_path: '', banner_path: '',
             user: autoUser ?? '',
+            _slugFirst: slugFirst,
             entity_incoming:  templated.entity_incoming  || '',
             entity_delivered: templated.entity_delivered || '',
             entity_outgoing:  templated.entity_outgoing  || '',
@@ -1376,26 +1398,26 @@ class HkiParcelsCardEditor extends LitElement {
         this._emit();
     }
 
-    // Returns an array of user-slugs detected in hass.states for a carrier type.
-    // e.g. for 'dhl' it matches sensor.*_dhl_incoming_parcels → extracts the prefix.
+    // Returns { user, slugFirst }[] for all detected accounts of a carrier type.
+    // Checks both "sensor.<user>_<slug>_incoming_parcels" and "sensor.<slug>_<user>_<incoming_suffix>".
     _detectUsers(carrierType) {
         if (!this.hass) return [];
         const preset = CARRIER_PRESETS[carrierType];
         if (!preset?.sensor_slug) return [];
         const slug = preset.sensor_slug;
-        // Match "sensor.<user>_<slug>_incoming_parcels" (with prefix) or "sensor.<slug>_incoming_parcels" (no prefix).
-        const patternWithPrefix = new RegExp(`^sensor\\.(.+)_${slug}_incoming_parcels$`);
-        const patternNoPrefix   = new RegExp(`^sensor\\.${slug}_incoming_parcels$`);
-        const users = [];
+        const slugFirstIncoming = preset.slug_first_suffixes?.incoming ?? 'incoming_parcels';
+        const patternUserFirst = new RegExp(`^sensor\\.(.+)_${slug}_incoming_parcels$`);
+        const patternSlugFirst = new RegExp(`^sensor\\.${slug}_(.+)_${slugFirstIncoming}$`);
+        const patternNoPrefix  = new RegExp(`^sensor\\.${slug}_incoming_parcels$`);
+        const seen = new Map(); // user → slugFirst
         for (const entityId of Object.keys(this.hass.states)) {
-            const match = patternWithPrefix.exec(entityId);
-            if (match) {
-                if (!users.includes(match[1])) users.push(match[1]);
-            } else if (patternNoPrefix.test(entityId) && !users.includes('')) {
-                users.push('');
-            }
+            const m1 = patternUserFirst.exec(entityId);
+            if (m1 && !seen.has(m1[1])) { seen.set(m1[1], false); continue; }
+            const m2 = patternSlugFirst.exec(entityId);
+            if (m2 && !seen.has(m2[1])) { seen.set(m2[1], true); continue; }
+            if (patternNoPrefix.test(entityId) && !seen.has('')) { seen.set('', false); }
         }
-        return users;
+        return [...seen.entries()].map(([user, slugFirst]) => ({ user, slugFirst }));
     }
 
     // Sanitizes free-text account input: lowercase, non-alnum → underscore, trim underscores.
@@ -1407,11 +1429,12 @@ class HkiParcelsCardEditor extends LitElement {
         ev.stopPropagation();
         const raw  = ev.target?.value ?? '';
         const user = this._sanitizeUserInput(raw);
-        // Feed sanitized value back into the input so the user sees it live.
+        // Show sanitized result after the user finishes typing (on change/blur).
         if (ev.target && ev.target.value !== user) ev.target.value = user;
         const carriers = [...(this._config.carriers || [])];
         const current  = carriers[index] || {};
-        const templated = buildTemplatedEntities(user, current.type);
+        const slugFirst = current._slugFirst ?? false;
+        const templated = buildTemplatedEntities(user, current.type, slugFirst);
         const supportsLetters = (CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom).supports_letters;
         carriers[index] = {
             ...current, user,
@@ -1428,10 +1451,14 @@ class HkiParcelsCardEditor extends LitElement {
     _carrierUserSelected(index, user) {
         const carriers = [...(this._config.carriers || [])];
         const current  = carriers[index] || {};
-        const templated = buildTemplatedEntities(user, current.type);
+        const detected = this._detectUsers(current.type);
+        const entry    = detected.find(d => d.user === user);
+        const slugFirst = entry?.slugFirst ?? current._slugFirst ?? false;
+        const templated = buildTemplatedEntities(user, current.type, slugFirst);
         const supportsLetters = (CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom).supports_letters;
         carriers[index] = {
             ...current, user,
+            _slugFirst: slugFirst,
             entity_incoming:  templated.entity_incoming  ?? '',
             entity_delivered: templated.entity_delivered ?? '',
             entity_outgoing:  templated.entity_outgoing  ?? '',
@@ -1475,7 +1502,8 @@ class HkiParcelsCardEditor extends LitElement {
             .advanced-toggle.open .adv-chevron { transform: rotate(90deg); }
             .advanced-body { padding: 12px 0 4px 0; }
             .color-default-btn { background: none; border: 1px solid var(--divider-color); border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; color: var(--secondary-text-color); white-space: nowrap; }
-            .color-default-btn:hover { background: var(--secondary-background-color); }
+            .color-default-btn:hover:not(:disabled) { background: var(--secondary-background-color); }
+            .color-default-btn:disabled { opacity: 0.45; cursor: default; }
             .templated-preview { background: var(--card-background-color, white); border: 1px solid var(--divider-color); border-radius: 4px; padding: 8px 12px; margin-bottom: 16px; font-family: monospace; font-size: 11px; color: var(--secondary-text-color); line-height: 1.6; }
             .inline-fields-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
             ha-icon-button.danger { color: var(--error-color, red); }
@@ -1502,28 +1530,291 @@ class HkiParcelsCardEditor extends LitElement {
             .appearance-preview { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--card-background-color, white); border: 1px solid var(--divider-color); border-radius: 8px; flex-shrink: 0; }
             .appearance-field-grow { flex: 1; }
             .appearance-field-grow ha-selector { width: 100%; }
-            .color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+            .color-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
             .color-label { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; }
-            .color-input-wrap { display: flex; align-items: center; gap: 8px; }
-            .color-swatch { width: 40px; height: 32px; border: 1px solid var(--divider-color); border-radius: 4px; cursor: pointer; padding: 2px; background: none; }
-            .color-hex { font-family: monospace; font-size: 13px; color: var(--primary-text-color); }
+            .color-input-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+            .color-swatch { width: 40px; height: 32px; border: 1px solid var(--divider-color); border-radius: 4px; cursor: pointer; padding: 2px; background: none; flex-shrink: 0; }
+            .color-hex-input { font-family: monospace; font-size: 13px; color: var(--primary-text-color); width: 90px; padding: 4px 8px; border: 1px solid var(--divider-color); border-radius: 4px; background: var(--card-background-color, white); box-sizing: border-box; }
+            .color-hex-input:focus { outline: none; border-color: var(--primary-color, #03a9f4); }
 
             /* URL field with preview */
             .url-field { margin-bottom: 8px; }
-            .url-field ha-textfield { width: 100%; margin-bottom: 4px; }
+            .url-input-row { display: flex; gap: 4px; align-items: center; }
+            .url-input-row input { flex: 1; min-width: 0; }
+            .browse-btn { flex-shrink: 0; background: var(--secondary-background-color, #2d2d2d); border: 1px solid var(--divider-color); border-radius: 4px; padding: 0 8px; cursor: pointer; color: var(--primary-text-color); display: flex; align-items: center; height: 38px; gap: 4px; font-size: 12px; white-space: nowrap; }
+            .browse-btn:hover { background: var(--primary-color, #03a9f4); color: white; border-color: var(--primary-color, #03a9f4); }
+            .browse-btn ha-icon { --mdc-icon-size: 16px; }
             .url-preview-wrap { padding: 6px 0 10px; }
             .url-preview { max-height: 56px; max-width: 120px; object-fit: contain; border-radius: 4px; border: 1px solid var(--divider-color); background: white; padding: 4px; display: block; }
             .url-preview-error { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--error-color, red); }
         `;
     }
 
-    // Renders a URL input field with a small live image preview below it.
+    // Opens a custom media browser overlay above all HA dialogs (z-index 100000).
+    // First tries the native HA dialog-media-player-browse (action:'pick') if loaded;
+    // falls back to our own WebSocket-based media browser otherwise.
+    _openImageBrowser(onSelect) {
+        if (!this.hass) return;
+        // --- Try native HA media browser dialog ---
+        const dialogTag = 'dialog-media-player-browse';
+        if (customElements.get(dialogTag)) {
+            const entityId = Object.keys(this.hass.states).find(id => id.startsWith('media_player.'));
+            if (entityId) {
+                const haRoot = document.querySelector('home-assistant');
+                if (haRoot) {
+                    haRoot.dispatchEvent(new CustomEvent('show-dialog', {
+                        bubbles: true,
+                        composed: true,
+                        detail: {
+                            dialogTag,
+                            dialogParams: {
+                                entityId,
+                                action: 'pick',
+                                mediaPickedCallback: (item) => {
+                                    const url = item?.media_content_id || item?.thumbnail;
+                                    if (url) onSelect(url);
+                                },
+                            },
+                        },
+                    }));
+                    return;
+                }
+            }
+        }
+        // --- Fall back to own media browser ---
+        // Use showModal() so our dialog enters the browser top-layer above HA's own dialog.
+        const backdropStyle = document.createElement('style');
+        backdropStyle.textContent = '#hki-media-picker::backdrop{background:rgba(0,0,0,0.65);}';
+        document.head.appendChild(backdropStyle);
+
+        const dlg = document.createElement('dialog');
+        dlg.id = 'hki-media-picker';
+        dlg.style.cssText = 'padding:0;border:none;border-radius:12px;background:transparent;width:520px;max-width:93vw;max-height:82vh;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.6);';
+
+        const close = () => {
+            dlg.close();
+            if (dlg.parentNode) dlg.parentNode.removeChild(dlg);
+            if (backdropStyle.parentNode) backdropStyle.parentNode.removeChild(backdropStyle);
+            blobUrls.forEach(u => URL.revokeObjectURL(u));
+        };
+
+        dlg.addEventListener('cancel', close); // ESC key
+
+        const panel = document.createElement('div');
+        panel.style.cssText = 'background:var(--card-background-color,#1c1c1c);width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;border-radius:12px;';
+
+        // Header
+        const header = document.createElement('div');
+        header.style.cssText = 'display:flex;align-items:center;gap:8px;padding:16px 16px 0;flex-shrink:0;';
+        const breadcrumb = document.createElement('div');
+        breadcrumb.style.cssText = 'flex:1;font-size:15px;font-weight:500;color:var(--primary-text-color,#fff);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+        breadcrumb.textContent = this._t('browse_media');
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '✕';
+        closeBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:20px;color:var(--secondary-text-color,#aaa);line-height:1;padding:4px 6px;flex-shrink:0;';
+        closeBtn.onclick = close;
+        header.appendChild(breadcrumb);
+        header.appendChild(closeBtn);
+
+        // Manual URL input
+        const urlRow = document.createElement('div');
+        urlRow.style.cssText = 'display:flex;gap:8px;padding:12px 16px 0;flex-shrink:0;';
+        const urlInput = document.createElement('input');
+        urlInput.type = 'text';
+        urlInput.placeholder = '/local/afbeelding.png  of  https://...';
+        urlInput.style.cssText = 'flex:1;min-width:0;padding:7px 10px;font-size:13px;border:1px solid var(--divider-color,#444);border-radius:4px;background:var(--secondary-background-color,#2d2d2d);color:var(--primary-text-color,#fff);font-family:inherit;box-sizing:border-box;';
+        const urlOk = document.createElement('button');
+        urlOk.textContent = 'OK';
+        urlOk.style.cssText = 'padding:7px 14px;background:var(--primary-color,#03a9f4);color:white;border:none;border-radius:4px;cursor:pointer;font-weight:500;font-size:13px;';
+        urlOk.onclick = () => { const v = urlInput.value.trim(); if (v) { onSelect(v); close(); } };
+        urlRow.appendChild(urlInput);
+        urlRow.appendChild(urlOk);
+
+        const divLabel = document.createElement('div');
+        divLabel.style.cssText = 'padding:10px 16px 4px;font-size:11px;color:var(--secondary-text-color,#888);text-transform:uppercase;letter-spacing:0.05em;flex-shrink:0;';
+        divLabel.textContent = 'Mediabibliotheek';
+
+        const content = document.createElement('div');
+        content.style.cssText = 'flex:1;overflow-y:auto;padding:0 16px 16px;min-height:80px;';
+
+        panel.appendChild(header);
+        panel.appendChild(urlRow);
+        panel.appendChild(divLabel);
+        panel.appendChild(content);
+        dlg.appendChild(panel);
+        document.body.appendChild(dlg);
+        dlg.showModal();
+
+        const stack = [];
+        const blobUrls = []; // track for cleanup on close
+
+        // Get the HA auth token from any available source.
+        const getToken = () =>
+            this.hass.auth?.data?.access_token
+            || this.hass.connection?.options?.auth?.data?.access_token
+            || JSON.parse(localStorage.getItem('hassTokens') || 'null')?.access_token;
+
+        // Load thumbnail: first try direct (session cookie), then fetch with Bearer token.
+        const loadThumb = (imgEl, url, onFail) => {
+            if (!url) { onFail(); return; }
+            imgEl.src = url;
+            imgEl.onerror = () => {
+                const token = getToken();
+                if (!token) { onFail(); return; }
+                imgEl.onerror = () => onFail();
+                fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+                    .then(r => { if (!r.ok) throw new Error(); return r.blob(); })
+                    .then(blob => {
+                        const bUrl = URL.createObjectURL(blob);
+                        blobUrls.push(bUrl);
+                        imgEl.src = bUrl;
+                    })
+                    .catch(() => onFail());
+            };
+        };
+
+        const MEDIA_EMOJI = { music: '🎵', audio: '🎵', podcast: '🎙', video: '🎬', movie: '🎬', tv_show: '📺', episode: '📺', channel: '📺', app: '📱', url: '🔗', image: '🖼', photo: '🖼' };
+
+        // Convert media-source://media_source/local/path → /local/path (served via HA's static file server)
+        const mediaSourceToLocal = (id) => {
+            if (!id) return null;
+            if (id.startsWith('media-source://media_source/local/')) {
+                return id.slice('media-source://media_source'.length);
+            }
+            return null;
+        };
+
+        const showImageInThumb = (thumb, url) => {
+            const img = document.createElement('img');
+            img.alt = '';
+            img.style.cssText = 'max-width:100%;max-height:72px;object-fit:contain;';
+            const onFail = () => { img.remove(); thumb.textContent = '🖼'; thumb.style.fontSize = '28px'; };
+            thumb.textContent = '';
+            thumb.appendChild(img);
+            loadThumb(img, url, onFail);
+        };
+
+        const renderItems = (items) => {
+            content.innerHTML = '';
+            if (stack.length > 0) {
+                const back = document.createElement('button');
+                back.innerHTML = '&#8592; Terug';
+                back.style.cssText = 'display:inline-flex;align-items:center;gap:4px;margin-bottom:10px;background:none;border:1px solid var(--divider-color,#444);border-radius:4px;padding:4px 10px;cursor:pointer;color:var(--primary-text-color,#fff);font-size:13px;';
+                back.onclick = () => { stack.pop(); browse(stack.length ? stack[stack.length-1].id : 'media-source://media_source/local'); breadcrumb.textContent = stack.length ? stack[stack.length-1].title : this._t('browse_media'); };
+                content.appendChild(back);
+            }
+            if (!items || items.length === 0) {
+                const msg = document.createElement('div');
+                msg.style.cssText = 'text-align:center;padding:32px 0;color:var(--secondary-text-color,#aaa);font-size:13px;font-style:italic;';
+                msg.textContent = 'Geen bestanden gevonden';
+                content.appendChild(msg);
+                return;
+            }
+            const grid = document.createElement('div');
+            grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;';
+            items.forEach(item => {
+                const isFolder = item.can_expand;
+                const isImage = ['image', 'photo'].includes(item.media_class);
+                const cell = document.createElement('div');
+                cell.style.cssText = 'cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;background:var(--secondary-background-color,#2a2a2a);';
+                cell.title = item.title;
+                const thumb = document.createElement('div');
+                thumb.style.cssText = 'width:100%;height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden;';
+                const defaultEmoji = isFolder ? '📁' : (MEDIA_EMOJI[item.media_class] || '📄');
+                thumb.textContent = defaultEmoji;
+                thumb.style.fontSize = '28px';
+
+                if (!isFolder) {
+                    if (item.thumbnail && !item.thumbnail.startsWith('media-source:')) {
+                        // HA provided a usable thumbnail URL — load it with auth support
+                        showImageInThumb(thumb, item.thumbnail);
+                    } else if (isImage && item.media_content_id) {
+                        // Image file: convert media-source://media_source/local/... → /local/...
+                        const localUrl = mediaSourceToLocal(item.media_content_id);
+                        if (localUrl) showImageInThumb(thumb, localUrl);
+                    }
+                }
+
+                const lbl = document.createElement('div');
+                lbl.textContent = item.title;
+                lbl.style.cssText = 'font-size:10px;color:var(--secondary-text-color,#aaa);padding:3px 5px 5px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;';
+                cell.appendChild(thumb);
+                cell.appendChild(lbl);
+                cell.addEventListener('mouseenter', () => cell.style.borderColor = 'var(--primary-color,#03a9f4)');
+                cell.addEventListener('mouseleave', () => cell.style.borderColor = 'transparent');
+                cell.addEventListener('click', () => {
+                    if (isFolder) {
+                        stack.push({ id: item.media_content_id, title: item.title });
+                        breadcrumb.textContent = item.title;
+                        browse(item.media_content_id);
+                    } else {
+                        const id = item.media_content_id;
+                        const thumb = item.thumbnail;
+                        // Never save media-source:// URLs — convert to /local/ path instead
+                        const localUrl = mediaSourceToLocal(id);
+                        const url = (thumb && !thumb.startsWith('media-source:')) ? thumb : (localUrl || id);
+                        onSelect(url);
+                        close();
+                    }
+                });
+                grid.appendChild(cell);
+            });
+            content.appendChild(grid);
+        };
+
+        const browse = async (mediaContentId) => {
+            content.innerHTML = '<div style="text-align:center;padding:32px;color:var(--secondary-text-color,#aaa);font-size:13px;">Laden…</div>';
+            try {
+                if (!this.hass?.callWS) throw new Error('callWS not available');
+                const result = await this.hass.callWS({
+                    type: 'media_source/browse_media',
+                    media_content_id: mediaContentId,
+                });
+                renderItems(result.children || []);
+            } catch (err) {
+                // Fallback: show image.* entities from HA state machine
+                if (!this.hass?.states) {
+                    content.innerHTML = '<div style="text-align:center;padding:32px;color:var(--secondary-text-color,#aaa);font-size:13px;">Geen verbinding met Home Assistant.</div>';
+                    return;
+                }
+                const imageEntities = Object.entries(this.hass.states)
+                    .filter(([id, s]) => id.startsWith('image.') && s.state !== 'unavailable')
+                    .map(([id, s]) => ({
+                        media_content_id: id,
+                        title: s.attributes?.friendly_name || id.replace('image.', ''),
+                        thumbnail: s.attributes?.entity_picture,
+                        can_expand: false,
+                        can_play: true,
+                        media_class: 'image',
+                    }))
+                    .filter(i => i.thumbnail);
+
+                if (imageEntities.length > 0) {
+                    divLabel.textContent = 'Afbeeldingen in Home Assistant';
+                    renderItems(imageEntities);
+                } else {
+                    content.innerHTML = '<div style="text-align:center;padding:32px;color:var(--secondary-text-color,#aaa);font-size:13px;">Geen mediabron beschikbaar — gebruik de URL invoer hierboven.</div>';
+                }
+            }
+        };
+
+        browse('media-source://media_source/local');
+    }
+
+    // Renders a URL input field with browse button and a small live image preview below it.
     _renderUrlField(label, value, placeholder, onChange) {
         return html`
             <div class="url-field">
                 <div class="plain-field" style="margin-bottom:4px;">
                     <label>${label}</label>
-                    <input type="text" .value=${value || ''} placeholder="${placeholder}" @input=${onChange} />
+                    <div class="url-input-row">
+                        <input type="text" .value=${value || ''} placeholder="${placeholder}" @input=${onChange} />
+                        <button class="browse-btn" title="${this._t('browse_media')}"
+                            @click=${() => this._openImageBrowser((val) => onChange({ target: { value: val }, stopPropagation: () => {}, preventDefault: () => {} }))}>
+                            <ha-icon icon="mdi:folder-open"></ha-icon>
+                            ${this._t('browse_media')}
+                        </button>
+                    </div>
                 </div>
                 ${value ? html`
                     <div class="url-preview-wrap">
@@ -1540,12 +1831,37 @@ class HkiParcelsCardEditor extends LitElement {
             </div>`;
     }
 
+    // Renders a color swatch + hex input + always-visible Standaard button.
+    _renderColorPicker(label, currentColor, defaultColor, onChange, onReset) {
+        const isDefault = !currentColor || currentColor === defaultColor;
+        return html`
+            <div class="color-row">
+                <label class="color-label">${label}</label>
+                <div class="color-input-wrap">
+                    <input type="color" class="color-swatch"
+                        .value=${currentColor || defaultColor}
+                        @input=${(ev) => onChange(ev.target.value)} />
+                    <input type="text" class="color-hex-input"
+                        .value=${currentColor || defaultColor}
+                        placeholder="#rrggbb"
+                        @change=${(ev) => {
+                            const v = ev.target.value.trim();
+                            if (/^#[0-9a-fA-F]{6}$/.test(v)) onChange(v);
+                        }} />
+                    <button class="color-default-btn"
+                        ?disabled=${isDefault}
+                        @click=${() => { if (!isDefault) onReset(); }}>
+                        ${this._t('color_default')}
+                    </button>
+                </div>
+            </div>`;
+    }
+
     // Renders the "Advanced: appearance override" section with icon-picker, color swatch and image selectors.
     _renderAppearanceOverride(carrier, index, preset) {
         const assets       = CARRIER_ASSETS[carrier.type] || CARRIER_ASSETS.custom;
         const currentIcon  = carrier.icon  || preset.icon;
         const currentColor = carrier.color || preset.color;
-        const hasCustomColor = !!carrier.color && carrier.color !== preset.color;
         const sectionKey   = `appearance-${index}`;
         const isOpen       = !!this._openSections[sectionKey];
 
@@ -1580,67 +1896,32 @@ class HkiParcelsCardEditor extends LitElement {
                 </div>
 
                 <!-- Color -->
-                <div class="color-row">
-                    <label class="color-label">${this._t('label_color_pick')}</label>
-                    <div class="color-input-wrap">
-                        <input type="color" class="color-swatch"
-                            .value=${currentColor}
-                            @input=${(ev) => {
-                                ev.stopPropagation();
-                                const carriers = [...(this._config.carriers || [])];
-                                carriers[index] = { ...carriers[index], color: ev.target.value };
-                                this._config = { ...this._config, carriers };
-                                this._emit();
-                            }} />
-                        <span class="color-hex">${currentColor}</span>
-                        ${hasCustomColor ? html`
-                            <button class="color-default-btn"
-                                @click=${(ev) => {
-                                    ev.stopPropagation();
-                                    const carriers = [...(this._config.carriers || [])];
-                                    carriers[index] = { ...carriers[index], color: undefined };
-                                    this._config = { ...this._config, carriers };
-                                    this._emit();
-                                }}>${this._t('color_default')}</button>` : html`
-                            <span style="font-size:11px;color:var(--secondary-text-color);">(${this._t('color_default')})</span>`}
-                    </div>
-                </div>
-
-                <!-- Logo (media library + URL) -->
-                <ha-selector .hass=${this.hass}
-                    .selector=${{ image: {} }}
-                    .value=${carrier.logo_path || ''}
-                    .label=${this._t('url_logo')}
-                    style="display:block;margin-bottom:16px;"
-                    @value-changed=${(ev) => {
-                        ev.stopPropagation();
+                ${this._renderColorPicker(
+                    this._t('label_color_pick'),
+                    carrier.color,
+                    preset.color,
+                    (val) => {
                         const carriers = [...(this._config.carriers || [])];
-                        carriers[index] = { ...carriers[index], logo_path: ev.detail.value };
+                        carriers[index] = { ...carriers[index], color: val };
                         this._config = { ...this._config, carriers };
                         this._emit();
-                    }}></ha-selector>
-
-                <!-- Vehicle GIF (URL only — GIFs are not in the media library) -->
-                ${this._renderUrlField(
-                    this._t('url_van'),
-                    carrier.van_path,
-                    assets.van || 'https://...',
-                    (ev) => this._carrierChanged(index, 'van_path', ev)
+                    },
+                    () => {
+                        const carriers = [...(this._config.carriers || [])];
+                        carriers[index] = { ...carriers[index], color: undefined };
+                        this._config = { ...this._config, carriers };
+                        this._emit();
+                    }
                 )}
 
-                <!-- Banner (media library + URL) -->
-                <ha-selector .hass=${this.hass}
-                    .selector=${{ image: {} }}
-                    .value=${carrier.banner_path || ''}
-                    .label=${this._t('url_banner')}
-                    style="display:block;margin-bottom:16px;"
-                    @value-changed=${(ev) => {
-                        ev.stopPropagation();
-                        const carriers = [...(this._config.carriers || [])];
-                        carriers[index] = { ...carriers[index], banner_path: ev.detail.value };
-                        this._config = { ...this._config, carriers };
-                        this._emit();
-                    }}></ha-selector>
+                <!-- Logo -->
+                ${this._renderUrlField(this._t('url_logo'), carrier.logo_path, assets.logo || 'https://...', (ev) => this._carrierChanged(index, 'logo_path', ev))}
+
+                <!-- Vehicle GIF -->
+                ${this._renderUrlField(this._t('url_van'), carrier.van_path, assets.van || 'https://...', (ev) => this._carrierChanged(index, 'van_path', ev))}
+
+                <!-- Banner -->
+                ${this._renderUrlField(this._t('url_banner'), carrier.banner_path, assets.banner || 'https://...', (ev) => this._carrierChanged(index, 'banner_path', ev))}
             </div>` : ''}`;
     }
 
@@ -1664,7 +1945,7 @@ class HkiParcelsCardEditor extends LitElement {
                     <ha-icon icon="mdi:check-circle" class="detected-icon ok"></ha-icon>
                     <div class="detected-info">
                         <div class="detected-label">${this._t('detected_one')}</div>
-                        <div class="detected-value">${(carrier.user != null ? carrier.user : detected[0]) || this._t('no_prefix')}</div>
+                        <div class="detected-value">${(carrier.user != null ? carrier.user : detected[0].user) || this._t('no_prefix')}</div>
                     </div>
                     <button class="detected-override" title="Enter manually"
                         @click=${() => {
@@ -1693,10 +1974,10 @@ class HkiParcelsCardEditor extends LitElement {
                 </div>
                 <ha-selector .hass=${this.hass}
                     .selector=${{ select: {
-                        options: detected.map(u => ({ value: u, label: u })),
+                        options: detected.map(u => ({ value: u.user, label: u.user })),
                         mode: 'dropdown'
                     } }}
-                    .value=${carrier.user || detected[0]}
+                    .value=${carrier.user || detected[0].user}
                     .label=${this._t('label_account')}
                     @value-changed=${(ev) => {
                         ev.stopPropagation();
@@ -1749,7 +2030,7 @@ class HkiParcelsCardEditor extends LitElement {
                 <label for="hki-carrier-user-${index}">${this._t('label_account')}</label>
                 <input id="hki-carrier-user-${index}" type="text" placeholder="e.g. my_account"
                     .value=${carrier.user || ''}
-                    @input=${(ev) => this._carrierUserInputChanged(index, ev)} />
+                    @change=${(ev) => this._carrierUserInputChanged(index, ev)} />
             </div>
             <div class="helper-text">"_${preset.sensor_slug}${this._t('account_help_suffix')}</div>
             ${entityPreview}`;
@@ -1904,48 +2185,26 @@ class HkiParcelsCardEditor extends LitElement {
 
                 <details class="section-details">
                     <summary class="section">${this._t('section_appearance')}</summary>
-                    <div class="inline-fields-2">
-                        <div class="plain-field">
-                            <label>${this._t('label_header_color')}</label>
-                            <div class="color-input-wrap" style="margin-top:4px;">
-                                <input type="color"
-                                    class="color-swatch"
-                                    .value=${this._config.header_color || '#f0f0f0'}
-                                    @input=${(ev) => { this._config = { ...this._config, header_color: ev.target.value }; this._emit(); }} />
-                                <span class="color-hex">${this._config.header_color || ''}</span>
-                                ${this._config.header_color ? html`
-                                    <button class="color-default-btn"
-                                        @click=${() => { this._config = { ...this._config, header_color: '' }; this._emit(); }}>
-                                        ${this._t('color_default')}</button>` : html`
-                                    <span style="font-size:11px;color:var(--secondary-text-color);">(${this._t('color_default')})</span>`}
-                            </div>
-                        </div>
-                        <div class="plain-field">
-                            <label>${this._t('label_header_text')}</label>
-                            <div class="color-input-wrap" style="margin-top:4px;">
-                                <input type="color"
-                                    class="color-swatch"
-                                    .value=${this._config.header_text_color || '#000000'}
-                                    @input=${(ev) => { this._config = { ...this._config, header_text_color: ev.target.value }; this._emit(); }} />
-                                <span class="color-hex">${this._config.header_text_color || ''}</span>
-                                ${this._config.header_text_color ? html`
-                                    <button class="color-default-btn"
-                                        @click=${() => { this._config = { ...this._config, header_text_color: '' }; this._emit(); }}>
-                                        ${this._t('color_default')}</button>` : html`
-                                    <span style="font-size:11px;color:var(--secondary-text-color);">(${this._t('color_default')})</span>`}
-                            </div>
-                        </div>
-                    </div>
-                    <ha-selector .hass=${this.hass}
-                        .selector=${{ image: {} }}
-                        .value=${this._config.placeholder_image || ''}
-                        .label=${this._t('label_placeholder_img')}
-                        style="display:block;margin-bottom:16px;"
-                        @value-changed=${(ev) => {
-                            ev.stopPropagation();
-                            this._config = { ...this._config, placeholder_image: ev.detail.value };
-                            this._emit();
-                        }}></ha-selector>
+                    ${this._renderColorPicker(
+                        this._t('label_header_color'),
+                        this._config.header_color,
+                        '',
+                        (val) => { this._config = { ...this._config, header_color: val }; this._emit(); },
+                        ()    => { this._config = { ...this._config, header_color: '' };  this._emit(); }
+                    )}
+                    ${this._renderColorPicker(
+                        this._t('label_header_text'),
+                        this._config.header_text_color,
+                        '',
+                        (val) => { this._config = { ...this._config, header_text_color: val }; this._emit(); },
+                        ()    => { this._config = { ...this._config, header_text_color: '' };  this._emit(); }
+                    )}
+                    ${this._renderUrlField(
+                        this._t('label_placeholder_img'),
+                        this._config.placeholder_image,
+                        'https://...',
+                        (ev) => { this._config = { ...this._config, placeholder_image: ev.target.value }; this._emit(); }
+                    )}
                 </details>
             </div>`;
     }

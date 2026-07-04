@@ -76,7 +76,14 @@ carriers:
     user: my_account
 ```
 
-The `user` field is the account part of your sensor name (the part before `_postnl_incoming_parcels`). The card builds all sensor names automatically. If your sensors have no user prefix (e.g. `sensor.postnl_incoming_parcels`), leave `user` empty.
+The `user` field is the account part of your sensor name. The card builds all sensor entity IDs automatically and supports both naming schemes used by the supported integrations:
+
+| Scheme | Example |
+| ------ | ------- |
+| `sensor.<user>_<carrier>_*` | PostNL, DHL — `sensor.my_account_postnl_incoming_parcels` |
+| `sensor.<carrier>_<user>_*` | DPD — `sensor.dpd_my_account_binnenkomende_pakketten` |
+
+If your sensors have no user prefix (e.g. `sensor.postnl_incoming_parcels`), leave `user` empty. The correct scheme is detected automatically.
 
 ### Multiple carriers
 
@@ -201,13 +208,14 @@ Both the **Letters** tab and the **Sent** tab show two sections:
 ## Features
 
 - **Multi-carrier** — PostNL, DHL and DPD side by side in one card
-- **Automatic sensor names** — enter only the account part, the rest is built automatically
+- **Automatic sensor names** — enter only the account part; the card builds all entity IDs automatically, supporting both `sensor.<user>_<carrier>_*` and `sensor.<carrier>_<user>_*` naming schemes
+- **Media browser** — browse the HA media library directly from the card editor to select logos, banners and placeholder images
 - **Tabs** — In Transit / Delivered / Sent / Letters
 - **Sent and Letters split into sections** — "Still to be delivered" and "Delivered" shown separately
 - **Parcel details** — click a parcel for tracking number, delivery method and direct tracking link
 - **Letterbox mail** — PostNL letters with scan images from `image.*` entities
 - **Animation** — vehicle animation for the selected parcel
-- **Customisable appearance** — custom logo, GIF, banner and colours per carrier
+- **Customisable appearance** — custom logo, GIF, banner and colours per carrier; colour picker with hex input and one-click reset to default
 - **PHU icons** — automatic carrier icons via [custom-brand-icons](https://github.com/elax46/custom-brand-icons) when installed
 
 ---

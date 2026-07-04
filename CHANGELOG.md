@@ -1,23 +1,29 @@
 # Changelog
 
-## [1.1.5-beta.1] — 2026-07-03
-
-### Changed
-
-- **Carrier label `postnl_v4` vereenvoudigd** — het label "PostNL (peternijssen v4.x)" is gewijzigd naar "PostNL" in zowel de dropdown als de preset-configuratie.
-- **Volgorde carrier dropdown aangepast** — nieuwe volgorde: PostNL · DHL · DPD · PostNL (<v4.x) · PostNL (ArjenBos) · Custom.
+## [1.2.0] — 2026-07-04
 
 ### Added
 
-- **Integratie-link bij niet-gevonden carriers** — wanneer de sensoren voor PostNL (v4.x), DHL of DPD niet gevonden worden in Home Assistant, toont de editor nu een directe link naar de bijbehorende integratierepository in plaats van de account- en sensorvelden. Via het ✎-knopje kan alsnog handmatig worden ingevoerd.
-- **"Standaard" kleurknop bij carrier kleur en header kleuren** — wanneer een kleur is aangepast, verschijnt een "Standaard" knop om de standaardkleur te herstellen. Wanneer de standaardkleur actief is, wordt dit zichtbaar aangegeven.
-- **Placeholder afbeelding via mediabibiliotheek** — het veld voor de placeholder afbeelding (onder Uiterlijk) gebruikt nu de Home Assistant afbeeldingskiezer met bladeren- en uploadknop, net als logo en banner bij de carriers.
+- **Mediabrowser-knop bij URL-velden** — naast elk URL-invoerveld (logo, voertuig GIF, banner, placeholder afbeelding) staat nu een "Bladeren"-knop. Deze opent een eigen mediabrowser-overlay die via de HA WebSocket-API (`media_source/browse_media`) de mediabibliotheek doorzoekbaar maakt. Mappen zijn aanklikbaar; een "Terug"-knop keert terug naar het vorige niveau. Afbeeldingen uit de `www`-map worden via `/local/` ingeladen. Na selectie wordt de URL automatisch ingevuld.
+- **Integratie-link bij niet-gevonden carriers** — wanneer de sensoren voor een carrier niet gevonden worden, toont de editor een directe link naar de bijbehorende integratierepository. Via het ✎-knopje kan alsnog handmatig worden ingevoerd.
+- **"Standaard" kleurknop bij carrier- en headerkleur** — herstelt de standaardkleur per carrier of header. De knop is altijd zichtbaar: actief wanneer een kleur is aangepast, grijs/disabled wanneer de standaard al actief is.
+- **Hex-kleurwaarde direct aanpasbaar** — naast het kleurenpalet staat een bewerkbaar tekstveld met de hex-waarde (`#rrggbb`). Invoer wordt gevalideerd voordat de kleur wordt opgeslagen.
+
+### Changed
+
+- **Carrier label `postnl_v4` vereenvoudigd** — het label "PostNL (peternijssen v4.x)" is gewijzigd naar "PostNL".
+- **Volgorde carrier dropdown aangepast** — nieuwe volgorde: PostNL · DHL · DPD · PostNL (<v4.x) · PostNL (ArjenBos) · Custom.
 
 ### Fixed
 
-- **Geavanceerde sensorvelden blijven zichtbaar na HA-update** — de velden in "Geavanceerd: sensoren handmatig overschrijven" werden onzichtbaar zodra Home Assistant de editor herrenderde (bijv. bij een sensorupdate), omdat de native `<details>`-element zijn open-toestand verloor bij elke Lit-herrender. De open/dicht-toestand wordt nu beheerd door LitElement zelf.
-- **Geavanceerde sensorvelden zijn altijd invulbaar** — de velden gebruiken nu standaard `<input>`-elementen in plaats van `ha-textfield`, wat in sommige HA-omgevingen niet correct renderde.
-- **Uiterlijk-sectie blijft open na aanpassing** — ook de "Geavanceerd: uiterlijk overschrijven" sectie gebruikt nu LitElement-managed open/dicht-toestand.
+- **Dual sensor-naamgeving ondersteund** — de auto-detectie herkent nu zowel `sensor.<carrier>_<user>_*` (DPD-stijl) als `sensor.<user>_<carrier>_*` (PostNL/DHL-stijl). De entiteitvelden worden automatisch gevuld met het juiste patroon.
+- **DPD-sensoren automatisch gevonden** — de DPD-integratie gebruikt Nederlandse sensornamen (`binnenkomende_pakketten`, `bezorgde_pakketten`, `uitgaande_pakketten`). De detectie en entiteitgeneratie gebruiken deze namen voor DPD.
+- **Vrije invoer in het accountveld** — het accountveld accepteert nu vrije invoer (inclusief `.`, `@`, `-`). Sanitisatie naar underscores vindt pas plaats bij verlaten van het veld.
+- **Logo, banner en voertuig GIF-velden altijd zichtbaar** — velden gebruiken nu een gewoon tekstveld met live afbeeldingspreview in plaats van `ha-selector image:{}` dat in de Shadow DOM niet betrouwbaar renderde.
+- **Banner met apostrof in mapnaam wordt correct getoond** — CSS `background-image` gebruikt nu dubbele aanhalingstekens zodat een apostrof in de padnaam (bijv. `Logo's`) de CSS-string niet breekt.
+- **Standaard placeholder bij leeg veld** — wanneer `placeholder_image` niet is ingesteld, wordt automatisch `dutch-parcels.png` uit de repo gebruikt.
+- **Geavanceerde sensorvelden blijven zichtbaar na HA-update** — de open/dicht-toestand van de geavanceerde secties wordt nu beheerd door LitElement in plaats van het native `<details>`-element, zodat de toestand niet verloren gaat bij een herrender.
+- **Geavanceerde sensorvelden altijd invulbaar** — velden gebruiken standaard `<input>`-elementen in plaats van `ha-textfield`.
 
 ---
 

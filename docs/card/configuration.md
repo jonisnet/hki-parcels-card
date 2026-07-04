@@ -31,13 +31,13 @@ Each entry in the `carriers` list supports the following options.
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `type` | string | — | **Required.** Carrier type (see [Carrier Types](#carrier-types)) |
-| `user` | string | `""` | Account part of the sensor name (omit for prefix-free sensors) |
+| `user` | string | `""` | Account part of the sensor name (omit for prefix-free sensors). The card detects the correct naming scheme automatically — both `sensor.<user>_<carrier>_*` (PostNL, DHL) and `sensor.<carrier>_<user>_*` (DPD) are supported. |
 | `name` | string | _(carrier label)_ | Display name for this carrier |
 | `icon` | string | _(carrier icon)_ | Icon for this carrier (`mdi:` or `phu:` prefix) |
 | `color` | string | _(carrier colour)_ | Accent colour for this carrier |
-| `logo_path` | string | _(carrier logo)_ | URL to a custom logo image |
+| `logo_path` | string | _(carrier logo)_ | URL to a custom logo image (use the Browse button in the editor to pick from the media library) |
 | `van_path` | string | _(carrier van GIF)_ | URL to a custom van animation |
-| `banner_path` | string | _(carrier banner)_ | URL to a custom banner image |
+| `banner_path` | string | _(carrier banner)_ | URL to a custom banner image (use the Browse button in the editor to pick from the media library) |
 | `show_tracking_link` | boolean | `true` | Show the "Open Tracking" button in the detail panel |
 
 ### Sensor Overrides

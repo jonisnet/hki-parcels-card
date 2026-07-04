@@ -47,5 +47,7 @@ This card requires at least one parcel-tracking integration to be installed in H
 
 - **Toggle elements** — show/hide header, tabs, animation and placeholder per carrier
 - **Layout reordering** — change the order of header, animation, tabs and list
-- **Visual editor** — full configuration through the Home Assistant UI
+- **Visual editor** — full configuration through the Home Assistant UI; sensor accounts are detected automatically
+- **Media browser** — browse the HA media library from the editor to select logos, banners and placeholder images
+- **Colour picker with hex input** — set custom carrier and header colours with one-click reset to the carrier default
 - **PHU icons** — automatic carrier icons via [custom-brand-icons](https://github.com/elax46/custom-brand-icons) when installed
