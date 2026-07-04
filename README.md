@@ -3,7 +3,7 @@
 [![Version](https://img.shields.io/badge/version-v1.2.0-blue?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/releases/latest)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange?style=flat-square)](https://hacs.xyz)
 [![License](https://img.shields.io/github/license/jonisnet/hki-parcels-card?style=flat-square)](LICENSE)
-[![HA](https://img.shields.io/badge/Home%20Assistant-2023.9%2B-41bdf5?style=flat-square)](https://www.home-assistant.io)
+[![HA](https://img.shields.io/badge/Home%20Assistant-2026.7%2B-41bdf5?style=flat-square)](https://www.home-assistant.io)
 
 **Track parcels from PostNL, DHL and DPD in a single Home Assistant card** — with animated banners, letter scan images, automatic sensor detection and a full visual editor.
 

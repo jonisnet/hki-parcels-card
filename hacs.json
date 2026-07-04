@@ -2,5 +2,5 @@
   "name": "HKI Parcels Card",
   "filename": "hki-parcels-card.js",
   "render_readme": true,
-  "homeassistant": "2023.9.0"
+  "homeassistant": "2026.7.0"
 }
