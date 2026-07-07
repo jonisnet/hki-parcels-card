@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Time/date detail beside the step tracker hero** — registered shows the time it was
+  registered, sorting centre shows the time it arrived there (both need the integration's
+  optional "include history" setting to have data — hidden otherwise), out for delivery shows
+  the expected delivery window ("between 16:00 and 18:00"), and delivered shows the delivery
+  date and time. Sits to the right of the hero illustration.
+
+### Changed
+
+- **DHL logo replaced with the wordmark from the banner** — the previous rounded-badge crop
+  didn't read as authentically "DHL" as the plain red wordmark does; extracted via chroma-key
+  from `DHL_banner.png` onto a transparent background.
+- **Registered/delivered mini icons no longer carry a baked-in checkmark** — only the large hero
+  illustration keeps it (as a permanent "this stage happened" marker); the small step-row icon
+  relies solely on the separate checkmark badge that already appears once a step is done, so a
+  parcel that's merely *at* the registered/delivered step no longer looks complete before it
+  actually is. Sorting/transit icons were unaffected since they never had a baked-in checkmark.
+
 ### Fixed
 
 - **"Onderweg" step icon reverted to the real van artwork** — the hand-drawn vector van from the

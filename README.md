@@ -34,7 +34,7 @@
 - **Four tabs** — In Transit · Delivered · Sent · Letters
 - **Split sections** — both Sent and Letters are split into *Still to be delivered* and *Delivered*
 - **Parcel details** — click any parcel for barcode, delivery type and a direct tracking link
-- **4-step delivery tracker** — selecting a parcel shows a progress row (Registered · In transit · Out for delivery · Delivered) with a carrier-branded illustration for the current step
+- **4-step delivery tracker** — selecting a parcel shows a progress row (Registered · In transit · Out for delivery · Delivered) with a carrier-branded illustration for the current step, plus a time/date detail (registered and sorting-centre times need the integration's optional "include history" setting; the delivery window and delivered timestamp work without it)
 - **Historical tracking** — configure how many days back delivered parcels remain visible
 
 ### 💌 Letterbox mail

@@ -108,6 +108,11 @@ const TRANSLATIONS = {
         step_label_sorting:     'Sorteercentrum',
         step_label_transit:     'Onderweg',
         step_label_delivered:   'Bezorgd',
+        step_info_registered:   'Aangemeld om',
+        step_info_sorting:      'Bij sorteercentrum om',
+        step_info_transit:      'Verwachte levering tussen',
+        step_info_transit_and:  'en',
+        step_info_delivered:    'Bezorgd op',
         parcel_from:            'Pakket van',
         unknown:                'Onbekend',
         mail_from:              'Post van',
@@ -222,6 +227,11 @@ const TRANSLATIONS = {
         step_label_sorting:     'Sorting centre',
         step_label_transit:     'Out for delivery',
         step_label_delivered:   'Delivered',
+        step_info_registered:   'Registered at',
+        step_info_sorting:      'At sorting centre at',
+        step_info_transit:      'Expected delivery between',
+        step_info_transit_and:  'and',
+        step_info_delivered:    'Delivered on',
         parcel_from:            'Parcel from',
         unknown:                'Unknown',
         mail_from:              'Mail from',
@@ -353,10 +363,12 @@ const CARRIER_ASSETS = {
         van:    `${IMG.postnl}/postnl-van.gif?raw=true`,
         banner: `${IMG.postnl}/postnl-banner.jpg?raw=true`,
         steps: {
-            registered: `${IMG.postnl}/postnl_step_registered.png?raw=true`,
-            sorting:    `${IMG.postnl}/postnl_step_sorting.png?raw=true`,
-            transit:    `${IMG.postnl}/postnl_step_transit.png?raw=true`,
-            delivered:  `${IMG.postnl}/postnl_step_delivered.png?raw=true`
+            registered:      `${IMG.postnl}/postnl_step_registered.png?raw=true`,
+            registered_mini: `${IMG.postnl}/postnl_step_registered_mini.png?raw=true`,
+            sorting:         `${IMG.postnl}/postnl_step_sorting.png?raw=true`,
+            transit:         `${IMG.postnl}/postnl_step_transit.png?raw=true`,
+            delivered:       `${IMG.postnl}/postnl_step_delivered.png?raw=true`,
+            delivered_mini:  `${IMG.postnl}/postnl_step_delivered_mini.png?raw=true`
         }
     },
     postnl: {
@@ -369,10 +381,12 @@ const CARRIER_ASSETS = {
         van:    `${IMG.dhl}/DHL_van.gif?raw=true`,
         banner: `${IMG.dhl}/DHL_banner.png?raw=true`,
         steps: {
-            registered: `${IMG.dhl}/DHL_step_registered.png?raw=true`,
-            sorting:    `${IMG.dhl}/DHL_step_sorting.png?raw=true`,
-            transit:    `${IMG.dhl}/DHL_step_transit.png?raw=true`,
-            delivered:  `${IMG.dhl}/DHL_step_delivered.png?raw=true`
+            registered:      `${IMG.dhl}/DHL_step_registered.png?raw=true`,
+            registered_mini: `${IMG.dhl}/DHL_step_registered_mini.png?raw=true`,
+            sorting:         `${IMG.dhl}/DHL_step_sorting.png?raw=true`,
+            transit:         `${IMG.dhl}/DHL_step_transit.png?raw=true`,
+            delivered:       `${IMG.dhl}/DHL_step_delivered.png?raw=true`,
+            delivered_mini:  `${IMG.dhl}/DHL_step_delivered_mini.png?raw=true`
         }
     },
     dpd: {
@@ -380,10 +394,12 @@ const CARRIER_ASSETS = {
         van:    `${IMG.dpd}/DPD_van.gif?raw=true`,
         banner: `${IMG.dpd}/DPD_banner.png?raw=true`,
         steps: {
-            registered: `${IMG.dpd}/DPD_step_registered.png?raw=true`,
-            sorting:    `${IMG.dpd}/DPD_step_sorting.png?raw=true`,
-            transit:    `${IMG.dpd}/DPD_step_transit.png?raw=true`,
-            delivered:  `${IMG.dpd}/DPD_step_delivered.png?raw=true`
+            registered:      `${IMG.dpd}/DPD_step_registered.png?raw=true`,
+            registered_mini: `${IMG.dpd}/DPD_step_registered_mini.png?raw=true`,
+            sorting:         `${IMG.dpd}/DPD_step_sorting.png?raw=true`,
+            transit:         `${IMG.dpd}/DPD_step_transit.png?raw=true`,
+            delivered:       `${IMG.dpd}/DPD_step_delivered.png?raw=true`,
+            delivered_mini:  `${IMG.dpd}/DPD_step_delivered_mini.png?raw=true`
         }
     },
     gls: {
@@ -391,10 +407,12 @@ const CARRIER_ASSETS = {
         van:    `${IMG.gls}/GLS_van.gif?raw=true`,
         banner: `${IMG.gls}/GLS_banner.png?raw=true`,
         steps: {
-            registered: `${IMG.gls}/GLS_step_registered.png?raw=true`,
-            sorting:    `${IMG.gls}/GLS_step_sorting.png?raw=true`,
-            transit:    `${IMG.gls}/GLS_step_transit.png?raw=true`,
-            delivered:  `${IMG.gls}/GLS_step_delivered.png?raw=true`
+            registered:      `${IMG.gls}/GLS_step_registered.png?raw=true`,
+            registered_mini: `${IMG.gls}/GLS_step_registered_mini.png?raw=true`,
+            sorting:         `${IMG.gls}/GLS_step_sorting.png?raw=true`,
+            transit:         `${IMG.gls}/GLS_step_transit.png?raw=true`,
+            delivered:       `${IMG.gls}/GLS_step_delivered.png?raw=true`,
+            delivered_mini:  `${IMG.gls}/GLS_step_delivered_mini.png?raw=true`
         }
     },
     postnl_legacy: {
@@ -1032,6 +1050,7 @@ class HkiParcelsCard extends HTMLElement {
     _renderStatusTracker(selected, stepIndex) {
         const color = selected.carrier_color || DEFAULT_CARRIER_COLOR;
         const stepKeys = ['registered', 'sorting', 'transit', 'delivered'];
+        const stepMiniKeys = ['registered_mini', 'sorting', 'transit', 'delivered_mini'];
         const stepLabelKeys = ['step_label_registered', 'step_label_sorting', 'step_label_transit', 'step_label_delivered'];
         const steps = selected.carrier_steps || {};
         const isFinalStep = stepIndex === STATUS_STEP_ORDER.length;
@@ -1041,7 +1060,9 @@ class HkiParcelsCard extends HTMLElement {
             // treatment too, not just the "current" ring — there's no step after it to await.
             const state = n < stepIndex || (n === stepIndex && isFinalStep) ? 'done' : n === stepIndex ? 'current' : 'upcoming';
             const colorVar = state !== 'upcoming' ? ` style="--step-color:${color};"` : '';
-            const icon = steps[stepKeys[i]];
+            // Mini icons never carry a baked-in checkmark (registered/delivered have a plain
+            // variant) — completion is shown only via the overlay badge below, never both.
+            const icon = steps[stepMiniKeys[i]] || steps[stepKeys[i]];
             const label = this._t(stepLabelKeys[i]);
             const col = `
                 <div class="status-step-col">
@@ -1056,9 +1077,9 @@ class HkiParcelsCard extends HTMLElement {
             return `${col}<div class="status-step-line ${lineDone ? 'done' : ''}"${lineDone ? ` style="--step-color:${color};"` : ''}></div>`;
         }).join('');
 
-        let heroHtml;
+        let heroImgHtml;
         if (stepIndex === 3) {
-            heroHtml = `
+            heroImgHtml = `
                 <div class="visual-road">
                     <div class="house-bg">🏠</div>
                     <div class="road-line"></div>
@@ -1068,9 +1089,16 @@ class HkiParcelsCard extends HTMLElement {
                 </div>`;
         } else {
             const key = stepIndex === 1 ? 'registered' : stepIndex === 2 ? 'sorting' : 'delivered';
-            const img = selected.carrier_steps?.[key];
-            heroHtml = img ? `<div class="status-hero"><img class="status-hero-img" src="${img}" alt="" /></div>` : '';
+            const img = steps[key];
+            heroImgHtml = img ? `<div class="status-hero"><img class="status-hero-img" src="${img}" alt="" /></div>` : '';
         }
+
+        const infoText = this._stepHeroInfo(selected, stepIndex);
+        const heroHtml = heroImgHtml ? `
+            <div class="status-hero-row">
+                ${heroImgHtml}
+                ${infoText ? `<div class="status-hero-info">${infoText}</div>` : ''}
+            </div>` : '';
 
         return `
             <div class="status-tracker">
@@ -1078,6 +1106,43 @@ class HkiParcelsCard extends HTMLElement {
                 ${heroHtml}
             </div>
             <div class="animation-info"><strong>${selected.name}</strong> • ${selected.status_message || ''} • ${selected.carrier_name || ''}</div>`;
+    }
+
+    // Time/date detail shown beside the hero image for the current step. Registered/sorting
+    // times come from the optional per-parcel `history` array (only populated when the
+    // integration's "include history" option is on); transit uses the planned delivery window;
+    // delivered uses delivered_at. Returns '' when the relevant data isn't available rather than
+    // showing a placeholder.
+    _stepHeroInfo(selected, stepIndex) {
+        const historyTime = (status) => {
+            const entry = Array.isArray(selected.history) ? selected.history.find(h => h?.status === status) : null;
+            return entry?.timestamp ? this._formatTime(entry.timestamp) : null;
+        };
+        if (stepIndex === 1) {
+            const time = historyTime('registered');
+            return time ? `${this._t('step_info_registered')} ${time}` : '';
+        }
+        if (stepIndex === 2) {
+            const time = historyTime('in_transit');
+            return time ? `${this._t('step_info_sorting')} ${time}` : '';
+        }
+        if (stepIndex === 3) {
+            const from = this._formatTime(selected.planned_from);
+            const to = this._formatTime(selected.planned_to);
+            if (from && to) return `${this._t('step_info_transit')} ${from} ${this._t('step_info_transit_and')} ${to}`;
+            if (from) return `${this._t('step_info_transit')} ${from}`;
+            return '';
+        }
+        if (stepIndex === 4) {
+            const dt = this.formatDate(selected.delivered_at);
+            return dt ? `${this._t('step_info_delivered')} ${dt}` : '';
+        }
+        return '';
+    }
+
+    _formatTime(dateStr) {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleTimeString(this._hass?.language || 'en', { hour: '2-digit', minute: '2-digit' });
     }
 
     updateAnimation(displayed) {
@@ -1320,8 +1385,10 @@ class HkiParcelsCard extends HTMLElement {
             .status-step-label.active { color: var(--primary-text-color); font-weight: 600; }
             .status-step-line { flex: 1 1 auto; height: 2px; background: var(--divider-color); margin-top: 35px; }
             .status-step-line.done { background: var(--step-color); }
-            .status-hero { display: flex; align-items: center; justify-content: center; height: 118px; }
+            .status-hero-row { display: flex; align-items: center; gap: 16px; width: 100%; box-sizing: border-box; }
+            .status-hero { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; height: 118px; }
             .status-hero-img { max-height: 100%; max-width: 100%; object-fit: contain; }
+            .status-hero-info { flex: 0 1 42%; font-size: 12px; line-height: 1.4; color: var(--secondary-text-color); text-align: left; }
             .combo-logo-row { display: flex; width: 100%; height: 100%; }
             .combo-panel { flex: 1 1 0; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
             .combo-panel:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 24%; bottom: 24%; width: 1px; background: var(--divider-color); opacity: 0.7; }
@@ -1330,7 +1397,7 @@ class HkiParcelsCard extends HTMLElement {
             .combo-panel:hover .combo-logo { transform: scale(1.06); }
             .combo-logo-chip { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; position: relative; z-index: 1; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
             .combo-logo-chip ha-icon { --mdc-icon-size: 22px; }
-            .visual-road { position: relative; width: 100%; height: 80px; display: flex; align-items: center; box-sizing: border-box; }
+            .visual-road { position: relative; flex: 1 1 auto; min-width: 0; height: 80px; display: flex; align-items: center; box-sizing: border-box; }
             .house-bg { position: absolute; right: 0; font-size: 32px; }
             .road-line { position: absolute; left: 0; right: 40px; height: 2px; background: var(--divider-color); top: 50%; }
             .carrier-chip { position: absolute; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; top: 50%; transform: translateY(-50%); transition: left 0.4s ease; }
