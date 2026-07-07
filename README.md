@@ -53,7 +53,7 @@
 
 ### ✨ Appearance
 
-- **Carrier banners** — animated banner shown when no parcel is selected; falls back to a placeholder image
+- **Carrier banners** — animated banner shown when no parcel is selected. With one carrier configured, that carrier's own banner/logo is shown. With two or more, the card automatically builds a combo banner from the logos of *only the carriers you've actually configured* — add GLS and it appears; leave out DPD and it doesn't. Set `placeholder_image` to override this with your own picture.
 - **Custom branding** — set a custom logo, van animation and banner per carrier
 - **PHU icons** — carrier icons via [custom-brand-icons](https://github.com/elax46/custom-brand-icons) activate automatically when installed
 - **Layout control** — reorder the header, animation, tabs and list sections
@@ -157,7 +157,7 @@ carriers:
 | `show_placeholder` | boolean | `true` | Show the background image when no parcel is selected |
 | `header_color` | string | _(theme)_ | Header background colour |
 | `header_text_color` | string | _(theme)_ | Header text colour |
-| `placeholder_image` | string | _(built-in)_ | URL to a custom background image |
+| `placeholder_image` | string | _(built-in)_ | URL to a custom background image. Overrides the automatic combo banner (see [Carrier banners](#-appearance)) — set to a fixed picture if you'd rather always show the same image than the auto-built combo banner |
 | `layout_order` | list | `[header, animation, tabs, list]` | Order of card sections |
 | `carriers` | list | — | **Required.** List of carrier configurations |
 

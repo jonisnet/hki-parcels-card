@@ -1,5 +1,26 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Dynamic combo banner** — the no-selection banner shown for 2+ carriers is no longer a single
+  static image with every possible carrier on it. It's now built automatically from the logos of
+  only the carriers you've actually configured (e.g. PostNL + GLS shows just those two), using
+  each carrier's own logo asset. A user-supplied `placeholder_image` still overrides this.
+- **GLS banner asset** — `images/GLS_banner.png`, the official GLS wordmark (sourced from
+  [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:GLS_Logo_2021.svg)) on a white
+  background, used as the single-carrier banner for `gls`.
+- **`images/dutch-parcels-2.png`** — an updated 4-carrier (PostNL/DHL/DPD/GLS) static banner,
+  replacing `dutch-parcels.png` as the built-in `DEFAULT_PLACEHOLDER_IMAGE` fallback (used when
+  0 carriers are configured, or a single carrier with no logo asset). Also settable as a fixed
+  `placeholder_image` for anyone who prefers it over the dynamic combo banner.
+
+### Fixed
+
+- **GLS accent colour corrected** — `#10218c` (estimate) → `#061ab1`, the exact GLS brand blue,
+  confirmed against both the official Wikimedia logo and GLS's own brand assets.
+
 ## [1.3.0] — 2026-07-07
 
 ### Added

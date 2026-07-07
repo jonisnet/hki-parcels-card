@@ -73,7 +73,7 @@ console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; backgroun
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
 const DEFAULT_CARRIER_COLOR = '#ed8c00';
-const DEFAULT_PLACEHOLDER_IMAGE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/dutch-parcels.png?raw=true';
+const DEFAULT_PLACEHOLDER_IMAGE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/dutch-parcels-2.png?raw=true';
 
 function hasPhuIcons() {
     return !!(window.customIconsets && window.customIconsets['phu']);
@@ -352,7 +352,7 @@ const CARRIER_ASSETS = {
     gls: {
         logo:   `${REPO_BASE}/GLS_logo.png?raw=true`,
         van:    null,
-        banner: null
+        banner: `${REPO_BASE}/GLS_banner.png?raw=true`
     },
     postnl_legacy: {
         logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
@@ -368,7 +368,7 @@ const CARRIER_PRESETS = {
     dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl'    },
     dpd:          { label: 'DPD',                        icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd',
                     slug_first_suffixes: { incoming: 'binnenkomende_pakketten', delivered: 'bezorgde_pakketten', outgoing: 'uitgaande_pakketten', outgoing_delivered: null, letters: null } },
-    gls:          { label: 'GLS',                        icon: 'mdi:package-variant-closed', color: '#10218c', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'gls'    },
+    gls:          { label: 'GLS',                        icon: 'mdi:package-variant-closed', color: '#061ab1', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'gls'    },
     postnl_legacy:{ label: 'PostNL (arjenbos)',          icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null     },
     custom:       { label: 'Custom',                     icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: false, sensor_slug: null     }
 };
@@ -871,15 +871,36 @@ class HkiParcelsCard extends HTMLElement {
     }
 
     _getNoSelectionBackground() {
-        const DEFAULT_PLACEHOLDER = `${REPO_BASE}/dutch-parcels.png?raw=true`;
         const carriers = this.config.carriers || [];
-        const placeholderImage = this.config.placeholder_image || DEFAULT_PLACEHOLDER;
-        if (carriers.length >= 2) return { image: placeholderImage, showText: false };
+        // setConfig() always fills placeholder_image with DEFAULT_PLACEHOLDER_IMAGE when the
+        // user leaves it blank, so a plain truthiness check can't tell "default" from "custom".
+        const hasCustomPlaceholder = !!this.config.placeholder_image
+            && this.config.placeholder_image !== DEFAULT_PLACEHOLDER_IMAGE;
+        const placeholderImage = this.config.placeholder_image || DEFAULT_PLACEHOLDER_IMAGE;
+
         if (carriers.length === 1) {
             const b = this._carrierBranding(carriers[0]);
             const image = b.carrier_banner || b.carrier_logo;
             if (image) return { image, showText: false };
+            return { image: placeholderImage, showText: false };
         }
+
+        // 2+ carriers: build a combo banner showing only the configured carriers'
+        // own logos, instead of a static image with every possible carrier on it.
+        // A user-supplied placeholder_image always wins over this.
+        if (carriers.length >= 2 && !hasCustomPlaceholder) {
+            const seen = new Set();
+            const combo = [];
+            for (const c of carriers) {
+                const b = this._carrierBranding(c);
+                const key = b.carrier_logo || `${c.type}:${b.carrier_name}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                combo.push(b);
+            }
+            if (combo.length) return { image: null, showText: false, comboLogos: combo };
+        }
+
         return { image: placeholderImage, showText: false };
     }
 
@@ -957,6 +978,7 @@ class HkiParcelsCard extends HTMLElement {
             : null;
 
         animationEl.style.backgroundImage = '';
+        animationEl.classList.remove('combo-placeholder');
 
         if (this.config.show_animation && selected?.delivered) {
             const isLetter = !!selected.is_letter;
@@ -998,6 +1020,14 @@ class HkiParcelsCard extends HTMLElement {
                 return;
             }
             const bg = this._getNoSelectionBackground();
+            if (bg.comboLogos) {
+                animationEl.classList.add('combo-placeholder');
+                animationEl.innerHTML = `<div class="combo-logo-row">${bg.comboLogos.map(c => c.carrier_logo
+                    ? `<img class="combo-logo" src="${c.carrier_logo}" alt="${c.carrier_name || ''}" title="${c.carrier_name || ''}" />`
+                    : `<div class="combo-logo combo-logo-chip" style="background:${c.carrier_color || DEFAULT_CARRIER_COLOR};" title="${c.carrier_name || ''}"><ha-icon icon="${c.carrier_icon || DEFAULT_CARRIER_ICON}"></ha-icon></div>`
+                ).join('')}</div>`;
+                return;
+            }
             animationEl.style.backgroundImage = bg.image ? `url("${bg.image.replace(/"/g, '%22')}")` : '';
             animationEl.innerHTML = bg.showText
                 ? `<div class="animation-placeholder"><div class="placeholder-text">${this._t('select_parcel')}</div></div>`
@@ -1146,6 +1176,11 @@ class HkiParcelsCard extends HTMLElement {
             .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--accent); }
             .header-animation { background-size: cover; background-position: center; background-repeat: no-repeat; padding: 16px; border-bottom: 1px solid var(--divider-color); height: 150px; box-sizing: border-box; }
             .header-animation.animation-active { background-image: none !important; background-color: var(--card-background-color); }
+            .header-animation.combo-placeholder { background-image: none !important; background-color: var(--card-background-color); display: flex; }
+            .combo-logo-row { display: flex; align-items: center; justify-content: center; gap: 28px; flex-wrap: wrap; width: 100%; }
+            .combo-logo { max-height: 56px; max-width: 130px; object-fit: contain; }
+            .combo-logo-chip { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+            .combo-logo-chip ha-icon { --mdc-icon-size: 24px; }
             .visual-road { position: relative; height: 80px; display: flex; align-items: center; }
             .house-bg { position: absolute; right: 0; font-size: 32px; }
             .road-line { position: absolute; left: 0; right: 40px; height: 2px; background: var(--divider-color); top: 50%; }
