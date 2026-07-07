@@ -104,6 +104,10 @@ const TRANSLATIONS = {
         status_returning:       'Retour naar verzender',
         status_problem:         'Probleem',
         status_unknown:         'Onbekend',
+        step_label_registered:  'Aangemeld',
+        step_label_sorting:     'Sorteercentrum',
+        step_label_transit:     'Onderweg',
+        step_label_delivered:   'Bezorgd',
         parcel_from:            'Pakket van',
         unknown:                'Onbekend',
         mail_from:              'Post van',
@@ -214,6 +218,10 @@ const TRANSLATIONS = {
         status_returning:       'Returning to Sender',
         status_problem:         'Problem',
         status_unknown:         'Unknown',
+        step_label_registered:  'Registered',
+        step_label_sorting:     'Sorting centre',
+        step_label_transit:     'Out for delivery',
+        step_label_delivered:   'Delivered',
         parcel_from:            'Parcel from',
         unknown:                'Unknown',
         mail_from:              'Mail from',
@@ -347,6 +355,7 @@ const CARRIER_ASSETS = {
         steps: {
             registered: `${IMG.postnl}/postnl_step_registered.png?raw=true`,
             sorting:    `${IMG.postnl}/postnl_step_sorting.png?raw=true`,
+            transit:    `${IMG.postnl}/postnl_step_transit.png?raw=true`,
             delivered:  `${IMG.postnl}/postnl_step_delivered.png?raw=true`
         }
     },
@@ -362,6 +371,7 @@ const CARRIER_ASSETS = {
         steps: {
             registered: `${IMG.dhl}/DHL_step_registered.png?raw=true`,
             sorting:    `${IMG.dhl}/DHL_step_sorting.png?raw=true`,
+            transit:    `${IMG.dhl}/DHL_step_transit.png?raw=true`,
             delivered:  `${IMG.dhl}/DHL_step_delivered.png?raw=true`
         }
     },
@@ -372,6 +382,7 @@ const CARRIER_ASSETS = {
         steps: {
             registered: `${IMG.dpd}/DPD_step_registered.png?raw=true`,
             sorting:    `${IMG.dpd}/DPD_step_sorting.png?raw=true`,
+            transit:    `${IMG.dpd}/DPD_step_transit.png?raw=true`,
             delivered:  `${IMG.dpd}/DPD_step_delivered.png?raw=true`
         }
     },
@@ -382,6 +393,7 @@ const CARRIER_ASSETS = {
         steps: {
             registered: `${IMG.gls}/GLS_step_registered.png?raw=true`,
             sorting:    `${IMG.gls}/GLS_step_sorting.png?raw=true`,
+            transit:    `${IMG.gls}/GLS_step_transit.png?raw=true`,
             delivered:  `${IMG.gls}/GLS_step_delivered.png?raw=true`
         }
     },
@@ -1019,15 +1031,29 @@ class HkiParcelsCard extends HTMLElement {
     // out_for_delivery (stepIndex 3), since that's already exactly what "onderweg met bezorger" is.
     _renderStatusTracker(selected, stepIndex) {
         const color = selected.carrier_color || DEFAULT_CARRIER_COLOR;
-        const stepIcons = ['mdi:file-document-check-outline', 'mdi:package-variant-closed', 'mdi:truck-fast-outline', 'mdi:home-check-outline'];
+        const stepKeys = ['registered', 'sorting', 'transit', 'delivered'];
+        const stepLabelKeys = ['step_label_registered', 'step_label_sorting', 'step_label_transit', 'step_label_delivered'];
+        const steps = selected.carrier_steps || {};
+        const isFinalStep = stepIndex === STATUS_STEP_ORDER.length;
         const dots = STATUS_STEP_ORDER.map((_, i) => {
             const n = i + 1;
-            const state = n < stepIndex ? 'done' : n === stepIndex ? 'current' : 'upcoming';
+            // Reaching the last step (delivered) IS completion, so it gets the done/checkmark
+            // treatment too, not just the "current" ring — there's no step after it to await.
+            const state = n < stepIndex || (n === stepIndex && isFinalStep) ? 'done' : n === stepIndex ? 'current' : 'upcoming';
             const colorVar = state !== 'upcoming' ? ` style="--step-color:${color};"` : '';
-            const step = `<div class="status-step ${state}"${colorVar}><ha-icon icon="${state === 'done' ? 'mdi:check' : stepIcons[i]}"></ha-icon></div>`;
-            if (n === STATUS_STEP_ORDER.length) return step;
+            const icon = steps[stepKeys[i]];
+            const label = this._t(stepLabelKeys[i]);
+            const col = `
+                <div class="status-step-col">
+                    <div class="status-step-icon-wrap ${state}">
+                        ${icon ? `<img class="status-step-icon" src="${icon}" alt="${label}" />` : ''}
+                        ${state === 'done' ? `<div class="status-step-check"${colorVar}><ha-icon icon="mdi:check"></ha-icon></div>` : ''}
+                    </div>
+                    <div class="status-step-label ${state !== 'upcoming' ? 'active' : ''}">${label}</div>
+                </div>`;
+            if (n === STATUS_STEP_ORDER.length) return col;
             const lineDone = n < stepIndex;
-            return `${step}<div class="status-step-line ${lineDone ? 'done' : ''}"${lineDone ? ` style="--step-color:${color};"` : ''}></div>`;
+            return `${col}<div class="status-step-line ${lineDone ? 'done' : ''}"${lineDone ? ` style="--step-color:${color};"` : ''}></div>`;
         }).join('');
 
         let heroHtml;
@@ -1283,14 +1309,18 @@ class HkiParcelsCard extends HTMLElement {
             .header-animation.combo-placeholder { background-image: none !important; background-color: var(--card-background-color); display: flex; padding: 0 !important; }
             .header-animation.status-tracker-active { height: auto; min-height: 150px; padding-top: 12px; padding-bottom: 10px; }
             .status-tracker { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-            .status-steps { display: flex; align-items: center; width: 100%; max-width: 260px; margin: 0 auto; }
-            .status-step { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: var(--secondary-background-color, #eee); color: var(--secondary-text-color); border: 2px solid var(--divider-color); }
-            .status-step ha-icon { --mdc-icon-size: 15px; }
-            .status-step.current { background: var(--step-color); border-color: var(--step-color); color: #fff; box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
-            .status-step.done { background: var(--step-color); border-color: var(--step-color); color: #fff; }
-            .status-step-line { flex: 1; height: 2px; background: var(--divider-color); }
+            .status-steps { display: flex; align-items: flex-start; width: 100%; max-width: 360px; margin: 0 auto; }
+            .status-step-col { display: flex; flex-direction: column; align-items: center; flex: 0 0 auto; width: 56px; }
+            .status-step-icon-wrap { position: relative; width: 40px; height: 40px; border-radius: 10px; box-sizing: border-box; background: var(--secondary-background-color, #eee); display: flex; align-items: center; justify-content: center; opacity: 0.5; filter: grayscale(70%); transition: opacity 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease; }
+            .status-step-icon-wrap.current, .status-step-icon-wrap.done { opacity: 1; filter: none; box-shadow: 0 0 0 2px var(--step-color); }
+            .status-step-icon { width: 100%; height: 100%; object-fit: contain; padding: 4px; box-sizing: border-box; }
+            .status-step-check { position: absolute; bottom: -5px; right: -5px; width: 17px; height: 17px; border-radius: 50%; background: var(--step-color); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--card-background-color, #fff); }
+            .status-step-check ha-icon { --mdc-icon-size: 11px; color: #fff; }
+            .status-step-label { margin-top: 5px; font-size: 9.5px; line-height: 1.15; text-align: center; color: var(--secondary-text-color); }
+            .status-step-label.active { color: var(--primary-text-color); font-weight: 600; }
+            .status-step-line { flex: 1 1 auto; height: 2px; background: var(--divider-color); margin-top: 19px; }
             .status-step-line.done { background: var(--step-color); }
-            .status-hero { display: flex; align-items: center; justify-content: center; height: 78px; }
+            .status-hero { display: flex; align-items: center; justify-content: center; height: 74px; }
             .status-hero-img { max-height: 100%; max-width: 100%; object-fit: contain; }
             .combo-logo-row { display: flex; width: 100%; height: 100%; }
             .combo-panel { flex: 1 1 0; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
