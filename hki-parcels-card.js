@@ -1330,7 +1330,7 @@ class HkiParcelsCard extends HTMLElement {
             .combo-panel:hover .combo-logo { transform: scale(1.06); }
             .combo-logo-chip { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; position: relative; z-index: 1; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
             .combo-logo-chip ha-icon { --mdc-icon-size: 22px; }
-            .visual-road { position: relative; height: 80px; display: flex; align-items: center; }
+            .visual-road { position: relative; width: 100%; height: 80px; display: flex; align-items: center; box-sizing: border-box; }
             .house-bg { position: absolute; right: 0; font-size: 32px; }
             .road-line { position: absolute; left: 0; right: 40px; height: 2px; background: var(--divider-color); top: 50%; }
             .carrier-chip { position: absolute; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; top: 50%; transform: translateY(-50%); transition: left 0.4s ease; }

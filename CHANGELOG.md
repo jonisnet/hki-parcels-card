@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **"Out for delivery" hero showed the house next to the van instead of across the card** —
+  `.visual-road` lost its full width once it moved inside the step tracker's flex column
+  (`align-items: center` shrinks flex children to their content width instead of stretching
+  them), so `right: 0` (house) and `left: 25%` (van) were both resolving against a near-zero-width
+  box. Restored with `width: 100%` — the van is back on the left, driving toward the house on the
+  right, across the full card.
+- **"Onderweg" step icon replaced** — the hand-drawn placeholder truck is gone; the step icon is
+  now a cropped still frame from each carrier's own van animation, so it actually matches the
+  large "out for delivery" illustration instead of looking like a different, lower-quality van.
+
 ### Changed
 
 - **Image assets reorganised into per-carrier folders** — `images/postnl/`, `images/dhl/`,
