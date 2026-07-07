@@ -334,7 +334,12 @@ const CARRIER_ASSETS = {
     postnl_v4: {
         logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
         van:    `${REPO_BASE}/postnl-van.gif?raw=true`,
-        banner: `${REPO_BASE}/postnl-banner.jpg?raw=true`
+        banner: `${REPO_BASE}/postnl-banner.jpg?raw=true`,
+        steps: {
+            registered: `${REPO_BASE}/postnl_step_registered.png?raw=true`,
+            sorting:    `${REPO_BASE}/postnl_step_sorting.png?raw=true`,
+            delivered:  `${REPO_BASE}/postnl_step_delivered.png?raw=true`
+        }
     },
     postnl: {
         logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
@@ -344,17 +349,32 @@ const CARRIER_ASSETS = {
     dhl: {
         logo:   `${REPO_BASE}/DHL_logo.png?raw=true`,
         van:    `${REPO_BASE}/DHL_van.gif?raw=true`,
-        banner: `${REPO_BASE}/DHL_banner.png?raw=true`
+        banner: `${REPO_BASE}/DHL_banner.png?raw=true`,
+        steps: {
+            registered: `${REPO_BASE}/DHL_step_registered.png?raw=true`,
+            sorting:    `${REPO_BASE}/DHL_step_sorting.png?raw=true`,
+            delivered:  `${REPO_BASE}/DHL_step_delivered.png?raw=true`
+        }
     },
     dpd: {
         logo:   `${REPO_BASE}/DPD_logo.png?raw=true`,
         van:    `${REPO_BASE}/DPD_van.gif?raw=true`,
-        banner: `${REPO_BASE}/DPD_banner.png?raw=true`
+        banner: `${REPO_BASE}/DPD_banner.png?raw=true`,
+        steps: {
+            registered: `${REPO_BASE}/DPD_step_registered.png?raw=true`,
+            sorting:    `${REPO_BASE}/DPD_step_sorting.png?raw=true`,
+            delivered:  `${REPO_BASE}/DPD_step_delivered.png?raw=true`
+        }
     },
     gls: {
         logo:   `${REPO_BASE}/GLS_logo.png?raw=true`,
         van:    `${REPO_BASE}/GLS_van.gif?raw=true`,
-        banner: `${REPO_BASE}/GLS_banner.png?raw=true`
+        banner: `${REPO_BASE}/GLS_banner.png?raw=true`,
+        steps: {
+            registered: `${REPO_BASE}/GLS_step_registered.png?raw=true`,
+            sorting:    `${REPO_BASE}/GLS_step_sorting.png?raw=true`,
+            delivered:  `${REPO_BASE}/GLS_step_delivered.png?raw=true`
+        }
     },
     postnl_legacy: {
         logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
@@ -363,6 +383,11 @@ const CARRIER_ASSETS = {
     },
     custom: { logo: null, van: null, banner: null }
 };
+
+// Canonical parcel-status happy path, mapped to a 1-based step index.
+// Statuses outside this set (at_pickup_point, returning, problem, unknown) fall
+// back to the plain van/chip + status-text treatment rather than the step tracker.
+const STATUS_STEP_ORDER = ['registered', 'in_transit', 'out_for_delivery', 'delivered'];
 
 const CARRIER_PRESETS = {
     postnl_v4:    { label: 'PostNL',                    icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: true,  sensor_slug: 'postnl' },
@@ -556,7 +581,8 @@ class HkiParcelsCard extends HTMLElement {
             carrier_color:  carrier.color  || preset.color || DEFAULT_CARRIER_COLOR,
             carrier_logo:   carrier.logo_path   || assets.logo   || '',
             carrier_van:    carrier.van_path    || assets.van    || '',
-            carrier_banner: carrier.banner_path || assets.banner || ''
+            carrier_banner: carrier.banner_path || assets.banner || '',
+            carrier_steps:  assets.steps || null
         };
     }
 
@@ -978,6 +1004,47 @@ class HkiParcelsCard extends HTMLElement {
         }
     }
 
+    // Renders the 4-step happy-path tracker: a small progress row (registered / in_transit /
+    // out_for_delivery / delivered) plus a large "hero" for the current step — the carrier's own
+    // step illustration for registered/sorting/delivered, or the existing driving-van visual for
+    // out_for_delivery (stepIndex 3), since that's already exactly what "onderweg met bezorger" is.
+    _renderStatusTracker(selected, stepIndex) {
+        const color = selected.carrier_color || DEFAULT_CARRIER_COLOR;
+        const stepIcons = ['mdi:file-document-check-outline', 'mdi:package-variant-closed', 'mdi:truck-fast-outline', 'mdi:home-check-outline'];
+        const dots = STATUS_STEP_ORDER.map((_, i) => {
+            const n = i + 1;
+            const state = n < stepIndex ? 'done' : n === stepIndex ? 'current' : 'upcoming';
+            const colorVar = state !== 'upcoming' ? ` style="--step-color:${color};"` : '';
+            const step = `<div class="status-step ${state}"${colorVar}><ha-icon icon="${state === 'done' ? 'mdi:check' : stepIcons[i]}"></ha-icon></div>`;
+            if (n === STATUS_STEP_ORDER.length) return step;
+            const lineDone = n < stepIndex;
+            return `${step}<div class="status-step-line ${lineDone ? 'done' : ''}"${lineDone ? ` style="--step-color:${color};"` : ''}></div>`;
+        }).join('');
+
+        let heroHtml;
+        if (stepIndex === 3) {
+            heroHtml = `
+                <div class="visual-road">
+                    <div class="house-bg">🏠</div>
+                    <div class="road-line"></div>
+                    ${selected.carrier_van
+                        ? `<img class="carrier-van-gif" src="${selected.carrier_van}" alt="${selected.carrier_name || ''}" style="left:25%;" />`
+                        : `<div class="carrier-chip" style="background:${color}; left:25%;"><ha-icon icon="${selected.carrier_icon || DEFAULT_CARRIER_ICON}"></ha-icon></div>`}
+                </div>`;
+        } else {
+            const key = stepIndex === 1 ? 'registered' : stepIndex === 2 ? 'sorting' : 'delivered';
+            const img = selected.carrier_steps?.[key];
+            heroHtml = img ? `<div class="status-hero"><img class="status-hero-img" src="${img}" alt="" /></div>` : '';
+        }
+
+        return `
+            <div class="status-tracker">
+                <div class="status-steps">${dots}</div>
+                ${heroHtml}
+            </div>
+            <div class="animation-info"><strong>${selected.name}</strong> • ${selected.status_message || ''} • ${selected.carrier_name || ''}</div>`;
+    }
+
     updateAnimation(displayed) {
         const animationEl = this.shadowRoot.querySelector('.header-animation');
         if (!animationEl) return;
@@ -989,6 +1056,20 @@ class HkiParcelsCard extends HTMLElement {
 
         animationEl.style.backgroundImage = '';
         animationEl.classList.remove('combo-placeholder');
+        animationEl.classList.remove('status-tracker-active');
+
+        // 4-step happy-path tracker (registered -> in_transit -> out_for_delivery -> delivered),
+        // only for canonical-schema carriers that have step illustrations configured. Letters and
+        // any other status (at_pickup_point, returning, problem, unknown) fall through to the
+        // plain van/chip + status-text treatment below, unchanged.
+        const stepIndex = (selected && !selected.is_letter && selected.carrier_steps)
+            ? STATUS_STEP_ORDER.indexOf(selected.status) + 1 : 0;
+        if (this.config.show_animation && selected && stepIndex > 0) {
+            animationEl.classList.add('animation-active');
+            animationEl.classList.add('status-tracker-active');
+            animationEl.innerHTML = this._renderStatusTracker(selected, stepIndex);
+            return;
+        }
 
         if (this.config.show_animation && selected?.delivered) {
             const isLetter = !!selected.is_letter;
@@ -1032,9 +1113,13 @@ class HkiParcelsCard extends HTMLElement {
             const bg = this._getNoSelectionBackground();
             if (bg.comboLogos) {
                 animationEl.classList.add('combo-placeholder');
-                animationEl.innerHTML = `<div class="combo-logo-row">${bg.comboLogos.map(c => c.carrier_logo
-                    ? `<img class="combo-logo" src="${c.carrier_logo}" alt="${c.carrier_name || ''}" title="${c.carrier_name || ''}" />`
-                    : `<div class="combo-logo combo-logo-chip" style="background:${c.carrier_color || DEFAULT_CARRIER_COLOR};" title="${c.carrier_name || ''}"><ha-icon icon="${c.carrier_icon || DEFAULT_CARRIER_ICON}"></ha-icon></div>`
+                animationEl.innerHTML = `<div class="combo-logo-row">${bg.comboLogos.map(c => `
+                    <div class="combo-panel" style="--panel-color:${c.carrier_color || DEFAULT_CARRIER_COLOR};" title="${c.carrier_name || ''}">
+                        <div class="combo-panel-bg"></div>
+                        ${c.carrier_logo
+                            ? `<img class="combo-logo" src="${c.carrier_logo}" alt="${c.carrier_name || ''}" />`
+                            : `<div class="combo-logo-chip" style="background:${c.carrier_color || DEFAULT_CARRIER_COLOR};"><ha-icon icon="${c.carrier_icon || DEFAULT_CARRIER_ICON}"></ha-icon></div>`}
+                    </div>`
                 ).join('')}</div>`;
                 return;
             }
@@ -1186,11 +1271,26 @@ class HkiParcelsCard extends HTMLElement {
             .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--accent); }
             .header-animation { background-size: cover; background-position: center; background-repeat: no-repeat; padding: 16px; border-bottom: 1px solid var(--divider-color); height: 150px; box-sizing: border-box; }
             .header-animation.animation-active { background-image: none !important; background-color: var(--card-background-color); }
-            .header-animation.combo-placeholder { background-image: none !important; background-color: var(--card-background-color); display: flex; }
-            .combo-logo-row { display: flex; align-items: center; justify-content: center; gap: 28px; flex-wrap: wrap; width: 100%; }
-            .combo-logo { max-height: 56px; max-width: 130px; object-fit: contain; }
-            .combo-logo-chip { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
-            .combo-logo-chip ha-icon { --mdc-icon-size: 24px; }
+            .header-animation.combo-placeholder { background-image: none !important; background-color: var(--card-background-color); display: flex; padding: 0 !important; }
+            .header-animation.status-tracker-active { height: auto; min-height: 150px; padding-top: 12px; padding-bottom: 10px; }
+            .status-tracker { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+            .status-steps { display: flex; align-items: center; width: 100%; max-width: 260px; margin: 0 auto; }
+            .status-step { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: var(--secondary-background-color, #eee); color: var(--secondary-text-color); border: 2px solid var(--divider-color); }
+            .status-step ha-icon { --mdc-icon-size: 15px; }
+            .status-step.current { background: var(--step-color); border-color: var(--step-color); color: #fff; box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+            .status-step.done { background: var(--step-color); border-color: var(--step-color); color: #fff; }
+            .status-step-line { flex: 1; height: 2px; background: var(--divider-color); }
+            .status-step-line.done { background: var(--step-color); }
+            .status-hero { display: flex; align-items: center; justify-content: center; height: 78px; }
+            .status-hero-img { max-height: 100%; max-width: 100%; object-fit: contain; }
+            .combo-logo-row { display: flex; width: 100%; height: 100%; }
+            .combo-panel { flex: 1 1 0; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+            .combo-panel:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 24%; bottom: 24%; width: 1px; background: var(--divider-color); opacity: 0.7; }
+            .combo-panel-bg { position: absolute; inset: 0; background: var(--panel-color); opacity: 0.09; }
+            .combo-logo { max-height: 46%; max-width: 62%; object-fit: contain; position: relative; z-index: 1; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15)); transition: transform 0.2s ease; }
+            .combo-panel:hover .combo-logo { transform: scale(1.06); }
+            .combo-logo-chip { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; position: relative; z-index: 1; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+            .combo-logo-chip ha-icon { --mdc-icon-size: 22px; }
             .visual-road { position: relative; height: 80px; display: flex; align-items: center; }
             .house-bg { position: absolute; right: 0; font-size: 32px; }
             .road-line { position: absolute; left: 0; right: 40px; height: 2px; background: var(--divider-color); top: 50%; }

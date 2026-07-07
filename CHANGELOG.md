@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Added
+
+- **4-step delivery tracker** — selecting a parcel now shows a small progress row (Registered ·
+  In transit · Out for delivery · Delivered) with a large carrier-branded illustration for the
+  current step, instead of only a driving van or plain checkmark. New illustrations per carrier
+  (PostNL, DHL, DPD, GLS): a labelled parcel with a "registered" check badge, a sorting-centre
+  building with a loading dock (as a small van docks to unload), and a house with the parcel
+  delivered on the doorstep. The existing driving-van animation is kept for the "out for delivery"
+  step — it already showed exactly that. Parcels with a status outside this happy path
+  (`at_pickup_point`, `returning`, `problem`, `unknown`) or on a non-canonical schema (legacy
+  PostNL, single-entity, custom) keep the previous plain van/chip + status-text treatment.
+- **Combo banner redesign** — the no-selection banner for 2+ carriers now fills the full card
+  width with equal-width panels per carrier (subtle brand-colour tint, thin divider, centred
+  logo) instead of a cluster of logos floating in the middle with empty space on both sides.
+
 ### Fixed
 
 - **Duplicate parcels when switching a carrier's type** — switching a carrier's type in the editor
