@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![HA](https://img.shields.io/badge/Home%20Assistant-2026.7%2B-41bdf5?style=flat-square)](https://www.home-assistant.io)
 
-**Track parcels from PostNL, DHL and DPD in a single Home Assistant card** — with animated banners, letter scan images, automatic sensor detection and a full visual editor.
+**Track parcels from PostNL, DHL, DPD and GLS in a single Home Assistant card** — with animated banners, letter scan images, automatic sensor detection and a full visual editor.
 
 ![Dashboard screenshot](https://raw.githubusercontent.com/jonisnet/hki-parcels-card/main/images/screenshot-dashboard.png)
 
@@ -30,7 +30,7 @@
 
 ### 📦 Parcel tracking
 
-- **Multi-carrier** — PostNL, DHL and DPD side by side in one card; add the same carrier multiple times for multiple accounts
+- **Multi-carrier** — PostNL, DHL, DPD and GLS side by side in one card; add the same carrier multiple times for multiple accounts
 - **Four tabs** — In Transit · Delivered · Sent · Letters
 - **Split sections** — both Sent and Letters are split into *Still to be delivered* and *Delivered*
 - **Parcel details** — click any parcel for barcode, delivery type and a direct tracking link
@@ -76,20 +76,24 @@ The card supports three PostNL variants:
 
 > **Upgrading from ha-postnl v3 to v4?** Change the card type from `postnl` to `postnl_v4`. Your sensor entity IDs stay the same.
 
-### DHL and DPD
+### DHL, DPD and GLS
 
 | Carrier | Integration |
 | ------- | ----------- |
 | **DHL** | [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) |
 | **DPD** | [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) |
+| **GLS** | [peternijssen/ha-gls](https://github.com/peternijssen/ha-gls) |
+
+> **GLS has no sender/account** — you track parcels by tracking number and postal code, not a login. The card's `user` field maps to the hub's postal code (e.g. `1234ab`), and the Sent tab is not available for this carrier.
 
 ### Tested versions
 
 | Integration | Version |
 | ----------- | ------- |
-| peternijssen/ha-postnl | 4.1.0 |
-| peternijssen/ha-dhl-nl | 2.2.0 |
-| peternijssen/ha-dpd | 2.2.0 |
+| peternijssen/ha-postnl | 4.3.0 |
+| peternijssen/ha-dhl-nl | 2.4.0 |
+| peternijssen/ha-dpd | 2.4.0 |
+| peternijssen/ha-gls | 1.0.0 |
 
 ---
 
@@ -111,7 +115,7 @@ The card supports three PostNL variants:
 
 ### Optional: PHU carrier icons
 
-Install [custom-brand-icons](https://github.com/elax46/custom-brand-icons) via HACS to get branded `phu:postnl`, `phu:dhl` and `phu:dpd` icons. The card detects this automatically — no configuration needed.
+Install [custom-brand-icons](https://github.com/elax46/custom-brand-icons) via HACS to get branded `phu:postnl`, `phu:dhl`, `phu:dpd` and `phu:gls-group` icons. The card detects this automatically — no configuration needed.
 
 ---
 
@@ -131,6 +135,8 @@ carriers:
     user: my_account
   - type: dpd
     user: my_account
+  - type: gls
+    user: "1234ab"
 ```
 
 ---
@@ -177,8 +183,8 @@ Normally the card generates sensor entity IDs automatically. Use these only if y
 | ------ | ----------- |
 | `entity_incoming` | Incoming parcels in transit |
 | `entity_delivered` | Delivered incoming parcels |
-| `entity_outgoing` | Outgoing parcels in transit |
-| `entity_outgoing_delivered` | Delivered outgoing parcels |
+| `entity_outgoing` | Outgoing parcels in transit (not available for GLS) |
+| `entity_outgoing_delivered` | Delivered outgoing parcels (not available for GLS) |
 | `entity_letters` | PostNL letterbox mail (PostNL only) |
 
 #### PostNL Legacy (arjenbos)
@@ -224,6 +230,8 @@ carriers:
     user: my_account
   - type: dpd
     user: my_account
+  - type: gls
+    user: "1234ab"
 ```
 
 ---
@@ -235,7 +243,7 @@ The `user` field is the account part of the sensor name. The card builds all ent
 | Scheme | Example |
 | ------ | ------- |
 | `sensor.<user>_<carrier>_*` | PostNL, DHL — `sensor.my_account_postnl_incoming_parcels` |
-| `sensor.<carrier>_<user>_*` | DPD — `sensor.dpd_my_account_binnenkomende_pakketten` |
+| `sensor.<carrier>_<user>_*` | DPD, GLS — `sensor.dpd_my_account_binnenkomende_pakketten`, `sensor.gls_1234ab_incoming_parcels` |
 
 The correct scheme is detected automatically. Leave `user` empty if your sensors have no account prefix (e.g. `sensor.postnl_incoming_parcels`).
 
@@ -249,8 +257,11 @@ The correct scheme is detected automatically. Leave `user` empty if your sensors
 | `postnl` | PostNL (peternijssen v3.x) | peternijssen/ha-postnl ≤ 3.x | legacy | ✅ |
 | `dhl` | DHL | peternijssen/ha-dhl-nl | canonical | — |
 | `dpd` | DPD | peternijssen/ha-dpd | canonical | — |
+| `gls` | GLS | peternijssen/ha-gls | canonical | — |
 | `postnl_legacy` | PostNL (arjenbos) | arjenbos/ha-postnl | single_entity | — |
 | `custom` | Custom | any | canonical | — |
+
+> **Note:** `gls` has no Sent tab — GLS tracks parcels by number/postal code with no sender/account concept, so `entity_outgoing` and `entity_outgoing_delivered` are not applicable.
 
 ---
 
@@ -260,6 +271,7 @@ The correct scheme is detected automatically. Leave `user` empty if your sensors
 - [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) — PostNL integration
 - [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) — DHL integration
 - [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) — DPD integration
+- [peternijssen/ha-gls](https://github.com/peternijssen/ha-gls) — GLS integration
 - [arjenbos/ha-postnl](https://github.com/arjenbos/ha-postnl) — legacy PostNL integration
 
 ---

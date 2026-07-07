@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **GLS carrier support** — new `gls` carrier type for [peternijssen/ha-gls](https://github.com/peternijssen/ha-gls).
+  Supports the incoming and delivered sensors (auto-detected as `sensor.gls_<postcode>_incoming_parcels` /
+  `sensor.gls_<postcode>_delivered_parcels`), carrier branding, and PHU icon (`phu:gls-group`) when
+  custom-brand-icons is installed. GLS has no sender/account concept, so the Sent tab's outgoing fields
+  are hidden for this carrier — the editor shows an explanatory note instead.
+
 ## [1.2.1] — 2026-07-04
 
 ### Added

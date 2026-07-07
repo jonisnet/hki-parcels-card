@@ -80,7 +80,7 @@ function hasPhuIcons() {
 }
 
 function getDefaultIcon(carrierType) {
-    const phuMap = { postnl: 'phu:postnl', postnl_v4: 'phu:postnl', dhl: 'phu:dhl', dpd: 'phu:dpd', postnl_legacy: 'phu:postnl' };
+    const phuMap = { postnl: 'phu:postnl', postnl_v4: 'phu:postnl', dhl: 'phu:dhl', dpd: 'phu:dpd', gls: 'phu:gls-group', postnl_legacy: 'phu:postnl' };
     if (hasPhuIcons() && phuMap[carrierType]) return phuMap[carrierType];
     return 'mdi:package-variant-closed';
 }
@@ -174,6 +174,7 @@ const TRANSLATIONS = {
         entity_letters:         'Post / Brieven Entity (letters)',
         letters_entity_help:    'Brief-afbeeldingen (image.* entiteiten) worden automatisch gekoppeld op datum.',
         no_letters_support:     'Post/Brieven wordt alleen ondersteund voor PostNL.',
+        no_outgoing_support:    'Verzonden pakketten worden niet ondersteund voor deze carrier.',
         adv_appearance:         'Geavanceerd: uiterlijk overschrijven',
         label_icon:             'Icoon (mdi:...)',
         label_color:            'Kleur',
@@ -282,6 +283,7 @@ const TRANSLATIONS = {
         entity_letters:         'Letters entity',
         letters_entity_help:    'Letter scan images (image.* entities) are matched automatically by date.',
         no_letters_support:     'Letters are only supported for PostNL.',
+        no_outgoing_support:    'Sent parcels are not supported for this carrier.',
         adv_appearance:         'Advanced: override appearance',
         label_icon:             'Icon (mdi:...)',
         label_color:            'Color',
@@ -323,6 +325,7 @@ const CARRIER_REPO_URLS = {
     postnl_v4: 'https://github.com/peternijssen/ha-postnl',
     dhl:       'https://github.com/peternijssen/ha-dhl-nl',
     dpd:       'https://github.com/peternijssen/ha-dpd',
+    gls:       'https://github.com/peternijssen/ha-gls',
 };
 
 const CARRIER_ASSETS = {
@@ -346,6 +349,11 @@ const CARRIER_ASSETS = {
         van:    null,
         banner: `${REPO_BASE}/DPD_banner.png?raw=true`
     },
+    gls: {
+        logo:   `${REPO_BASE}/GLS_logo.png?raw=true`,
+        van:    null,
+        banner: null
+    },
     postnl_legacy: {
         logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
         van:    `${REPO_BASE}/postnl-van.gif?raw=true`,
@@ -360,6 +368,7 @@ const CARRIER_PRESETS = {
     dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl'    },
     dpd:          { label: 'DPD',                        icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd',
                     slug_first_suffixes: { incoming: 'binnenkomende_pakketten', delivered: 'bezorgde_pakketten', outgoing: 'uitgaande_pakketten', outgoing_delivered: null, letters: null } },
+    gls:          { label: 'GLS',                        icon: 'mdi:package-variant-closed', color: '#10218c', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'gls'    },
     postnl_legacy:{ label: 'PostNL (arjenbos)',          icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null     },
     custom:       { label: 'Custom',                     icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: false, sensor_slug: null     }
 };
@@ -387,8 +396,8 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false) {
         return {
             entity_incoming:          s('incoming',          'incoming_parcels'),
             entity_delivered:         s('delivered',         'delivered_parcels'),
-            entity_outgoing:          s('outgoing',          'outgoing_parcels'),
-            entity_outgoing_delivered:s('outgoing_delivered','outgoing_delivered_parcels'),
+            entity_outgoing:          preset.supports_outgoing !== false ? s('outgoing',          'outgoing_parcels') : null,
+            entity_outgoing_delivered:preset.supports_outgoing !== false ? s('outgoing_delivered','outgoing_delivered_parcels') : null,
             entity_letters: preset.supports_letters ? s('letters', 'letters') : null
         };
     }
@@ -396,8 +405,8 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false) {
     return {
         entity_incoming:          `sensor.${prefix}${slug}_incoming_parcels`,
         entity_delivered:         `sensor.${prefix}${slug}_delivered_parcels`,
-        entity_outgoing:          `sensor.${prefix}${slug}_outgoing_parcels`,
-        entity_outgoing_delivered:`sensor.${prefix}${slug}_outgoing_delivered_parcels`,
+        entity_outgoing:          preset.supports_outgoing !== false ? `sensor.${prefix}${slug}_outgoing_parcels` : null,
+        entity_outgoing_delivered:preset.supports_outgoing !== false ? `sensor.${prefix}${slug}_outgoing_delivered_parcels` : null,
         entity_letters: preset.supports_letters ? `sensor.${prefix}${slug}_letters` : null
     };
 }
@@ -1927,14 +1936,16 @@ class HkiParcelsCardEditor extends LitElement {
 
     // Renders the user/account detection block: badge if 1 found, dropdown if multiple, manual if none.
     // Never mutates state during render — auto-fill happens in _addCarrier / _carrierTypeChanged.
-    _renderUserDetection(carrier, index, preset, supportsLetters) {
+    _renderUserDetection(carrier, index, preset, supportsLetters, supportsOutgoing = true) {
         const detected   = this._detectUsers(carrier.type);
         const entityPreview = carrier.entity_incoming ? html`
             <div class="templated-preview">
                 <div>${carrier.entity_incoming}</div>
                 <div>${carrier.entity_delivered}</div>
+                ${supportsOutgoing ? html`
                 <div>${carrier.entity_outgoing}</div>
                 <div>${carrier.entity_outgoing_delivered}</div>
+                ` : ''}
                 ${supportsLetters && carrier.entity_letters ? html`<div>${carrier.entity_letters}</div>` : ''}
             </div>` : '';
 
@@ -2048,6 +2059,7 @@ class HkiParcelsCardEditor extends LitElement {
         const expanded = carrier._expanded !== false;
         const preset   = CARRIER_PRESETS[carrier.type] || CARRIER_PRESETS.custom;
         const supportsLetters = preset.supports_letters;
+        const supportsOutgoing = preset.supports_outgoing !== false;
 
         return html`
             <div class="carrier-card">
@@ -2069,6 +2081,7 @@ class HkiParcelsCardEditor extends LitElement {
                             { value: 'postnl_v4',     label: 'PostNL' },
                             { value: 'dhl',           label: 'DHL' },
                             { value: 'dpd',           label: 'DPD' },
+                            { value: 'gls',           label: 'GLS' },
                             { value: 'postnl',        label: 'PostNL (<v4.x)' },
                             { value: 'postnl_legacy', label: 'PostNL (ArjenBos)' },
                             { value: 'custom',        label: 'Custom' }
@@ -2089,7 +2102,7 @@ class HkiParcelsCardEditor extends LitElement {
                         </div>
                         ${this._renderEntityPicker(this._t('postnl_entity_label'), carrier.entity, 'e.g. sensor.postnl_delivery', (ev) => this._carrierChanged(index, 'entity', ev))}
                         ${this._renderEntityPicker(this._t('postnl_dist_label'), carrier.distribution_entity, 'e.g. sensor.postnl_distribution', (ev) => this._carrierChanged(index, 'distribution_entity', ev))}
-                    ` : this._renderUserDetection(carrier, index, preset, supportsLetters)}
+                    ` : this._renderUserDetection(carrier, index, preset, supportsLetters, supportsOutgoing)}
 
                     ${carrier.type !== 'postnl_legacy' ? (() => {
                         const sk = `sensors-${index}`;
@@ -2105,8 +2118,10 @@ class HkiParcelsCardEditor extends LitElement {
                             <div class="helper-text">${this._t('adv_sensors_help')}</div>
                             ${this._renderEntityPicker(this._t('entity_incoming'), carrier.entity_incoming, 'e.g. sensor.dhl_incoming_parcels', (ev) => this._carrierChanged(index, 'entity_incoming', ev))}
                             ${this._renderEntityPicker(this._t('entity_delivered'), carrier.entity_delivered, 'e.g. sensor.dhl_delivered_parcels', (ev) => this._carrierChanged(index, 'entity_delivered', ev))}
+                            ${supportsOutgoing ? html`
                             ${this._renderEntityPicker(this._t('entity_outgoing'), carrier.entity_outgoing, 'e.g. sensor.dhl_outgoing_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing', ev))}
                             ${this._renderEntityPicker(this._t('entity_outgoing_delivered'), carrier.entity_outgoing_delivered, 'e.g. sensor.dhl_outgoing_delivered_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing_delivered', ev))}
+                            ` : html`<div class="helper-text">${this._t('no_outgoing_support')}</div>`}
                             ${supportsLetters
                                 ? this._renderEntityPicker(this._t('entity_letters'), carrier.entity_letters, this._t('letters_entity_help'), (ev) => this._carrierChanged(index, 'entity_letters', ev))
                                 : html`<div class="helper-text">${this._t('no_letters_support')}</div>`}
@@ -2219,7 +2234,7 @@ window.customCards = window.customCards || [];
 window.customCards.push({
     type: "hki-parcels-card",
     name: "HKI Parcels Card",
-    description: "Multi-carrier parcel tracker (PostNL, DHL, DPD) — fork of jimz011/hki-elements",
+    description: "Multi-carrier parcel tracker (PostNL, DHL, DPD, GLS) — fork of jimz011/hki-elements",
     preview: true
 });
 
