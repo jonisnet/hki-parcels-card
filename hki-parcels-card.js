@@ -1376,7 +1376,7 @@ class HkiParcelsCard extends HTMLElement {
             .status-tracker { display: flex; flex-direction: column; align-items: center; gap: 14px; }
             .status-steps { display: flex; align-items: flex-start; width: 100%; }
             .status-step-col { display: flex; flex-direction: column; align-items: center; flex: 0 0 auto; width: 96px; }
-            .status-step-icon-wrap { position: relative; width: 72px; height: 72px; border-radius: 16px; box-sizing: border-box; background: var(--secondary-background-color, #eee); display: flex; align-items: center; justify-content: center; opacity: 0.5; filter: grayscale(70%); transition: opacity 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease; }
+            .status-step-icon-wrap { position: relative; width: 72px; height: 72px; border-radius: 16px; box-sizing: border-box; background: var(--secondary-background-color, #eee); border: 1px solid var(--divider-color); display: flex; align-items: center; justify-content: center; opacity: 0.5; filter: grayscale(70%); transition: opacity 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease; }
             .status-step-icon-wrap.current, .status-step-icon-wrap.done { opacity: 1; filter: none; box-shadow: 0 0 0 2.5px var(--step-color); }
             .status-step-icon { width: 100%; height: 100%; object-fit: contain; padding: 6px; box-sizing: border-box; }
             .status-step-check { position: absolute; bottom: -7px; right: -7px; width: 26px; height: 26px; border-radius: 50%; background: var(--step-color); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px var(--card-background-color, #fff); }

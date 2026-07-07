@@ -4,6 +4,14 @@
 
 ### Fixed
 
+- **Step icons were nearly invisible on a light/white theme** — the registered/sorting/delivered
+  illustrations use a near-white body, and their outline stroke was thin enough in the source SVG
+  (1.5px at a 200-unit viewBox) that it became sub-pixel and got anti-aliased away once scaled
+  down to the 72px tile size, leaving a washed-out shape with almost no contrast against a white
+  card background. Outline stroke width and opacity roughly doubled, the isometric shading steps
+  darkened, and `.status-step-icon-wrap` gained a `1px solid var(--divider-color)` border so every
+  tile is clearly delineated regardless of theme.
+
 - **DHL logo reverted to red-on-yellow, now in the exact official brand colours** — a transparent
   wordmark was the wrong idea for DHL specifically: unlike the other carriers, DHL's mark is
   always shown on its yellow field, not as a free-floating red shape. `DHL_logo.png` is a cropped,
