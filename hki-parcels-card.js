@@ -341,17 +341,17 @@ const CARRIER_ASSETS = {
     },
     dhl: {
         logo:   `${REPO_BASE}/DHL_logo.png?raw=true`,
-        van:    null,
+        van:    `${REPO_BASE}/DHL_van.gif?raw=true`,
         banner: `${REPO_BASE}/DHL_banner.png?raw=true`
     },
     dpd: {
         logo:   `${REPO_BASE}/DPD_logo.png?raw=true`,
-        van:    null,
+        van:    `${REPO_BASE}/DPD_van.gif?raw=true`,
         banner: `${REPO_BASE}/DPD_banner.png?raw=true`
     },
     gls: {
         logo:   `${REPO_BASE}/GLS_logo.png?raw=true`,
-        van:    null,
+        van:    `${REPO_BASE}/GLS_van.gif?raw=true`,
         banner: `${REPO_BASE}/GLS_banner.png?raw=true`
     },
     postnl_legacy: {

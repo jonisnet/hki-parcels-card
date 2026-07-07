@@ -15,6 +15,11 @@
   replacing `dutch-parcels.png` as the built-in `DEFAULT_PLACEHOLDER_IMAGE` fallback (used when
   0 carriers are configured, or a single carrier with no logo asset). Also settable as a fixed
   `placeholder_image` for anyone who prefers it over the dynamic combo banner.
+- **Branded van animations for DHL, DPD and GLS** — `images/DHL_van.gif`, `images/DPD_van.gif`
+  and `images/GLS_van.gif`. Each is the existing PostNL driving animation (67 frames) recoloured
+  to the carrier's brand colour via a hue shift, with the door badge swapped for that carrier's
+  own logo mark. Previously only PostNL had a van animation; the others fell back to a plain
+  colour-chip icon.
 
 ### Fixed
 
