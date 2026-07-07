@@ -73,7 +73,7 @@ console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; backgroun
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
 const DEFAULT_CARRIER_COLOR = '#ed8c00';
-const DEFAULT_PLACEHOLDER_IMAGE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/dutch-parcels-2.png?raw=true';
+const DEFAULT_PLACEHOLDER_IMAGE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images/shared/dutch-parcels-2.png?raw=true';
 
 function hasPhuIcons() {
     return !!(window.customIconsets && window.customIconsets['phu']);
@@ -323,6 +323,15 @@ function getT(lang) {
 
 const REPO_BASE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images';
 
+// Per-carrier asset folders (images/<carrier>/...). Keeps the images directory navigable as
+// more carriers are added, instead of one flat folder of prefixed filenames.
+const IMG = {
+    postnl: `${REPO_BASE}/postnl`,
+    dhl:    `${REPO_BASE}/dhl`,
+    dpd:    `${REPO_BASE}/dpd`,
+    gls:    `${REPO_BASE}/gls`,
+};
+
 const CARRIER_REPO_URLS = {
     postnl_v4: 'https://github.com/peternijssen/ha-postnl',
     dhl:       'https://github.com/peternijssen/ha-dhl-nl',
@@ -332,54 +341,54 @@ const CARRIER_REPO_URLS = {
 
 const CARRIER_ASSETS = {
     postnl_v4: {
-        logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
-        van:    `${REPO_BASE}/postnl-van.gif?raw=true`,
-        banner: `${REPO_BASE}/postnl-banner.jpg?raw=true`,
+        logo:   `${IMG.postnl}/postnl-logo.png?raw=true`,
+        van:    `${IMG.postnl}/postnl-van.gif?raw=true`,
+        banner: `${IMG.postnl}/postnl-banner.jpg?raw=true`,
         steps: {
-            registered: `${REPO_BASE}/postnl_step_registered.png?raw=true`,
-            sorting:    `${REPO_BASE}/postnl_step_sorting.png?raw=true`,
-            delivered:  `${REPO_BASE}/postnl_step_delivered.png?raw=true`
+            registered: `${IMG.postnl}/postnl_step_registered.png?raw=true`,
+            sorting:    `${IMG.postnl}/postnl_step_sorting.png?raw=true`,
+            delivered:  `${IMG.postnl}/postnl_step_delivered.png?raw=true`
         }
     },
     postnl: {
-        logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
-        van:    `${REPO_BASE}/postnl-van.gif?raw=true`,
-        banner: `${REPO_BASE}/postnl-banner.jpg?raw=true`
+        logo:   `${IMG.postnl}/postnl-logo.png?raw=true`,
+        van:    `${IMG.postnl}/postnl-van.gif?raw=true`,
+        banner: `${IMG.postnl}/postnl-banner.jpg?raw=true`
     },
     dhl: {
-        logo:   `${REPO_BASE}/DHL_logo.png?raw=true`,
-        van:    `${REPO_BASE}/DHL_van.gif?raw=true`,
-        banner: `${REPO_BASE}/DHL_banner.png?raw=true`,
+        logo:   `${IMG.dhl}/DHL_logo.png?raw=true`,
+        van:    `${IMG.dhl}/DHL_van.gif?raw=true`,
+        banner: `${IMG.dhl}/DHL_banner.png?raw=true`,
         steps: {
-            registered: `${REPO_BASE}/DHL_step_registered.png?raw=true`,
-            sorting:    `${REPO_BASE}/DHL_step_sorting.png?raw=true`,
-            delivered:  `${REPO_BASE}/DHL_step_delivered.png?raw=true`
+            registered: `${IMG.dhl}/DHL_step_registered.png?raw=true`,
+            sorting:    `${IMG.dhl}/DHL_step_sorting.png?raw=true`,
+            delivered:  `${IMG.dhl}/DHL_step_delivered.png?raw=true`
         }
     },
     dpd: {
-        logo:   `${REPO_BASE}/DPD_logo.png?raw=true`,
-        van:    `${REPO_BASE}/DPD_van.gif?raw=true`,
-        banner: `${REPO_BASE}/DPD_banner.png?raw=true`,
+        logo:   `${IMG.dpd}/DPD_logo.png?raw=true`,
+        van:    `${IMG.dpd}/DPD_van.gif?raw=true`,
+        banner: `${IMG.dpd}/DPD_banner.png?raw=true`,
         steps: {
-            registered: `${REPO_BASE}/DPD_step_registered.png?raw=true`,
-            sorting:    `${REPO_BASE}/DPD_step_sorting.png?raw=true`,
-            delivered:  `${REPO_BASE}/DPD_step_delivered.png?raw=true`
+            registered: `${IMG.dpd}/DPD_step_registered.png?raw=true`,
+            sorting:    `${IMG.dpd}/DPD_step_sorting.png?raw=true`,
+            delivered:  `${IMG.dpd}/DPD_step_delivered.png?raw=true`
         }
     },
     gls: {
-        logo:   `${REPO_BASE}/GLS_logo.png?raw=true`,
-        van:    `${REPO_BASE}/GLS_van.gif?raw=true`,
-        banner: `${REPO_BASE}/GLS_banner.png?raw=true`,
+        logo:   `${IMG.gls}/GLS_logo.png?raw=true`,
+        van:    `${IMG.gls}/GLS_van.gif?raw=true`,
+        banner: `${IMG.gls}/GLS_banner.png?raw=true`,
         steps: {
-            registered: `${REPO_BASE}/GLS_step_registered.png?raw=true`,
-            sorting:    `${REPO_BASE}/GLS_step_sorting.png?raw=true`,
-            delivered:  `${REPO_BASE}/GLS_step_delivered.png?raw=true`
+            registered: `${IMG.gls}/GLS_step_registered.png?raw=true`,
+            sorting:    `${IMG.gls}/GLS_step_sorting.png?raw=true`,
+            delivered:  `${IMG.gls}/GLS_step_delivered.png?raw=true`
         }
     },
     postnl_legacy: {
-        logo:   `${REPO_BASE}/postnl-logo.png?raw=true`,
-        van:    `${REPO_BASE}/postnl-van.gif?raw=true`,
-        banner: `${REPO_BASE}/postnl-banner.jpg?raw=true`
+        logo:   `${IMG.postnl}/postnl-logo.png?raw=true`,
+        van:    `${IMG.postnl}/postnl-van.gif?raw=true`,
+        banner: `${IMG.postnl}/postnl-banner.jpg?raw=true`
     },
     custom: { logo: null, van: null, banner: null }
 };

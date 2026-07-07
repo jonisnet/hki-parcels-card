@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Image assets reorganised into per-carrier folders** — `images/postnl/`, `images/dhl/`,
+  `images/dpd/`, `images/gls/` and `images/shared/` (for the generic combo-banner placeholders),
+  instead of one flat folder of prefixed filenames. No config changes needed — this only affects
+  the repo layout and the internal asset URLs the card already builds itself.
+
 ### Added
 
 - **4-step delivery tracker** — selecting a parcel now shows a small progress row (Registered ·
