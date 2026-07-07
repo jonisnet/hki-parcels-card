@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **"Onderweg" step icon reverted to the real van artwork** — the hand-drawn vector van from the
+  previous update looked out of place next to the actual illustrated vans. It's back to being a
+  cropped frame from each carrier's own van GIF (same source as the "out for delivery" hero), at
+  native resolution instead of artificially upscaled.
+- **`GLS_logo.png` had a solid blue background** — every other carrier logo is transparent (used
+  on tinted panels, colored backgrounds, etc.), but GLS's used the square brand-icon variant with
+  an opaque blue fill. Replaced with the official transparent wordmark (same source as the GLS
+  banner). `DHL_logo.png` also had a soft dark glow baked into its "transparent" edges instead of
+  clean alpha=0; cropped to the solid icon, removing the halo.
+- **Status-step row no longer capped at 480px** — it was centered with a fixed max-width, leaving
+  empty space on wider cards instead of stretching edge to edge like the rest of the card.
+
 ### Changed
 
 - **Step tracker icons are bigger and sharper** — 72px icon tiles (was 40px), a bigger checkmark

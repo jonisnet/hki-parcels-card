@@ -1309,7 +1309,7 @@ class HkiParcelsCard extends HTMLElement {
             .header-animation.combo-placeholder { background-image: none !important; background-color: var(--card-background-color); display: flex; padding: 0 !important; }
             .header-animation.status-tracker-active { height: auto; min-height: 150px; padding-top: 14px; padding-bottom: 12px; }
             .status-tracker { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-            .status-steps { display: flex; align-items: flex-start; width: 100%; max-width: 480px; margin: 0 auto; }
+            .status-steps { display: flex; align-items: flex-start; width: 100%; }
             .status-step-col { display: flex; flex-direction: column; align-items: center; flex: 0 0 auto; width: 96px; }
             .status-step-icon-wrap { position: relative; width: 72px; height: 72px; border-radius: 16px; box-sizing: border-box; background: var(--secondary-background-color, #eee); display: flex; align-items: center; justify-content: center; opacity: 0.5; filter: grayscale(70%); transition: opacity 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease; }
             .status-step-icon-wrap.current, .status-step-icon-wrap.done { opacity: 1; filter: none; box-shadow: 0 0 0 2.5px var(--step-color); }
