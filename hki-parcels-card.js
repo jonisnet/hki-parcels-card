@@ -1358,7 +1358,7 @@ class HkiParcelsCard extends HTMLElement {
             }
             ha-card { background: var(--bg-color); color: var(--primary-text-color); overflow: hidden; border-radius: 12px; }
             .header { background: var(--header-bg); padding: 16px; color: var(--header-text); display: flex; align-items: center; gap: 12px; }
-            .header-logo { height: 36px; border-radius: 6px; background: white; padding: 4px; flex-shrink: 0; }
+            .header-logo { height: 36px; max-width: 110px; border-radius: 6px; background: white; padding: 4px; box-sizing: border-box; object-fit: contain; flex-shrink: 0; }
             .header-info { display: flex; flex-direction: column; flex: 1; }
             .header-title { font-weight: bold; font-size: 1.1em; }
             .header-stats { font-size: 0.8em; opacity: 0.9; }

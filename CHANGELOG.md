@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **DHL logo reverted to red-on-yellow, now in the exact official brand colours** — a transparent
+  wordmark was the wrong idea for DHL specifically: unlike the other carriers, DHL's mark is
+  always shown on its yellow field, not as a free-floating red shape. `DHL_logo.png` is a cropped,
+  colour-corrected slice of `DHL_banner.png`, both now recoloured to DHL's exact brand hex values
+  (`#FFCC00` yellow, `#D40511` red — Pantone 116C / 199C) instead of the original artwork's
+  approximate colours. `DHL_step_sorting.png`'s signboard picks up the corrected logo too.
+  `.header-logo` gained `max-width: 110px` so a wide-aspect logo like this one can't crowd the
+  header.
+
 ### Added
 
 - **Time/date detail beside the step tracker hero** — registered shows the time it was
