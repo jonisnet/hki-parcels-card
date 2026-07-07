@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Step tracker icons are bigger and sharper** — 72px icon tiles (was 40px), a bigger checkmark
+  badge, and larger labels. All 16 step illustrations were re-exported at 1200px source width
+  (was 600px) for headroom at the new size. The "onderweg" (out for delivery) mini icon is now a
+  small vector van illustration in the same flat style as the other three steps, instead of a
+  cropped frame from the 200x142 van GIF — that source was too low-res to hold up at a larger
+  size. The large out-for-delivery illustration still uses the real van animation, unchanged.
+
 ### Fixed
 
 - **"Out for delivery" hero showed the house next to the van instead of across the card** —

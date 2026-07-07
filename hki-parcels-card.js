@@ -1307,20 +1307,20 @@ class HkiParcelsCard extends HTMLElement {
             .header-animation { background-size: cover; background-position: center; background-repeat: no-repeat; padding: 16px; border-bottom: 1px solid var(--divider-color); height: 150px; box-sizing: border-box; }
             .header-animation.animation-active { background-image: none !important; background-color: var(--card-background-color); }
             .header-animation.combo-placeholder { background-image: none !important; background-color: var(--card-background-color); display: flex; padding: 0 !important; }
-            .header-animation.status-tracker-active { height: auto; min-height: 150px; padding-top: 12px; padding-bottom: 10px; }
-            .status-tracker { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-            .status-steps { display: flex; align-items: flex-start; width: 100%; max-width: 360px; margin: 0 auto; }
-            .status-step-col { display: flex; flex-direction: column; align-items: center; flex: 0 0 auto; width: 56px; }
-            .status-step-icon-wrap { position: relative; width: 40px; height: 40px; border-radius: 10px; box-sizing: border-box; background: var(--secondary-background-color, #eee); display: flex; align-items: center; justify-content: center; opacity: 0.5; filter: grayscale(70%); transition: opacity 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease; }
-            .status-step-icon-wrap.current, .status-step-icon-wrap.done { opacity: 1; filter: none; box-shadow: 0 0 0 2px var(--step-color); }
-            .status-step-icon { width: 100%; height: 100%; object-fit: contain; padding: 4px; box-sizing: border-box; }
-            .status-step-check { position: absolute; bottom: -5px; right: -5px; width: 17px; height: 17px; border-radius: 50%; background: var(--step-color); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--card-background-color, #fff); }
-            .status-step-check ha-icon { --mdc-icon-size: 11px; color: #fff; }
-            .status-step-label { margin-top: 5px; font-size: 9.5px; line-height: 1.15; text-align: center; color: var(--secondary-text-color); }
+            .header-animation.status-tracker-active { height: auto; min-height: 150px; padding-top: 14px; padding-bottom: 12px; }
+            .status-tracker { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+            .status-steps { display: flex; align-items: flex-start; width: 100%; max-width: 480px; margin: 0 auto; }
+            .status-step-col { display: flex; flex-direction: column; align-items: center; flex: 0 0 auto; width: 96px; }
+            .status-step-icon-wrap { position: relative; width: 72px; height: 72px; border-radius: 16px; box-sizing: border-box; background: var(--secondary-background-color, #eee); display: flex; align-items: center; justify-content: center; opacity: 0.5; filter: grayscale(70%); transition: opacity 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease; }
+            .status-step-icon-wrap.current, .status-step-icon-wrap.done { opacity: 1; filter: none; box-shadow: 0 0 0 2.5px var(--step-color); }
+            .status-step-icon { width: 100%; height: 100%; object-fit: contain; padding: 6px; box-sizing: border-box; }
+            .status-step-check { position: absolute; bottom: -7px; right: -7px; width: 26px; height: 26px; border-radius: 50%; background: var(--step-color); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px var(--card-background-color, #fff); }
+            .status-step-check ha-icon { --mdc-icon-size: 16px; color: #fff; }
+            .status-step-label { margin-top: 7px; font-size: 11.5px; line-height: 1.2; text-align: center; color: var(--secondary-text-color); }
             .status-step-label.active { color: var(--primary-text-color); font-weight: 600; }
-            .status-step-line { flex: 1 1 auto; height: 2px; background: var(--divider-color); margin-top: 19px; }
+            .status-step-line { flex: 1 1 auto; height: 2px; background: var(--divider-color); margin-top: 35px; }
             .status-step-line.done { background: var(--step-color); }
-            .status-hero { display: flex; align-items: center; justify-content: center; height: 74px; }
+            .status-hero { display: flex; align-items: center; justify-content: center; height: 118px; }
             .status-hero-img { max-height: 100%; max-width: 100%; object-fit: contain; }
             .combo-logo-row { display: flex; width: 100%; height: 100%; }
             .combo-panel { flex: 1 1 0; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
