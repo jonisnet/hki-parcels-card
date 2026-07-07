@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Duplicate parcels when switching a carrier's type** — switching a carrier's type in the editor
+  (e.g. from `postnl_v4` to `gls`) could leave `entity_outgoing`/`entity_outgoing_delivered`
+  pointing at the *previous* carrier's sensor, because the fallback chain read the old value
+  instead of clearing it for carriers that don't support outgoing (`supports_outgoing: false`).
+  In practice this meant a GLS (or any outgoing-unsupported) carrier could silently re-read and
+  display PostNL's sent/delivered parcels a second time under its own name. Fixed at both the
+  editor (no longer carries the stale value over) and the card's data read (ignores the field
+  outright for carriers that don't support it), so existing saved configs self-heal too.
+- **GLS account field now accepts a postal code cleanly** — "1234 AB" is sanitised to "1234ab"
+  (space stripped, not turned into an underscore) so it matches `sensor.gls_1234ab_incoming_parcels`.
+  The account field also shows a GLS-specific placeholder/help text explaining it's the hub's
+  postal code rather than a login account.
+
 ### Added
 
 - **Dynamic combo banner** — the no-selection banner shown for 2+ carriers is no longer a single

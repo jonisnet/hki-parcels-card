@@ -165,6 +165,7 @@ const TRANSLATIONS = {
         legacy_warning:         'Recreëert de originele hki-postnl-card: één entity met onderweg én bezorgde pakketten, plus een losse entity voor verzonden. Geen brieven, geen sensor-templating. Deze modus krijgt geen verdere updates zolang arjenbos/ha-postnl niet wordt bijgehouden.',
         label_account:          'Account / gebruikersdeel van de sensornaam',
         account_help_suffix:    '_incoming_parcels" etc. De 4 sensoren worden automatisch opgebouwd.',
+        gls_account_help:       'GLS heeft geen account — vul de postcode van je GLS-hub in (bv. 1234AB, zoals ingesteld bij het toevoegen van de integratie).',
         adv_sensors:            'Geavanceerd: sensoren handmatig overschrijven',
         adv_sensors_help:       'Normaal hoef je dit niet aan te passen. Gebruik dit alleen als je sensoren een afwijkende naam hebben.',
         entity_incoming:        'Onderweg Entity (incoming)',
@@ -274,6 +275,7 @@ const TRANSLATIONS = {
         legacy_warning:         'Recreates the original hki-postnl-card: one entity with both in-transit and delivered parcels, plus a separate entity for sent parcels. No letter support, no sensor templating. This mode will not receive further updates as long as arjenbos/ha-postnl is not actively maintained.',
         label_account:          'Account / user part of the sensor name',
         account_help_suffix:    '_incoming_parcels" etc. The 4 sensors are built automatically.',
+        gls_account_help:       'GLS has no account — enter the postal code of your GLS hub (e.g. 1234AB, as set when adding the integration).',
         adv_sensors:            'Advanced: override sensors manually',
         adv_sensors_help:       'You normally don\'t need to change this. Use this only if your sensors have a non-standard name.',
         entity_incoming:        'In Transit entity (incoming)',
@@ -625,6 +627,14 @@ class HkiParcelsCard extends HTMLElement {
     }
 
     _getCarrierSensorItems(carrier, entityField) {
+        // Carriers without a sender/account concept (e.g. GLS) never have real outgoing
+        // sensors. Ignoring the field here — not just hiding it in the editor — also
+        // protects against a saved config that still has a stale entity reference left
+        // over from switching a carrier's type (e.g. postnl_v4 -> gls) before this was fixed.
+        if ((entityField === 'entity_outgoing' || entityField === 'entity_outgoing_delivered')
+            && (CARRIER_PRESETS[carrier.type] || CARRIER_PRESETS.custom).supports_outgoing === false) {
+            return [];
+        }
         const entityId = carrier[entityField];
         if (!entityId || !this._hass) return [];
         const stateObj = this._hass.states[entityId];
@@ -1364,8 +1374,8 @@ class HkiParcelsCardEditor extends LitElement {
             _manualUser: !!current.user,
             entity_incoming:    isSingle ? '' : (templated.entity_incoming    ?? current.entity_incoming    ?? ''),
             entity_delivered:   isSingle ? '' : (templated.entity_delivered   ?? current.entity_delivered   ?? ''),
-            entity_outgoing:    isSingle ? '' : (templated.entity_outgoing    ?? current.entity_outgoing    ?? ''),
-            entity_outgoing_delivered: isSingle ? '' : (templated.entity_outgoing_delivered ?? current.entity_outgoing_delivered ?? ''),
+            entity_outgoing:    (isSingle || preset.supports_outgoing === false) ? '' : (templated.entity_outgoing    ?? current.entity_outgoing    ?? ''),
+            entity_outgoing_delivered: (isSingle || preset.supports_outgoing === false) ? '' : (templated.entity_outgoing_delivered ?? current.entity_outgoing_delivered ?? ''),
             entity:             isSingle ? (current.entity ?? '') : '',
             distribution_entity:isSingle ? (current.distribution_entity ?? '') : '',
             entity_letters:     preset.supports_letters ? (templated.entity_letters ?? current.entity_letters ?? '') : ''
@@ -1380,13 +1390,14 @@ class HkiParcelsCardEditor extends LitElement {
         const carriers = [...(this._config.carriers || [])];
         const current = carriers[index] || {};
         const templated = buildTemplatedEntities(user, current.type);
+        const preset = CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom;
         carriers[index] = {
             ...current, user,
             entity_incoming:  templated.entity_incoming  ?? current.entity_incoming  ?? '',
             entity_delivered: templated.entity_delivered ?? current.entity_delivered ?? '',
-            entity_outgoing:  templated.entity_outgoing  ?? current.entity_outgoing  ?? '',
-            entity_outgoing_delivered: templated.entity_outgoing_delivered ?? current.entity_outgoing_delivered ?? '',
-            entity_letters:   (CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom).supports_letters
+            entity_outgoing:  preset.supports_outgoing === false ? '' : (templated.entity_outgoing  ?? current.entity_outgoing  ?? ''),
+            entity_outgoing_delivered: preset.supports_outgoing === false ? '' : (templated.entity_outgoing_delivered ?? current.entity_outgoing_delivered ?? ''),
+            entity_letters:   preset.supports_letters
                 ? (templated.entity_letters ?? current.entity_letters ?? '') : ''
         };
         this._config = { ...this._config, carriers };
@@ -1465,8 +1476,14 @@ class HkiParcelsCardEditor extends LitElement {
     }
 
     // Sanitizes free-text account input: lowercase, non-alnum → underscore, trim underscores.
+    // Dutch postcodes (e.g. "1234 AB", used as the GLS hub identifier) are a special case:
+    // HA's entity_id has no separator between the digits and letters, so the space is
+    // stripped outright rather than turned into an underscore ("1234 AB" → "1234ab").
     _sanitizeUserInput(value) {
-        return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        const raw = String(value || '').trim();
+        const postcodeMatch = raw.match(/^(\d{4})\s*([a-zA-Z]{2})$/);
+        if (postcodeMatch) return (postcodeMatch[1] + postcodeMatch[2]).toLowerCase();
+        return raw.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
     }
 
     _carrierUserInputChanged(index, ev) {
@@ -1479,14 +1496,14 @@ class HkiParcelsCardEditor extends LitElement {
         const current  = carriers[index] || {};
         const slugFirst = current._slugFirst ?? false;
         const templated = buildTemplatedEntities(user, current.type, slugFirst);
-        const supportsLetters = (CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom).supports_letters;
+        const preset = CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom;
         carriers[index] = {
             ...current, user,
             entity_incoming:  templated.entity_incoming  ?? current.entity_incoming  ?? '',
             entity_delivered: templated.entity_delivered ?? current.entity_delivered ?? '',
-            entity_outgoing:  templated.entity_outgoing  ?? current.entity_outgoing  ?? '',
-            entity_outgoing_delivered: templated.entity_outgoing_delivered ?? current.entity_outgoing_delivered ?? '',
-            entity_letters:   supportsLetters ? (templated.entity_letters ?? current.entity_letters ?? '') : ''
+            entity_outgoing:  preset.supports_outgoing === false ? '' : (templated.entity_outgoing  ?? current.entity_outgoing  ?? ''),
+            entity_outgoing_delivered: preset.supports_outgoing === false ? '' : (templated.entity_outgoing_delivered ?? current.entity_outgoing_delivered ?? ''),
+            entity_letters:   preset.supports_letters ? (templated.entity_letters ?? current.entity_letters ?? '') : ''
         };
         this._config = { ...this._config, carriers };
         this._emit();
@@ -2074,11 +2091,11 @@ class HkiParcelsCardEditor extends LitElement {
                 </div>`}
             <div class="plain-field" style="margin-top:8px;">
                 <label for="hki-carrier-user-${index}">${this._t('label_account')}</label>
-                <input id="hki-carrier-user-${index}" type="text" placeholder="e.g. my_account"
+                <input id="hki-carrier-user-${index}" type="text" placeholder="${carrier.type === 'gls' ? 'e.g. 1234ab' : 'e.g. my_account'}"
                     .value=${carrier.user || ''}
                     @change=${(ev) => this._carrierUserInputChanged(index, ev)} />
             </div>
-            <div class="helper-text">"_${preset.sensor_slug}${this._t('account_help_suffix')}</div>
+            <div class="helper-text">${carrier.type === 'gls' ? this._t('gls_account_help') : html`"_${preset.sensor_slug}${this._t('account_help_suffix')}`}</div>
             ${entityPreview}`;
     }
 
