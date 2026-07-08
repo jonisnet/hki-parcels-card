@@ -1,172 +1,51 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.0b1] — 2026-07-08
 
 ### Added
 
-- **Expected delivery window always wins in the parcel list** — for a parcel still in transit,
-  the list row's date now always shows the planned delivery window (`planned_from`/`planned_to`)
-  instead of falling back through other date fields, since it's the most actionable thing to
-  show. Displayed as "Today between 16:00 and 18:00" / "Tomorrow between..." / "The day after
-  tomorrow between..." for the next 2 days, or "Expected on 12 Jul between 16:00 and 18:00"
-  further out. Delivered parcels are unaffected — they still show their actual delivery
-  timestamp.
+- **4-step delivery tracker** — selecting a parcel shows a labelled progress row (Registered ·
+  Sorting centre · Out for delivery · Delivered), each step with its own carrier-branded icon and
+  a checkmark badge once that step is actually done, plus a larger illustration and a time/date
+  detail for the current step:
+  - Registered / sorting-centre times need the integration's optional "include history" setting
+    to have data; out for delivery shows the expected delivery window; delivered shows the
+    delivery date and time
+  - The existing driving-van animation is used for "out for delivery"; new illustrations for the
+    other three steps, per carrier (PostNL, DHL, DPD, GLS)
+  - Parcels with a status outside this happy path (`at_pickup_point`, `returning`, `problem`,
+    `unknown`) or on a non-canonical schema (legacy PostNL, single-entity, custom) keep the
+    previous plain van/chip + status-text treatment
+- **Dynamic combo banner** — the no-selection banner for 2+ carriers now shows only the carriers
+  you've actually configured, as full-width equal panels with a brand-colour tint, instead of a
+  static image listing every possible carrier
+- **Branded van animations for DHL, DPD and GLS** — each carrier's own van, recoloured from the
+  original PostNL animation instead of a generic colour chip
+- **GLS brand assets** — banner and van animation using GLS's exact brand blue (`#061ab1`)
+- **Expected delivery window always wins in the parcel list** — a parcel still in transit shows
+  its planned delivery window ("Today between 16:00 and 18:00", "Expected on 12 Jul between...")
+  instead of a bare date; delivered parcels are unaffected
 
 ### Fixed
 
-- **Restored `images/dutch-parcels.png` and `images/dutch-parcels-2.png` at the repo root** —
-  removed twice by mistake as "duplicates" of `images/shared/`. They're intentionally kept at
-  the pre-reorg path too: older tagged releases' JS still hardcodes `images/dutch-parcels*.png`
-  URLs, so removing them breaks the placeholder image for anyone on an older pinned version.
-
-- **Step tracker icons overflowed the card on narrow/mobile widths** — the 4 step columns had a
-  rigid `width: 96px` with no shrink, so on a typical phone-width card the row (well over 380px
-  just for the columns) ran past the card edge and the last icon got clipped. Columns now shrink
-  gracefully (down to a 40px floor) with the connecting lines absorbing space pressure first, so
-  icons stay full-size on normal cards and only shrink as a last resort on very narrow ones —
-  verified at 300px, 360px and 700px card widths.
+- **Duplicate parcels when switching a carrier's type** — could leave a carrier silently
+  re-reading another carrier's sent/delivered sensor under its own name; existing saved configs
+  self-heal automatically
+- **GLS postal code input** — "1234 AB" now sanitises to "1234ab" instead of "1234_ab"
+- **DHL brand colours corrected** — logo and banner recoloured to DHL's exact official hex values
+  (`#FFCC00` yellow / `#D40511` red) instead of the original artwork's approximation; DHL's mark
+  is kept on its yellow field rather than as a free-floating shape, matching how DHL's logo is
+  actually used
+- **Step tracker icons overflowed on narrow/mobile cards** — now shrink gracefully instead of
+  clipping the last step off screen
+- **Step icons were nearly invisible on a light theme** — bolder outlines and a tile border fix
+  the contrast against a white card background
 
 ### Changed
 
-- **Step hero time/date info restyled** — the label (e.g. "Bezorgd op") and the actual time/date
-  are now on separate lines instead of one sentence, with the time/date bigger and bold so it's
-  the part that stands out at a glance.
-
-### Fixed
-
-- **Step icons were nearly invisible on a light/white theme** — the registered/sorting/delivered
-  illustrations use a near-white body, and their outline stroke was thin enough in the source SVG
-  (1.5px at a 200-unit viewBox) that it became sub-pixel and got anti-aliased away once scaled
-  down to the 72px tile size, leaving a washed-out shape with almost no contrast against a white
-  card background. Outline stroke width and opacity roughly doubled, the isometric shading steps
-  darkened, and `.status-step-icon-wrap` gained a `1px solid var(--divider-color)` border so every
-  tile is clearly delineated regardless of theme.
-
-- **DHL logo reverted to red-on-yellow, now in the exact official brand colours** — a transparent
-  wordmark was the wrong idea for DHL specifically: unlike the other carriers, DHL's mark is
-  always shown on its yellow field, not as a free-floating red shape. `DHL_logo.png` is a cropped,
-  colour-corrected slice of `DHL_banner.png`, both now recoloured to DHL's exact brand hex values
-  (`#FFCC00` yellow, `#D40511` red — Pantone 116C / 199C) instead of the original artwork's
-  approximate colours. `DHL_step_sorting.png`'s signboard picks up the corrected logo too.
-  `.header-logo` gained `max-width: 110px` so a wide-aspect logo like this one can't crowd the
-  header.
-
-### Added
-
-- **Time/date detail beside the step tracker hero** — registered shows the time it was
-  registered, sorting centre shows the time it arrived there (both need the integration's
-  optional "include history" setting to have data — hidden otherwise), out for delivery shows
-  the expected delivery window ("between 16:00 and 18:00"), and delivered shows the delivery
-  date and time. Sits to the right of the hero illustration.
-
-### Changed
-
-- **DHL logo replaced with the wordmark from the banner** — the previous rounded-badge crop
-  didn't read as authentically "DHL" as the plain red wordmark does; extracted via chroma-key
-  from `DHL_banner.png` onto a transparent background.
-- **Registered/delivered mini icons no longer carry a baked-in checkmark** — only the large hero
-  illustration keeps it (as a permanent "this stage happened" marker); the small step-row icon
-  relies solely on the separate checkmark badge that already appears once a step is done, so a
-  parcel that's merely *at* the registered/delivered step no longer looks complete before it
-  actually is. Sorting/transit icons were unaffected since they never had a baked-in checkmark.
-
-### Fixed
-
-- **"Onderweg" step icon reverted to the real van artwork** — the hand-drawn vector van from the
-  previous update looked out of place next to the actual illustrated vans. It's back to being a
-  cropped frame from each carrier's own van GIF (same source as the "out for delivery" hero), at
-  native resolution instead of artificially upscaled.
-- **`GLS_logo.png` had a solid blue background** — every other carrier logo is transparent (used
-  on tinted panels, colored backgrounds, etc.), but GLS's used the square brand-icon variant with
-  an opaque blue fill. Replaced with the official transparent wordmark (same source as the GLS
-  banner). `DHL_logo.png` also had a soft dark glow baked into its "transparent" edges instead of
-  clean alpha=0; cropped to the solid icon, removing the halo.
-- **Status-step row no longer capped at 480px** — it was centered with a fixed max-width, leaving
-  empty space on wider cards instead of stretching edge to edge like the rest of the card.
-
-### Changed
-
-- **Step tracker icons are bigger and sharper** — 72px icon tiles (was 40px), a bigger checkmark
-  badge, and larger labels. All 16 step illustrations were re-exported at 1200px source width
-  (was 600px) for headroom at the new size. The "onderweg" (out for delivery) mini icon is now a
-  small vector van illustration in the same flat style as the other three steps, instead of a
-  cropped frame from the 200x142 van GIF — that source was too low-res to hold up at a larger
-  size. The large out-for-delivery illustration still uses the real van animation, unchanged.
-
-### Fixed
-
-- **"Out for delivery" hero showed the house next to the van instead of across the card** —
-  `.visual-road` lost its full width once it moved inside the step tracker's flex column
-  (`align-items: center` shrinks flex children to their content width instead of stretching
-  them), so `right: 0` (house) and `left: 25%` (van) were both resolving against a near-zero-width
-  box. Restored with `width: 100%` — the van is back on the left, driving toward the house on the
-  right, across the full card.
-- **"Onderweg" step icon replaced** — the hand-drawn placeholder truck is gone; the step icon is
-  now a cropped still frame from each carrier's own van animation, so it actually matches the
-  large "out for delivery" illustration instead of looking like a different, lower-quality van.
-
-### Changed
-
-- **Image assets reorganised into per-carrier folders** — `images/postnl/`, `images/dhl/`,
-  `images/dpd/`, `images/gls/` and `images/shared/` (for the generic combo-banner placeholders),
-  instead of one flat folder of prefixed filenames. No config changes needed — this only affects
-  the repo layout and the internal asset URLs the card already builds itself.
-
-### Added
-
-- **4-step delivery tracker** — selecting a parcel now shows a labelled progress row (Registered ·
-  Sorting centre · Out for delivery · Delivered), each step with its own small carrier-branded
-  icon, plus a large illustration for the current step below. A step's mini icon only gets a
-  checkmark badge once that step is actually completed — reaching the final "Delivered" step
-  marks all four as done. New illustrations per carrier (PostNL, DHL, DPD, GLS): a labelled
-  parcel with a "registered" check badge, a sorting-centre building with a loading dock (a small
-  van docks to unload), a van "on the way" icon, and a house with the parcel delivered on the
-  doorstep. The existing driving-van animation is kept as the large illustration for the "out for
-  delivery" step — it already showed exactly that. Parcels with a status outside this happy path
-  (`at_pickup_point`, `returning`, `problem`, `unknown`) or on a non-canonical schema (legacy
-  PostNL, single-entity, custom) keep the previous plain van/chip + status-text treatment.
-- **Combo banner redesign** — the no-selection banner for 2+ carriers now fills the full card
-  width with equal-width panels per carrier (subtle brand-colour tint, thin divider, centred
-  logo) instead of a cluster of logos floating in the middle with empty space on both sides.
-
-### Fixed
-
-- **Duplicate parcels when switching a carrier's type** — switching a carrier's type in the editor
-  (e.g. from `postnl_v4` to `gls`) could leave `entity_outgoing`/`entity_outgoing_delivered`
-  pointing at the *previous* carrier's sensor, because the fallback chain read the old value
-  instead of clearing it for carriers that don't support outgoing (`supports_outgoing: false`).
-  In practice this meant a GLS (or any outgoing-unsupported) carrier could silently re-read and
-  display PostNL's sent/delivered parcels a second time under its own name. Fixed at both the
-  editor (no longer carries the stale value over) and the card's data read (ignores the field
-  outright for carriers that don't support it), so existing saved configs self-heal too.
-- **GLS account field now accepts a postal code cleanly** — "1234 AB" is sanitised to "1234ab"
-  (space stripped, not turned into an underscore) so it matches `sensor.gls_1234ab_incoming_parcels`.
-  The account field also shows a GLS-specific placeholder/help text explaining it's the hub's
-  postal code rather than a login account.
-
-### Added
-
-- **Dynamic combo banner** — the no-selection banner shown for 2+ carriers is no longer a single
-  static image with every possible carrier on it. It's now built automatically from the logos of
-  only the carriers you've actually configured (e.g. PostNL + GLS shows just those two), using
-  each carrier's own logo asset. A user-supplied `placeholder_image` still overrides this.
-- **GLS banner asset** — `images/GLS_banner.png`, the official GLS wordmark (sourced from
-  [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:GLS_Logo_2021.svg)) on a white
-  background, used as the single-carrier banner for `gls`.
-- **`images/dutch-parcels-2.png`** — an updated 4-carrier (PostNL/DHL/DPD/GLS) static banner,
-  replacing `dutch-parcels.png` as the built-in `DEFAULT_PLACEHOLDER_IMAGE` fallback (used when
-  0 carriers are configured, or a single carrier with no logo asset). Also settable as a fixed
-  `placeholder_image` for anyone who prefers it over the dynamic combo banner.
-- **Branded van animations for DHL, DPD and GLS** — `images/DHL_van.gif`, `images/DPD_van.gif`
-  and `images/GLS_van.gif`. Each is the existing PostNL driving animation (67 frames) recoloured
-  to the carrier's brand colour via a hue shift, with the door badge swapped for that carrier's
-  own logo mark. Previously only PostNL had a van animation; the others fell back to a plain
-  colour-chip icon.
-
-### Fixed
-
-- **GLS accent colour corrected** — `#10218c` (estimate) → `#061ab1`, the exact GLS brand blue,
-  confirmed against both the official Wikimedia logo and GLS's own brand assets.
+- **Images reorganised into per-carrier folders** (`images/postnl/`, `images/dhl/`,
+  `images/dpd/`, `images/gls/`, `images/shared/`) instead of one flat folder of prefixed
+  filenames
 
 ## [1.3.0] — 2026-07-07
 

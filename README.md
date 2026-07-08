@@ -1,9 +1,10 @@
 # HKI Parcels Card
 
-[![Version](https://img.shields.io/badge/version-v1.3.0-blue?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/releases/latest)
+[![Version](https://img.shields.io/badge/version-v1.4.0b1-blue?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/releases/latest)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange?style=flat-square)](https://hacs.xyz)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![HA](https://img.shields.io/badge/Home%20Assistant-2026.7%2B-41bdf5?style=flat-square)](https://www.home-assistant.io)
+[![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-ea4aaa?style=flat-square&logo=githubsponsors)](https://github.com/sponsors/jonisnet)
 
 **Track parcels from PostNL, DHL, DPD and GLS in a single Home Assistant card** — with animated banners, letter scan images, automatic sensor detection and a full visual editor.
 
@@ -22,6 +23,7 @@
 - [Configuration](#configuration)
 - [Sensor naming](#sensor-naming)
 - [Carrier types reference](#carrier-types-reference)
+- [Sponsor](#sponsor)
 - [Credits](#credits)
 
 ---
@@ -34,7 +36,7 @@
 - **Four tabs** — In Transit · Delivered · Sent · Letters
 - **Split sections** — both Sent and Letters are split into *Still to be delivered* and *Delivered*
 - **Parcel details** — click any parcel for barcode, delivery type and a direct tracking link
-- **4-step delivery tracker** — selecting a parcel shows a progress row (Registered · In transit · Out for delivery · Delivered) with a carrier-branded illustration for the current step, plus a time/date detail (registered and sorting-centre times need the integration's optional "include history" setting; the delivery window and delivered timestamp work without it)
+- **4-step delivery tracker** — selecting a parcel shows a progress row (Registered · Sorting centre · Out for delivery · Delivered) with a carrier-branded illustration for the current step, plus a time/date detail (registered and sorting-centre times need the integration's optional "include history" setting; the delivery window and delivered timestamp work without it)
 - **Historical tracking** — configure how many days back delivered parcels remain visible
 
 ### 💌 Letterbox mail
@@ -263,6 +265,14 @@ The correct scheme is detected automatically. Leave `user` empty if your sensors
 | `custom` | Custom | any | canonical | — |
 
 > **Note:** `gls` has no Sent tab — GLS tracks parcels by number/postal code with no sender/account concept, so `entity_outgoing` and `entity_outgoing_delivered` are not applicable.
+
+---
+
+## Sponsor
+
+This card is free and maintained in my spare time. If it's useful to you, a small contribution is very welcome and appreciated:
+
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?style=for-the-badge&logo=githubsponsors)](https://github.com/sponsors/jonisnet)
 
 ---
 
