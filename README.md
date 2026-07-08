@@ -11,6 +11,8 @@
 
 ![Dashboard screenshot](https://raw.githubusercontent.com/jonisnet/hki-parcels-card/main/images/screenshot-dashboard.png)
 
+*Parcel detail with the 4-step delivery tracker*
+
 > Based on [jimz011/hki-elements](https://github.com/jimz011/hki-elements) — the original PostNL card from the HKI project, extended with multi-carrier support, automatic sensor templating and letterbox mail.
 
 ---
@@ -55,12 +57,25 @@
 
 ![Editor screenshot](https://raw.githubusercontent.com/jonisnet/hki-parcels-card/main/images/screenshot-editor-preview.png)
 
+*Visual editor with live preview*
+
 ### ✨ Appearance
 
 - **Carrier banners** — animated banner shown when no parcel is selected. With one carrier configured, that carrier's own banner/logo is shown. With two or more, the card automatically builds a combo banner from the logos of *only the carriers you've actually configured* — add GLS and it appears; leave out DPD and it doesn't. Set `placeholder_image` to override this with your own picture.
 - **Custom branding** — set a custom logo, van animation and banner per carrier
 - **PHU icons** — carrier icons via [custom-brand-icons](https://github.com/elax46/custom-brand-icons) activate automatically when installed
 - **Layout control** — reorder the header, animation, tabs and list sections
+
+<table>
+<tr>
+<td><img src="https://raw.githubusercontent.com/jonisnet/hki-parcels-card/main/images/screenshot-banners-dark.png" alt="Combo banner, dark theme"></td>
+<td><img src="https://raw.githubusercontent.com/jonisnet/hki-parcels-card/main/images/screenshot-banners-light.png" alt="Combo banner, light theme"></td>
+</tr>
+<tr>
+<td align="center"><em>Dark theme</em></td>
+<td align="center"><em>Light theme</em></td>
+</tr>
+</table>
 
 ---
 
