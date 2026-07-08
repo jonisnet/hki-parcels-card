@@ -4,6 +4,11 @@
 
 ### Fixed
 
+- **Restored `images/dutch-parcels.png` and `images/dutch-parcels-2.png` at the repo root** —
+  removed twice by mistake as "duplicates" of `images/shared/`. They're intentionally kept at
+  the pre-reorg path too: older tagged releases' JS still hardcodes `images/dutch-parcels*.png`
+  URLs, so removing them breaks the placeholder image for anyone on an older pinned version.
+
 - **Step tracker icons overflowed the card on narrow/mobile widths** — the 4 step columns had a
   rigid `width: 96px` with no shrink, so on a typical phone-width card the row (well over 380px
   just for the columns) ran past the card edge and the last icon got clipped. Columns now shrink
