@@ -1093,11 +1093,15 @@ class HkiParcelsCard extends HTMLElement {
             heroImgHtml = img ? `<div class="status-hero"><img class="status-hero-img" src="${img}" alt="" /></div>` : '';
         }
 
-        const infoText = this._stepHeroInfo(selected, stepIndex);
+        const info = this._stepHeroInfo(selected, stepIndex);
         const heroHtml = heroImgHtml ? `
             <div class="status-hero-row">
                 ${heroImgHtml}
-                ${infoText ? `<div class="status-hero-info">${infoText}</div>` : ''}
+                ${info ? `
+                <div class="status-hero-info">
+                    <div class="status-hero-info-label">${info.label}</div>
+                    <div class="status-hero-info-time">${info.time}</div>
+                </div>` : ''}
             </div>` : '';
 
         return `
@@ -1108,11 +1112,11 @@ class HkiParcelsCard extends HTMLElement {
             <div class="animation-info"><strong>${selected.name}</strong> • ${selected.status_message || ''} • ${selected.carrier_name || ''}</div>`;
     }
 
-    // Time/date detail shown beside the hero image for the current step. Registered/sorting
-    // times come from the optional per-parcel `history` array (only populated when the
-    // integration's "include history" option is on); transit uses the planned delivery window;
-    // delivered uses delivered_at. Returns '' when the relevant data isn't available rather than
-    // showing a placeholder.
+    // Time/date detail shown beside the hero image for the current step: a label line plus a
+    // bold time/date line underneath it. Registered/sorting times come from the optional
+    // per-parcel `history` array (only populated when the integration's "include history" option
+    // is on); transit uses the planned delivery window; delivered uses delivered_at. Returns null
+    // when the relevant data isn't available rather than showing a placeholder.
     _stepHeroInfo(selected, stepIndex) {
         const historyTime = (status) => {
             const entry = Array.isArray(selected.history) ? selected.history.find(h => h?.status === status) : null;
@@ -1120,24 +1124,24 @@ class HkiParcelsCard extends HTMLElement {
         };
         if (stepIndex === 1) {
             const time = historyTime('registered');
-            return time ? `${this._t('step_info_registered')} ${time}` : '';
+            return time ? { label: this._t('step_info_registered'), time } : null;
         }
         if (stepIndex === 2) {
             const time = historyTime('in_transit');
-            return time ? `${this._t('step_info_sorting')} ${time}` : '';
+            return time ? { label: this._t('step_info_sorting'), time } : null;
         }
         if (stepIndex === 3) {
             const from = this._formatTime(selected.planned_from);
             const to = this._formatTime(selected.planned_to);
-            if (from && to) return `${this._t('step_info_transit')} ${from} ${this._t('step_info_transit_and')} ${to}`;
-            if (from) return `${this._t('step_info_transit')} ${from}`;
-            return '';
+            if (from && to) return { label: this._t('step_info_transit'), time: `${from} ${this._t('step_info_transit_and')} ${to}` };
+            if (from) return { label: this._t('step_info_transit'), time: from };
+            return null;
         }
         if (stepIndex === 4) {
             const dt = this.formatDate(selected.delivered_at);
-            return dt ? `${this._t('step_info_delivered')} ${dt}` : '';
+            return dt ? { label: this._t('step_info_delivered'), time: dt } : null;
         }
-        return '';
+        return null;
     }
 
     _formatTime(dateStr) {
@@ -1388,7 +1392,9 @@ class HkiParcelsCard extends HTMLElement {
             .status-hero-row { display: flex; align-items: center; gap: 16px; width: 100%; box-sizing: border-box; }
             .status-hero { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; height: 118px; }
             .status-hero-img { max-height: 100%; max-width: 100%; object-fit: contain; }
-            .status-hero-info { flex: 0 1 42%; font-size: 12px; line-height: 1.4; color: var(--secondary-text-color); text-align: left; }
+            .status-hero-info { flex: 0 1 42%; text-align: left; }
+            .status-hero-info-label { font-size: 14px; line-height: 1.35; color: var(--secondary-text-color); }
+            .status-hero-info-time { font-size: 16px; line-height: 1.35; font-weight: 700; color: var(--primary-text-color); margin-top: 2px; }
             .combo-logo-row { display: flex; width: 100%; height: 100%; }
             .combo-panel { flex: 1 1 0; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
             .combo-panel:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 24%; bottom: 24%; width: 1px; background: var(--divider-color); opacity: 0.7; }

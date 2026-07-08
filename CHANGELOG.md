@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Step hero time/date info restyled** — the label (e.g. "Bezorgd op") and the actual time/date
+  are now on separate lines instead of one sentence, with the time/date bigger and bold so it's
+  the part that stands out at a glance.
+
 ### Fixed
 
 - **Step icons were nearly invisible on a light/white theme** — the registered/sorting/delivered
