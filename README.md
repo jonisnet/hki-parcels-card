@@ -1,6 +1,6 @@
 # HKI Parcels Card
 
-[![Version](https://img.shields.io/badge/version-v1.2.0-blue?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/releases/latest)
+[![Version](https://img.shields.io/badge/version-v1.3.0-blue?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/releases/latest)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange?style=flat-square)](https://hacs.xyz)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![HA](https://img.shields.io/badge/Home%20Assistant-2026.7%2B-41bdf5?style=flat-square)](https://www.home-assistant.io)
