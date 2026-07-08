@@ -1379,15 +1379,19 @@ class HkiParcelsCard extends HTMLElement {
             .header-animation.status-tracker-active { height: auto; min-height: 150px; padding-top: 14px; padding-bottom: 12px; }
             .status-tracker { display: flex; flex-direction: column; align-items: center; gap: 14px; }
             .status-steps { display: flex; align-items: flex-start; width: 100%; }
-            .status-step-col { display: flex; flex-direction: column; align-items: center; flex: 0 0 auto; width: 96px; }
-            .status-step-icon-wrap { position: relative; width: 72px; height: 72px; border-radius: 16px; box-sizing: border-box; background: var(--secondary-background-color, #eee); border: 1px solid var(--divider-color); display: flex; align-items: center; justify-content: center; opacity: 0.5; filter: grayscale(70%); transition: opacity 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease; }
+            /* Columns hold their 72px size as long as there's room; lines (flex-shrink: 20)
+               absorb space pressure first so icons only shrink as a last resort on very
+               narrow cards — keeps the row from overflowing on mobile without shrinking
+               icons unnecessarily on normal-width cards. */
+            .status-step-col { display: flex; flex-direction: column; align-items: center; flex: 0 1 72px; min-width: 40px; }
+            .status-step-icon-wrap { position: relative; width: 100%; max-width: 72px; aspect-ratio: 1 / 1; border-radius: 16px; box-sizing: border-box; background: var(--secondary-background-color, #eee); border: 1px solid var(--divider-color); display: flex; align-items: center; justify-content: center; opacity: 0.5; filter: grayscale(70%); transition: opacity 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease; }
             .status-step-icon-wrap.current, .status-step-icon-wrap.done { opacity: 1; filter: none; box-shadow: 0 0 0 2.5px var(--step-color); }
             .status-step-icon { width: 100%; height: 100%; object-fit: contain; padding: 6px; box-sizing: border-box; }
             .status-step-check { position: absolute; bottom: -7px; right: -7px; width: 26px; height: 26px; border-radius: 50%; background: var(--step-color); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px var(--card-background-color, #fff); }
             .status-step-check ha-icon { --mdc-icon-size: 16px; color: #fff; }
             .status-step-label { margin-top: 7px; font-size: 11.5px; line-height: 1.2; text-align: center; color: var(--secondary-text-color); }
             .status-step-label.active { color: var(--primary-text-color); font-weight: 600; }
-            .status-step-line { flex: 1 1 auto; height: 2px; background: var(--divider-color); margin-top: 35px; }
+            .status-step-line { flex: 1 20 12px; min-width: 0; height: 2px; background: var(--divider-color); margin-top: 35px; }
             .status-step-line.done { background: var(--step-color); }
             .status-hero-row { display: flex; align-items: center; gap: 16px; width: 100%; box-sizing: border-box; }
             .status-hero { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; height: 118px; }

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Step tracker icons overflowed the card on narrow/mobile widths** — the 4 step columns had a
+  rigid `width: 96px` with no shrink, so on a typical phone-width card the row (well over 380px
+  just for the columns) ran past the card edge and the last icon got clipped. Columns now shrink
+  gracefully (down to a 40px floor) with the connecting lines absorbing space pressure first, so
+  icons stay full-size on normal cards and only shrink as a last resort on very narrow ones —
+  verified at 300px, 360px and 700px card widths.
+
 ### Changed
 
 - **Step hero time/date info restyled** — the label (e.g. "Bezorgd op") and the actual time/date
