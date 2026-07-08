@@ -113,6 +113,11 @@ const TRANSLATIONS = {
         step_info_transit:      'Verwachte levering tussen',
         step_info_transit_and:  'en',
         step_info_delivered:    'Bezorgd op',
+        today:                  'Vandaag',
+        tomorrow:               'Morgen',
+        day_after_tomorrow:     'Overmorgen',
+        expected_on:            'Verwacht op',
+        between_time:           'tussen',
         parcel_from:            'Pakket van',
         unknown:                'Onbekend',
         mail_from:              'Post van',
@@ -232,6 +237,11 @@ const TRANSLATIONS = {
         step_info_transit:      'Expected delivery between',
         step_info_transit_and:  'and',
         step_info_delivered:    'Delivered on',
+        today:                  'Today',
+        tomorrow:               'Tomorrow',
+        day_after_tomorrow:     'The day after tomorrow',
+        expected_on:            'Expected on',
+        between_time:           'between',
         parcel_from:            'Parcel from',
         unknown:                'Unknown',
         mail_from:              'Mail from',
@@ -1149,6 +1159,43 @@ class HkiParcelsCard extends HTMLElement {
         return new Date(dateStr).toLocaleTimeString(this._hass?.language || 'en', { hour: '2-digit', minute: '2-digit' });
     }
 
+    _formatDateOnly(dateStr) {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleDateString(this._hass?.language || 'en', { day: 'numeric', month: 'short' });
+    }
+
+    // 'Today' / 'Tomorrow' / 'the day after tomorrow' for a date within the next 2 calendar
+    // days; null otherwise so the caller can fall back to an actual date.
+    _relativeDayLabel(dateStr) {
+        if (!dateStr) return null;
+        const d = new Date(dateStr);
+        const now = new Date();
+        const startOfDay = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+        const diffDays = Math.round((startOfDay(d) - startOfDay(now)) / 86400000);
+        if (diffDays === 0) return this._t('today');
+        if (diffDays === 1) return this._t('tomorrow');
+        if (diffDays === 2) return this._t('day_after_tomorrow');
+        return null;
+    }
+
+    // The parcel list row's date label. An expected delivery window (planned_from/planned_to —
+    // "verwachte levertijd") always wins over any other date for a parcel still in transit, since
+    // it's the most actionable info; shown as "Today between 16:00 and 18:00" or, beyond the next
+    // 2 days, "Expected on 12 Jul between 16:00 and 18:00". Delivered parcels are unaffected —
+    // they show their actual delivery timestamp, never an "expected" one.
+    _parcelDateLabel(item) {
+        if (!item.delivered && item.planned_from) {
+            const dayLabel = this._relativeDayLabel(item.planned_from);
+            const fromTime = this._formatTime(item.planned_from);
+            const toTime = item.planned_to ? this._formatTime(item.planned_to) : null;
+            const timePart = toTime ? `${this._t('between_time')} ${fromTime} ${this._t('step_info_transit_and')} ${toTime}` : fromTime;
+            return dayLabel
+                ? `${dayLabel} ${timePart}`
+                : `${this._t('expected_on')} ${this._formatDateOnly(item.planned_from)} ${timePart}`;
+        }
+        return this.formatDate(item.delivery_date || item.planned_date || item.planned_to);
+    }
+
     updateAnimation(displayed) {
         const animationEl = this.shadowRoot.querySelector('.header-animation');
         if (!animationEl) return;
@@ -1238,7 +1285,7 @@ class HkiParcelsCard extends HTMLElement {
         const isDelivered = item.delivered;
         const isLetter    = !!item.is_letter;
         const statusMsg   = item.status_message || (isLetter ? this._t('letterbox_mail') : (isDelivered ? this._t('status_delivered') : this._t('status_in_transit')));
-        const dateLabel   = this.formatDate(item.delivery_date || item.planned_date || item.planned_to);
+        const dateLabel   = this._parcelDateLabel(item);
         const statusIcon  = isLetter ? 'mdi:email' : (isDelivered ? 'mdi:check-circle' : 'mdi:truck-delivery');
         const isSelected  = this._selectedParcel === item.key;
 

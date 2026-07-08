@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Expected delivery window always wins in the parcel list** — for a parcel still in transit,
+  the list row's date now always shows the planned delivery window (`planned_from`/`planned_to`)
+  instead of falling back through other date fields, since it's the most actionable thing to
+  show. Displayed as "Today between 16:00 and 18:00" / "Tomorrow between..." / "The day after
+  tomorrow between..." for the next 2 days, or "Expected on 12 Jul between 16:00 and 18:00"
+  further out. Delivered parcels are unaffected — they still show their actual delivery
+  timestamp.
+
 ### Fixed
 
 - **Restored `images/dutch-parcels.png` and `images/dutch-parcels-2.png` at the repo root** —
