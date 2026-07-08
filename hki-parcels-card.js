@@ -110,9 +110,9 @@ const TRANSLATIONS = {
         step_label_delivered:   'Bezorgd',
         step_info_registered:   'Aangemeld om',
         step_info_sorting:      'Bij sorteercentrum om',
-        step_info_transit:      'Verwachte levering tussen',
         step_info_transit_and:  'en',
         step_info_delivered:    'Bezorgd op',
+        step_info_expected_delivery: 'Verwachte bezorging',
         today:                  'Vandaag',
         tomorrow:               'Morgen',
         day_after_tomorrow:     'Overmorgen',
@@ -234,9 +234,9 @@ const TRANSLATIONS = {
         step_label_delivered:   'Delivered',
         step_info_registered:   'Registered at',
         step_info_sorting:      'At sorting centre at',
-        step_info_transit:      'Expected delivery between',
         step_info_transit_and:  'and',
         step_info_delivered:    'Delivered on',
+        step_info_expected_delivery: 'Expected delivery',
         today:                  'Today',
         tomorrow:               'Tomorrow',
         day_after_tomorrow:     'The day after tomorrow',
@@ -1103,14 +1103,17 @@ class HkiParcelsCard extends HTMLElement {
             heroImgHtml = img ? `<div class="status-hero"><img class="status-hero-img" src="${img}" alt="" /></div>` : '';
         }
 
-        const info = this._stepHeroInfo(selected, stepIndex);
+        const infos = this._stepHeroInfo(selected, stepIndex);
         const heroHtml = heroImgHtml ? `
             <div class="status-hero-row">
                 ${heroImgHtml}
-                ${info ? `
+                ${infos.length ? `
                 <div class="status-hero-info">
-                    <div class="status-hero-info-label">${info.label}</div>
-                    <div class="status-hero-info-time">${info.time}</div>
+                    ${infos.map(info => `
+                    <div class="status-hero-info-block">
+                        <div class="status-hero-info-label">${info.label}</div>
+                        <div class="status-hero-info-time">${info.time}</div>
+                    </div>`).join('')}
                 </div>` : ''}
             </div>` : '';
 
@@ -1122,36 +1125,49 @@ class HkiParcelsCard extends HTMLElement {
             <div class="animation-info"><strong>${selected.name}</strong> • ${selected.status_message || ''} • ${selected.carrier_name || ''}</div>`;
     }
 
-    // Time/date detail shown beside the hero image for the current step: a label line plus a
-    // bold time/date line underneath it. Registered/sorting times come from the optional
+    // Time/date detail(s) shown beside the hero image for the current step, each as a label line
+    // plus a bold time/date line underneath it. Registered/sorting times come from the optional
     // per-parcel `history` array (only populated when the integration's "include history" option
-    // is on); transit uses the planned delivery window; delivered uses delivered_at. Returns null
-    // when the relevant data isn't available rather than showing a placeholder.
+    // is on). Every non-delivered step additionally shows the expected delivery window (if known)
+    // using the same relative-day wording as the parcel list ("Today between 16:00 and 18:00") —
+    // for "out for delivery" that's the only block, since it has no step-specific timestamp of its
+    // own. Delivered uses delivered_at only; nothing is "expected" once it's already arrived.
+    // Returns [] when no relevant data is available rather than showing a placeholder.
     _stepHeroInfo(selected, stepIndex) {
+        const infos = [];
         const historyTime = (status) => {
             const entry = Array.isArray(selected.history) ? selected.history.find(h => h?.status === status) : null;
             return entry?.timestamp ? this._formatTime(entry.timestamp) : null;
         };
         if (stepIndex === 1) {
             const time = historyTime('registered');
-            return time ? { label: this._t('step_info_registered'), time } : null;
-        }
-        if (stepIndex === 2) {
+            if (time) infos.push({ label: this._t('step_info_registered'), time });
+        } else if (stepIndex === 2) {
             const time = historyTime('in_transit');
-            return time ? { label: this._t('step_info_sorting'), time } : null;
-        }
-        if (stepIndex === 3) {
-            const from = this._formatTime(selected.planned_from);
-            const to = this._formatTime(selected.planned_to);
-            if (from && to) return { label: this._t('step_info_transit'), time: `${from} ${this._t('step_info_transit_and')} ${to}` };
-            if (from) return { label: this._t('step_info_transit'), time: from };
-            return null;
-        }
-        if (stepIndex === 4) {
+            if (time) infos.push({ label: this._t('step_info_sorting'), time });
+        } else if (stepIndex === 4) {
             const dt = this.formatDate(selected.delivered_at);
-            return dt ? { label: this._t('step_info_delivered'), time: dt } : null;
+            if (dt) infos.push({ label: this._t('step_info_delivered'), time: dt });
         }
-        return null;
+        if (stepIndex !== 4) {
+            const parts = this._expectedDeliveryParts(selected);
+            if (parts) infos.push({ label: this._t('step_info_expected_delivery'), time: `${parts.dayPart} ${parts.timePart}` });
+        }
+        return infos;
+    }
+
+    // Shared building block for "expected delivery" wording — a relative-day label ("Today" /
+    // "Tomorrow" / "The day after tomorrow", or an "Expected on {date}" fallback beyond that) plus
+    // the planned time or window. Used by both the parcel list and the step tracker hero info so
+    // they read consistently. Returns null when there's no planned_from to work with.
+    _expectedDeliveryParts(item) {
+        if (!item.planned_from) return null;
+        const dayLabel = this._relativeDayLabel(item.planned_from);
+        const fromTime = this._formatTime(item.planned_from);
+        const toTime = item.planned_to ? this._formatTime(item.planned_to) : null;
+        const dayPart = dayLabel || `${this._t('expected_on')} ${this._formatDateOnly(item.planned_from)}`;
+        const timePart = toTime ? `${this._t('between_time')} ${fromTime} ${this._t('step_info_transit_and')} ${toTime}` : fromTime;
+        return { dayPart, timePart };
     }
 
     _formatTime(dateStr) {
@@ -1184,14 +1200,9 @@ class HkiParcelsCard extends HTMLElement {
     // 2 days, "Expected on 12 Jul between 16:00 and 18:00". Delivered parcels are unaffected —
     // they show their actual delivery timestamp, never an "expected" one.
     _parcelDateLabel(item) {
-        if (!item.delivered && item.planned_from) {
-            const dayLabel = this._relativeDayLabel(item.planned_from);
-            const fromTime = this._formatTime(item.planned_from);
-            const toTime = item.planned_to ? this._formatTime(item.planned_to) : null;
-            const timePart = toTime ? `${this._t('between_time')} ${fromTime} ${this._t('step_info_transit_and')} ${toTime}` : fromTime;
-            return dayLabel
-                ? `${dayLabel} ${timePart}`
-                : `${this._t('expected_on')} ${this._formatDateOnly(item.planned_from)} ${timePart}`;
+        if (!item.delivered) {
+            const parts = this._expectedDeliveryParts(item);
+            if (parts) return `${parts.dayPart} ${parts.timePart}`;
         }
         return this.formatDate(item.delivery_date || item.planned_date || item.planned_to);
     }
@@ -1443,7 +1454,7 @@ class HkiParcelsCard extends HTMLElement {
             .status-hero-row { display: flex; align-items: center; gap: 16px; width: 100%; box-sizing: border-box; }
             .status-hero { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; height: 118px; }
             .status-hero-img { max-height: 100%; max-width: 100%; object-fit: contain; }
-            .status-hero-info { flex: 0 1 42%; text-align: left; }
+            .status-hero-info { flex: 0 1 42%; text-align: left; display: flex; flex-direction: column; gap: 10px; }
             .status-hero-info-label { font-size: 14px; line-height: 1.35; color: var(--secondary-text-color); }
             .status-hero-info-time { font-size: 16px; line-height: 1.35; font-weight: 700; color: var(--primary-text-color); margin-top: 2px; }
             .combo-logo-row { display: flex; width: 100%; height: 100%; }

@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Expected delivery window shown at every non-delivered step** — the step tracker's hero info
+  now always includes the expected delivery window (if known) alongside whatever else is shown
+  for that step (e.g. "Aangemeld om 08:15" *and* "Verwachte bezorging: Morgen tussen 09:00 en
+  11:00"), using the same relative-day wording as the parcel list. "Out for delivery" already
+  showed this info; it now uses the same "Today/Tomorrow/the day after tomorrow" wording as the
+  list instead of a bare time range. Nothing shown once a parcel is actually delivered — there's
+  nothing left to expect.
+
 ## [1.4.0b2] — 2026-07-08
 
 ### Added
