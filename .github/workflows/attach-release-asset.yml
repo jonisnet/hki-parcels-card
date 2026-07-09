@@ -1,0 +1,25 @@
+name: Attach release asset
+
+# Uploads hki-parcels-card.js as a downloadable release asset whenever a
+# release (including pre-releases) is published, so download counts are
+# tracked per release (GitHub does not track downloads of the auto-generated
+# source zip/tarball, only of explicitly uploaded assets).
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  upload-asset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Upload hki-parcels-card.js to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" hki-parcels-card.js --repo "${{ github.repository }}" --clobber

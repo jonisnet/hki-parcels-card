@@ -1,6 +1,6 @@
 # HKI Parcels Card
 
-[![Version](https://img.shields.io/badge/version-v1.4.0b4-blue?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/releases/latest)
+[![Version](https://img.shields.io/badge/version-v1.4.0b5-blue?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/releases/latest)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange?style=flat-square)](https://hacs.xyz)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/blob/main/LICENSE)
 [![HA](https://img.shields.io/badge/Home%20Assistant-2026.7%2B-41bdf5?style=flat-square)](https://www.home-assistant.io)
@@ -140,7 +140,7 @@ Install [custom-brand-icons](https://github.com/elax46/custom-brand-icons) via H
 
 ## Quick start
 
-Add the card to your dashboard and open the visual editor. The editor auto-detects your installed carriers and fills in the sensor entity IDs automatically. You only need to pick your carrier type and confirm the account.
+Add the card to your dashboard — it auto-detects every installed carrier integration (PostNL, DHL, DPD, GLS) and pre-fills a fully configured entry for each one it finds, including `days_back` (based on the oldest delivered parcel currently visible across your carriers). Open the visual editor afterwards only if you want to tweak something; the editor itself also auto-fills entity IDs when you pick a carrier type and confirm the account.
 
 Alternatively, add it via YAML:
 
@@ -167,7 +167,7 @@ carriers:
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `title` | string | `Parcels` | Title shown in the card header |
-| `days_back` | number | `90` | Days to keep delivered parcels visible |
+| `days_back` | number | `90`* | Days to keep delivered parcels visible |
 | `show_delivered` | boolean | `true` | Show the Delivered tab |
 | `show_sent` | boolean | `true` | Show the Sent tab |
 | `show_letters` | boolean | `true` | Show the Letters tab (PostNL only) |
@@ -179,6 +179,8 @@ carriers:
 | `placeholder_image` | string | _(built-in)_ | URL to a custom background image. Overrides the automatic combo banner (see [Carrier banners](#-appearance)) — set to a fixed picture if you'd rather always show the same image than the auto-built combo banner |
 | `layout_order` | list | `[header, animation, tabs, list]` | Order of card sections |
 | `carriers` | list | — | **Required.** List of carrier configurations |
+
+\* When the card is first added, `days_back` is pre-filled from your actual delivered-parcel history (the oldest delivered parcel currently visible, across every detected carrier) instead of the flat `90`. This is a one-time default, not a live setting — change it any time in the card options.
 
 ### Carrier options
 

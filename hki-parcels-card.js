@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.4.0b4';
+const CARD_VERSION = 'v1.4.0b5';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -533,6 +533,77 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false, hass = nul
     };
 }
 
+// Returns { user, slugFirst }[] for all detected accounts of a carrier type.
+// Tries every known "incoming" suffix — the carrier's own override (if any)
+// plus the universal English/Dutch alternates in CANONICAL_SUFFIXES — against
+// both "sensor.<user>_<slug>_<suffix>" and "sensor.<slug>_<user>_<suffix>",
+// since language and prefix ordering can each vary independently per sensor
+// (see CANONICAL_SUFFIXES / resolveEntityId above). Module-level (not tied to
+// the editor instance) so both the editor's account-detection UI and
+// HkiParcelsCard.getStubConfig() (auto-populating carriers on first add) can
+// use it.
+function detectCarrierUsers(hass, carrierType) {
+    if (!hass) return [];
+    const preset = CARRIER_PRESETS[carrierType];
+    if (!preset?.sensor_slug) return [];
+    const slug = preset.sensor_slug;
+    const incomingSuffixes = [
+        ...(preset.slug_first_suffixes?.incoming != null ? [preset.slug_first_suffixes.incoming] : []),
+        ...CANONICAL_SUFFIXES.incoming,
+    ];
+    const patterns = incomingSuffixes.map(suffix => ({
+        userFirst: new RegExp(`^sensor\\.(.+)_${slug}_${suffix}$`),
+        slugFirst: new RegExp(`^sensor\\.${slug}_(.+)_${suffix}$`),
+        noPrefix:  new RegExp(`^sensor\\.${slug}_${suffix}$`),
+    }));
+    const seen = new Map(); // user → slugFirst
+    for (const entityId of Object.keys(hass.states)) {
+        for (const { userFirst, slugFirst, noPrefix } of patterns) {
+            const m1 = userFirst.exec(entityId);
+            if (m1 && !seen.has(m1[1])) { seen.set(m1[1], false); break; }
+            const m2 = slugFirst.exec(entityId);
+            if (m2 && !seen.has(m2[1])) { seen.set(m2[1], true); break; }
+            if (noPrefix.test(entityId) && !seen.has('')) { seen.set('', false); break; }
+        }
+    }
+    return [...seen.entries()].map(([user, slugFirst]) => ({ user, slugFirst }));
+}
+
+// The carrier types offered for auto-population when the card is first added
+// (HkiParcelsCard.getStubConfig). Excludes postnl (legacy v3.x — same
+// sensor_slug as postnl_v4, so detection can't tell them apart; v4 is the
+// recommended default and the user can switch the type manually if they're
+// still on v3.x) and postnl_legacy / custom (sensor_slug is null — no
+// entity-based detection is possible for those).
+const AUTO_DETECT_CARRIER_TYPES = ['postnl_v4', 'dhl', 'dpd', 'gls'];
+
+// Infers a sensible days_back for a freshly auto-populated card: the number
+// of days since the oldest currently-visible delivered parcel, across every
+// detected carrier's delivered sensor, whichever is largest. This is an
+// approximation, not the integration's own configured delivered-filter
+// setting — a Lovelace card has no supported way to read another
+// integration's stored config-entry options (that only lives in its own
+// options-flow, not in any entity state/attribute a card can see). Falls
+// back to 90 (the long-standing static default) when nothing is known yet
+// (fresh accounts with no delivered history, or hass unavailable).
+function inferDaysBack(hass, carriers) {
+    const DEFAULT_DAYS_BACK = 90;
+    if (!hass?.states) return DEFAULT_DAYS_BACK;
+    const now = Date.now();
+    let maxDays = 0;
+    for (const carrier of carriers) {
+        const stateObj = hass.states[carrier.entity_delivered];
+        for (const parcel of stateObj?.attributes?.parcels || []) {
+            if (!parcel?.delivered_at) continue;
+            const deliveredMs = Date.parse(parcel.delivered_at);
+            if (Number.isNaN(deliveredMs)) continue;
+            const daysAgo = Math.ceil((now - deliveredMs) / 86400000);
+            if (daysAgo > maxDays) maxDays = daysAgo;
+        }
+    }
+    return maxDays > 0 ? maxDays : DEFAULT_DAYS_BACK;
+}
+
 // Both lowercase (DHL/DPD) and uppercase (ha-postnl v4.x) enum values are accepted.
 const CANONICAL_DELIVERED_STATUSES = new Set(['delivered', 'DELIVERED']);
 
@@ -592,20 +663,41 @@ class HkiParcelsCard extends HTMLElement {
         return document.createElement("hki-parcels-card-editor");
     }
 
-    static getStubConfig() {
-        return {
-            title: "Parcels",
-            days_back: 90,
-            show_delivered: true,
-            show_sent: true,
-            show_letters: true,
-            show_animation: true,
-            show_header: true,
-            show_placeholder: true,
-            header_color: '',
-            header_text_color: '',
-            placeholder_image: DEFAULT_PLACEHOLDER_IMAGE,
-            carriers: [
+    // HA calls this with the live `hass` object when the card is first added
+    // to a dashboard, before the editor opens. Auto-populates one carrier
+    // entry per detected account across every installed carrier integration
+    // (PostNL, DHL, DPD, GLS), fully filled in via the same detection/entity
+    // resolution the editor itself uses — instead of a fixed PostNL+DHL
+    // example that had nothing to do with what's actually installed.
+    // Falls back to that static example when hass isn't available yet or
+    // nothing gets detected (fresh HA instance, no carriers configured).
+    static getStubConfig(hass) {
+        const carriers = [];
+        if (hass) {
+            for (const type of AUTO_DETECT_CARRIER_TYPES) {
+                const preset = CARRIER_PRESETS[type];
+                for (const { user, slugFirst } of detectCarrierUsers(hass, type)) {
+                    const templated = buildTemplatedEntities(user, type, slugFirst, hass);
+                    carriers.push({
+                        type,
+                        name: preset.label,
+                        icon: getDefaultIcon(type),
+                        color: preset.color,
+                        schema: preset.schema,
+                        logo_path: '', van_path: '', banner_path: '',
+                        user,
+                        entity_incoming: templated.entity_incoming || '',
+                        entity_delivered: templated.entity_delivered || '',
+                        entity_outgoing: preset.supports_outgoing === false ? '' : (templated.entity_outgoing || ''),
+                        entity_outgoing_delivered: preset.supports_outgoing === false ? '' : (templated.entity_outgoing_delivered || ''),
+                        entity_letters: preset.supports_letters ? (templated.entity_letters || '') : ''
+                    });
+                }
+            }
+        }
+
+        if (!carriers.length) {
+            carriers.push(
                 {
                     type: 'postnl',
                     name: 'PostNL',
@@ -632,7 +724,22 @@ class HkiParcelsCard extends HTMLElement {
                     entity_outgoing_delivered: 'sensor.dhl_outgoing_delivered_parcels',
                     entity_letters: ''
                 }
-            ],
+            );
+        }
+
+        return {
+            title: "Parcels",
+            days_back: inferDaysBack(hass, carriers),
+            show_delivered: true,
+            show_sent: true,
+            show_letters: true,
+            show_animation: true,
+            show_header: true,
+            show_placeholder: true,
+            header_color: '',
+            header_text_color: '',
+            placeholder_image: DEFAULT_PLACEHOLDER_IMAGE,
+            carriers,
             show_tracking_link: true,
             layout_order: ['header', 'animation', 'tabs', 'list']
         };
@@ -1774,36 +1881,10 @@ class HkiParcelsCardEditor extends LitElement {
     }
 
     // Returns { user, slugFirst }[] for all detected accounts of a carrier type.
-    // Tries every known "incoming" suffix — the carrier's own override (if any)
-    // plus the universal English/Dutch alternates in CANONICAL_SUFFIXES — against
-    // both "sensor.<user>_<slug>_<suffix>" and "sensor.<slug>_<user>_<suffix>",
-    // since language and prefix ordering can each vary independently per
-    // sensor (see CANONICAL_SUFFIXES / resolveEntityId above).
+    // Thin wrapper — see the module-level detectCarrierUsers() above, shared
+    // with HkiParcelsCard.getStubConfig().
     _detectUsers(carrierType) {
-        if (!this.hass) return [];
-        const preset = CARRIER_PRESETS[carrierType];
-        if (!preset?.sensor_slug) return [];
-        const slug = preset.sensor_slug;
-        const incomingSuffixes = [
-            ...(preset.slug_first_suffixes?.incoming != null ? [preset.slug_first_suffixes.incoming] : []),
-            ...CANONICAL_SUFFIXES.incoming,
-        ];
-        const patterns = incomingSuffixes.map(suffix => ({
-            userFirst: new RegExp(`^sensor\\.(.+)_${slug}_${suffix}$`),
-            slugFirst: new RegExp(`^sensor\\.${slug}_(.+)_${suffix}$`),
-            noPrefix:  new RegExp(`^sensor\\.${slug}_${suffix}$`),
-        }));
-        const seen = new Map(); // user → slugFirst
-        for (const entityId of Object.keys(this.hass.states)) {
-            for (const { userFirst, slugFirst, noPrefix } of patterns) {
-                const m1 = userFirst.exec(entityId);
-                if (m1 && !seen.has(m1[1])) { seen.set(m1[1], false); break; }
-                const m2 = slugFirst.exec(entityId);
-                if (m2 && !seen.has(m2[1])) { seen.set(m2[1], true); break; }
-                if (noPrefix.test(entityId) && !seen.has('')) { seen.set('', false); break; }
-            }
-        }
-        return [...seen.entries()].map(([user, slugFirst]) => ({ user, slugFirst }));
+        return detectCarrierUsers(this.hass, carrierType);
     }
 
     // Sanitizes free-text account input: lowercase, non-alnum → underscore, trim underscores.
