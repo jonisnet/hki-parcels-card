@@ -468,21 +468,37 @@ function slugifyUserSlug(text) {
 }
 
 // Builds a candidate entity_id and, when `hass` is available, verifies it
-// against real state before accepting it. A has_entity_name entity's
-// entity_id is derived from whatever language HA was displaying at the
-// moment it was first created, not from the (English) translation_key —
-// so a fresh Dutch-language install can produce a different suffix than a
-// fresh English one for the exact same integration code. `preset.translated_suffixes[slotKey]`
-// lists alternate suffixes to try, in order, before giving up and
-// returning the plain guess (used as a placeholder when nothing exists
-// yet, e.g. a carrier that hasn't been set up at all).
-function resolveEntityId(hass, base, slotKey, suffix, preset) {
+// against real state before accepting it. Tries, in order: the primary
+// guess (`base` + `suffix`), then `base` + each of
+// `preset.translated_suffixes[slotKey]` (a has_entity_name entity's
+// entity_id is derived from whatever language HA was displaying when it
+// was first created, not from the English translation_key, so a fresh
+// Dutch-language install can produce a different suffix than a fresh
+// English one for the exact same integration code).
+//
+// When translated_suffixes is defined for this slot, also cross-checks
+// `altBase` (the *other* prefix/slug ordering) with every suffix. This
+// matters for an account whose older sensors predate has_entity_name and
+// got a legacy entity_id ordering assigned once and never renamed: a
+// brand-new sensor added later always lands in the current
+// <device-name-slug>_<entity-name-slug> ("slug first") order regardless
+// of what ordering the rest of that account's sensors happen to use — so
+// the two "base" orderings do not necessarily line up within one account.
+//
+// Falls back to the primary guess as a placeholder when nothing matches
+// (fresh install, sensor not created yet).
+function resolveEntityId(hass, base, altBase, slotKey, suffix, preset) {
     const guess = `sensor.${base}_${suffix}`;
     if (!hass?.states) return guess;
-    if (hass.states[guess]) return guess;
-    for (const altSuffix of preset.translated_suffixes?.[slotKey] || []) {
-        const candidate = `sensor.${base}_${altSuffix}`;
-        if (hass.states[candidate]) return candidate;
+
+    const altSuffixes = preset.translated_suffixes?.[slotKey] || [];
+    const suffixes = [suffix, ...altSuffixes];
+    const bases = altSuffixes.length ? [base, altBase] : [base];
+    for (const b of bases) {
+        for (const suf of suffixes) {
+            const candidate = `sensor.${b}_${suf}`;
+            if (hass.states[candidate]) return candidate;
+        }
     }
     return guess;
 }
@@ -494,14 +510,15 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false, hass = nul
         return { entity_incoming: null, entity_delivered: null, entity_outgoing: null, entity_outgoing_delivered: null, entity_letters: null };
     }
     const u = slugifyUserSlug(user);
+    const userFirstBase = u ? `${u}_${slug}` : slug;
+    const slugFirstBase = u ? `${slug}_${u}` : slug;
     // slugFirst: sensor.<slug>_<user>_* (e.g. sensor.dpd_keesb_binnenkomende_pakketten)
     // userFirst: sensor.<user>_<slug>_* or sensor.<slug>_* when no prefix
     if (slugFirst && u) {
         const sf = preset.slug_first_suffixes;
-        const base = `${slug}_${u}`;
         const s = (key, fallback) => sf?.[key] != null
-            ? resolveEntityId(hass, base, key, sf[key], preset)
-            : (sf?.[key] === null ? null : resolveEntityId(hass, base, key, fallback, preset));
+            ? resolveEntityId(hass, slugFirstBase, userFirstBase, key, sf[key], preset)
+            : (sf?.[key] === null ? null : resolveEntityId(hass, slugFirstBase, userFirstBase, key, fallback, preset));
         return {
             entity_incoming:          s('incoming',          'incoming_parcels'),
             entity_delivered:         s('delivered',         'delivered_parcels'),
@@ -510,14 +527,12 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false, hass = nul
             entity_letters: preset.supports_letters ? s('letters', 'letters') : null
         };
     }
-    const prefix = u ? `${u}_` : '';
-    const base = `${prefix}${slug}`;
     return {
-        entity_incoming:          resolveEntityId(hass, base, 'incoming', 'incoming_parcels', preset),
-        entity_delivered:         resolveEntityId(hass, base, 'delivered', 'delivered_parcels', preset),
-        entity_outgoing:          preset.supports_outgoing !== false ? resolveEntityId(hass, base, 'outgoing', 'outgoing_parcels', preset) : null,
-        entity_outgoing_delivered:preset.supports_outgoing !== false ? resolveEntityId(hass, base, 'outgoing_delivered', 'outgoing_delivered_parcels', preset) : null,
-        entity_letters: preset.supports_letters ? resolveEntityId(hass, base, 'letters', 'letters', preset) : null
+        entity_incoming:          resolveEntityId(hass, userFirstBase, slugFirstBase, 'incoming', 'incoming_parcels', preset),
+        entity_delivered:         resolveEntityId(hass, userFirstBase, slugFirstBase, 'delivered', 'delivered_parcels', preset),
+        entity_outgoing:          preset.supports_outgoing !== false ? resolveEntityId(hass, userFirstBase, slugFirstBase, 'outgoing', 'outgoing_parcels', preset) : null,
+        entity_outgoing_delivered:preset.supports_outgoing !== false ? resolveEntityId(hass, userFirstBase, slugFirstBase, 'outgoing_delivered', 'outgoing_delivered_parcels', preset) : null,
+        entity_letters: preset.supports_letters ? resolveEntityId(hass, userFirstBase, slugFirstBase, 'letters', 'letters', preset) : null
     };
 }
 
