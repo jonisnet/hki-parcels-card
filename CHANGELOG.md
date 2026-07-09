@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.1] — 2026-07-09
+
+### Fixed
+
+- **DPD's delivered-outgoing sensor was never auto-detected** — DPD's `slug_first_suffixes` preset hardcoded `outgoing_delivered: null` ("unsupported"), left over from before peternijssen/ha-dpd 2.5.0 added its own `outgoing_delivered_parcels` sensor. That hardcoded `null` short-circuited detection before it ever reached the English/Dutch fallback list, so a real sensor like `sensor.dpd_<account>_uitgaande_bezorgde_pakketten` was invisible even though the same fallback logic already covers exactly that suffix. Removed the override — DPD now falls through to the same generic detection as every other carrier without one.
+
 ## [1.4.0] — 2026-07-09
 
 ### Added
