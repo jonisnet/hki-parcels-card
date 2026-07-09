@@ -4,13 +4,6 @@
 
 ### Added
 
-- **Adding the card now auto-populates every installed carrier, not just a fixed PostNL + DHL example** — `getStubConfig` now receives the live `hass` object (as Home Assistant provides when the card is first added to a dashboard) and runs the same account-detection used by the editor across every supported carrier type (PostNL, DHL, DPD, GLS), pre-filling a fully configured carrier entry — name, icon, colour, and all detected sensor entities — for each account found. Falls back to the old static PostNL + DHL example only when nothing can be detected yet (e.g. a fresh HA instance with no carrier integrations configured).
-- **`days_back` is now inferred from your actual delivered-parcel history on first add** — looks at every auto-populated carrier's delivered sensor, finds the oldest currently-visible delivered parcel, and uses the largest value across all carriers instead of a flat default of 90. This is an approximation based on what's actually visible right now, not each integration's own configured retention setting — a Lovelace card has no supported way to read another integration's stored config-entry options (e.g. DHL/PostNL's `delivered_filter_amount`), since that lives in the integration's own options flow, not in any entity state or attribute. Falls back to 90 when there's no delivered history yet.
-
-## [1.4.0b4] — 2026-07-09
-
-### Added
-
 - **4-step delivery tracker** — selecting a parcel shows a labelled progress row (Registered ·
   Sorting centre · Out for delivery · Delivered), each step with its own carrier-branded icon and
   a checkmark badge once that step is actually done, plus a larger illustration and a time/date
@@ -35,6 +28,21 @@
 - **Expected delivery window always wins in the parcel list** — a parcel still in transit shows
   its planned delivery window ("Today between 16:00 and 18:00", "Expected on 12 Jul between...")
   instead of a bare date; delivered parcels are unaffected
+- **Adding the card now auto-populates every installed carrier, not just a fixed PostNL + DHL
+  example** — `getStubConfig` now receives the live `hass` object (as Home Assistant provides when
+  the card is first added to a dashboard) and runs the same account-detection used by the editor
+  across every supported carrier type (PostNL, DHL, DPD, GLS), pre-filling a fully configured
+  carrier entry — name, icon, colour, and all detected sensor entities — for each account found.
+  Falls back to the old static PostNL + DHL example only when nothing can be detected yet (e.g. a
+  fresh HA instance with no carrier integrations configured).
+- **`days_back` is now inferred from your actual delivered-parcel history on first add** — looks
+  at every auto-populated carrier's delivered sensor, finds the oldest currently-visible delivered
+  parcel, and uses the largest value across all carriers instead of a flat default of 90. This is
+  an approximation based on what's actually visible right now, not each integration's own
+  configured retention setting — a Lovelace card has no supported way to read another
+  integration's stored config-entry options (e.g. DHL/PostNL's `delivered_filter_amount`), since
+  that lives in the integration's own options flow, not in any entity state or attribute. Falls
+  back to 90 when there's no delivered history yet.
 
 ### Fixed
 
