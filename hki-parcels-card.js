@@ -441,17 +441,7 @@ const STATUS_STEP_ORDER = ['registered', 'in_transit', 'out_for_delivery', 'deli
 const CARRIER_PRESETS = {
     postnl_v4:    { label: 'PostNL',                    icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: true,  sensor_slug: 'postnl' },
     postnl:       { label: 'PostNL (peternijssen v3.x)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'legacy',        supports_letters: true,  sensor_slug: 'postnl' },
-    dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl',
-                    // "Delivered outgoing parcels" is a has_entity_name entity, so a
-                    // brand-new one's entity_id is derived from whatever language HA
-                    // was showing when it was first created — not from the English
-                    // translation_key. Give buildTemplatedEntities' hass-aware
-                    // verification (see resolve() below) both the English and Dutch
-                    // possibilities to check against real state before falling back
-                    // to the plain guess.
-                    translated_suffixes: {
-                        outgoing_delivered: ['delivered_outgoing_parcels', 'bezorgde_uitgaande_pakketten'],
-                    } },
+    dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl'    },
     dpd:          { label: 'DPD',                        icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd',
                     slug_first_suffixes: { incoming: 'binnenkomende_pakketten', delivered: 'bezorgde_pakketten', outgoing: 'uitgaande_pakketten', outgoing_delivered: null, letters: null } },
     gls:          { label: 'GLS',                        icon: 'mdi:package-variant-closed', color: '#061ab1', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'gls'    },
@@ -467,34 +457,41 @@ function slugifyUserSlug(text) {
         .replace(/^_+|_+$/g, '');
 }
 
+// Universal English/Dutch suffix alternates for each entity slot, tried by
+// every carrier on top of any carrier-specific override (e.g. DPD's own
+// word choices in slug_first_suffixes — those still take priority as the
+// primary guess, this is just an extra safety net). Needed because:
+// - a has_entity_name entity's entity_id is derived from whatever language
+//   HA was displaying when it was first created, not from the (English)
+//   translation_key — so the exact same integration code can produce an
+//   English or a Dutch suffix depending on the install.
+// - some integrations (seen on DHL and PostNL) keep legacy
+//   pre-has_entity_name sensors in one prefix ordering while brand-new
+//   ones land in the current <device-name-slug>_<entity-name-slug>
+//   ("slug first") ordering, within the very same account — so language
+//   AND ordering can each vary independently per sensor, not just per carrier.
+const CANONICAL_SUFFIXES = {
+    incoming:           ['incoming_parcels', 'inkomende_pakketten'],
+    delivered:          ['delivered_parcels', 'bezorgde_pakketten'],
+    outgoing:           ['outgoing_parcels', 'uitgaande_pakketten'],
+    outgoing_delivered: ['outgoing_delivered_parcels', 'delivered_outgoing_parcels', 'bezorgde_uitgaande_pakketten', 'uitgaande_bezorgde_pakketten'],
+    letters:            ['letters', 'brieven'],
+};
+
 // Builds a candidate entity_id and, when `hass` is available, verifies it
-// against real state before accepting it. Tries, in order: the primary
-// guess (`base` + `suffix`), then `base` + each of
-// `preset.translated_suffixes[slotKey]` (a has_entity_name entity's
-// entity_id is derived from whatever language HA was displaying when it
-// was first created, not from the English translation_key, so a fresh
-// Dutch-language install can produce a different suffix than a fresh
-// English one for the exact same integration code).
-//
-// When translated_suffixes is defined for this slot, also cross-checks
-// `altBase` (the *other* prefix/slug ordering) with every suffix. This
-// matters for an account whose older sensors predate has_entity_name and
-// got a legacy entity_id ordering assigned once and never renamed: a
-// brand-new sensor added later always lands in the current
-// <device-name-slug>_<entity-name-slug> ("slug first") order regardless
-// of what ordering the rest of that account's sensors happen to use — so
-// the two "base" orderings do not necessarily line up within one account.
-//
-// Falls back to the primary guess as a placeholder when nothing matches
-// (fresh install, sensor not created yet).
+// against real state before accepting it. Tries the primary guess
+// (`base` + `suffix`) first, then `base` + every alternate in
+// `preset.translated_suffixes[slotKey]` (carrier-specific, if any) and
+// `CANONICAL_SUFFIXES[slotKey]` (universal), then repeats all of that
+// against `altBase` — the *other* prefix/slug ordering. Falls back to the
+// primary guess as a placeholder when nothing matches (fresh install,
+// sensor not created yet).
 function resolveEntityId(hass, base, altBase, slotKey, suffix, preset) {
     const guess = `sensor.${base}_${suffix}`;
     if (!hass?.states) return guess;
 
-    const altSuffixes = preset.translated_suffixes?.[slotKey] || [];
-    const suffixes = [suffix, ...altSuffixes];
-    const bases = altSuffixes.length ? [base, altBase] : [base];
-    for (const b of bases) {
+    const suffixes = [suffix, ...(preset.translated_suffixes?.[slotKey] || []), ...(CANONICAL_SUFFIXES[slotKey] || [])];
+    for (const b of [base, altBase]) {
         for (const suf of suffixes) {
             const candidate = `sensor.${b}_${suf}`;
             if (hass.states[candidate]) return candidate;
@@ -1777,23 +1774,34 @@ class HkiParcelsCardEditor extends LitElement {
     }
 
     // Returns { user, slugFirst }[] for all detected accounts of a carrier type.
-    // Checks both "sensor.<user>_<slug>_incoming_parcels" and "sensor.<slug>_<user>_<incoming_suffix>".
+    // Tries every known "incoming" suffix — the carrier's own override (if any)
+    // plus the universal English/Dutch alternates in CANONICAL_SUFFIXES — against
+    // both "sensor.<user>_<slug>_<suffix>" and "sensor.<slug>_<user>_<suffix>",
+    // since language and prefix ordering can each vary independently per
+    // sensor (see CANONICAL_SUFFIXES / resolveEntityId above).
     _detectUsers(carrierType) {
         if (!this.hass) return [];
         const preset = CARRIER_PRESETS[carrierType];
         if (!preset?.sensor_slug) return [];
         const slug = preset.sensor_slug;
-        const slugFirstIncoming = preset.slug_first_suffixes?.incoming ?? 'incoming_parcels';
-        const patternUserFirst = new RegExp(`^sensor\\.(.+)_${slug}_incoming_parcels$`);
-        const patternSlugFirst = new RegExp(`^sensor\\.${slug}_(.+)_${slugFirstIncoming}$`);
-        const patternNoPrefix  = new RegExp(`^sensor\\.${slug}_incoming_parcels$`);
+        const incomingSuffixes = [
+            ...(preset.slug_first_suffixes?.incoming != null ? [preset.slug_first_suffixes.incoming] : []),
+            ...CANONICAL_SUFFIXES.incoming,
+        ];
+        const patterns = incomingSuffixes.map(suffix => ({
+            userFirst: new RegExp(`^sensor\\.(.+)_${slug}_${suffix}$`),
+            slugFirst: new RegExp(`^sensor\\.${slug}_(.+)_${suffix}$`),
+            noPrefix:  new RegExp(`^sensor\\.${slug}_${suffix}$`),
+        }));
         const seen = new Map(); // user → slugFirst
         for (const entityId of Object.keys(this.hass.states)) {
-            const m1 = patternUserFirst.exec(entityId);
-            if (m1 && !seen.has(m1[1])) { seen.set(m1[1], false); continue; }
-            const m2 = patternSlugFirst.exec(entityId);
-            if (m2 && !seen.has(m2[1])) { seen.set(m2[1], true); continue; }
-            if (patternNoPrefix.test(entityId) && !seen.has('')) { seen.set('', false); }
+            for (const { userFirst, slugFirst, noPrefix } of patterns) {
+                const m1 = userFirst.exec(entityId);
+                if (m1 && !seen.has(m1[1])) { seen.set(m1[1], false); break; }
+                const m2 = slugFirst.exec(entityId);
+                if (m2 && !seen.has(m2[1])) { seen.set(m2[1], true); break; }
+                if (noPrefix.test(entityId) && !seen.has('')) { seen.set('', false); break; }
+            }
         }
         return [...seen.entries()].map(([user, slugFirst]) => ({ user, slugFirst }));
     }
