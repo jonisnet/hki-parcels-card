@@ -206,6 +206,8 @@ Normally the card generates sensor entity IDs automatically. Use these only if y
 | `entity_outgoing_delivered` | Delivered outgoing parcels (not available for GLS) |
 | `entity_letters` | PostNL letterbox mail (PostNL only) |
 
+> **DHL note:** `entity_outgoing` / `entity_outgoing_delivered` default to DHL's `returning_parcels` / `delivered_outgoing_parcels` sensors (return shipments on their way back to a webshop), not DHL's own sent-shipments sensor — that one only lists shipments where you're the registered sender, which a webshop return label never is, so it's empty in practice. Requires a version of [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) that exposes these return-parcel sensors.
+
 #### PostNL Legacy (arjenbos)
 
 When `type: postnl_legacy` use these instead:

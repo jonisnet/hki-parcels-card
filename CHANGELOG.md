@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **DHL Sent tab now shows return parcels** — `entity_outgoing` / `entity_outgoing_delivered`
+  for the `dhl` carrier type now default to `..._returning_parcels` /
+  `..._delivered_outgoing_parcels` instead of `..._outgoing_parcels` /
+  `..._outgoing_delivered_parcels`. DHL's own sent-shipments sensor only lists shipments the
+  account holder is registered as the sender for, which a webshop-generated return label never
+  is — so it was always empty in practice. Requires a version of
+  [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) that exposes
+  `returning_parcels` / `delivered_outgoing_parcels` (not yet released upstream at the time of
+  writing). Existing manually-configured `entity_outgoing` / `entity_outgoing_delivered`
+  overrides are untouched — this only changes the auto-detected default in the visual editor.
+
 ## [1.4.0b3] — 2026-07-08
 
 ### Added

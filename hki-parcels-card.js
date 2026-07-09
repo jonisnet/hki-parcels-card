@@ -441,7 +441,13 @@ const STATUS_STEP_ORDER = ['registered', 'in_transit', 'out_for_delivery', 'deli
 const CARRIER_PRESETS = {
     postnl_v4:    { label: 'PostNL',                    icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: true,  sensor_slug: 'postnl' },
     postnl:       { label: 'PostNL (peternijssen v3.x)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'legacy',        supports_letters: true,  sensor_slug: 'postnl' },
-    dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl'    },
+    dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl',
+                    // ha-dhl-nl's own sent-shipments sensor (outgoing_parcels) only lists
+                    // shipments the account holder registered as sender — a webshop return
+                    // label never appears there. Point the Sent tab at the return-parcel
+                    // sensors instead (returning_parcels / delivered_outgoing_parcels),
+                    // which is the "outgoing" data DHL users actually have.
+                    outgoing_suffixes: { outgoing: 'returning_parcels', outgoing_delivered: 'delivered_outgoing_parcels' } },
     dpd:          { label: 'DPD',                        icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd',
                     slug_first_suffixes: { incoming: 'binnenkomende_pakketten', delivered: 'bezorgde_pakketten', outgoing: 'uitgaande_pakketten', outgoing_delivered: null, letters: null } },
     gls:          { label: 'GLS',                        icon: 'mdi:package-variant-closed', color: '#061ab1', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'gls'    },
@@ -464,6 +470,11 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false) {
         return { entity_incoming: null, entity_delivered: null, entity_outgoing: null, entity_outgoing_delivered: null, entity_letters: null };
     }
     const u = slugifyUserSlug(user);
+    // Per-carrier override for the two "Sent tab" suffixes (see e.g. the dhl preset).
+    // Falls back to the generic outgoing_parcels / outgoing_delivered_parcels pattern.
+    const outSuf = preset.outgoing_suffixes || {};
+    const outgoingSuffix = outSuf.outgoing || 'outgoing_parcels';
+    const outgoingDeliveredSuffix = outSuf.outgoing_delivered || 'outgoing_delivered_parcels';
     // slugFirst: sensor.<slug>_<user>_* (e.g. sensor.dpd_keesb_binnenkomende_pakketten)
     // userFirst: sensor.<user>_<slug>_* or sensor.<slug>_* when no prefix
     if (slugFirst && u) {
@@ -472,8 +483,8 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false) {
         return {
             entity_incoming:          s('incoming',          'incoming_parcels'),
             entity_delivered:         s('delivered',         'delivered_parcels'),
-            entity_outgoing:          preset.supports_outgoing !== false ? s('outgoing',          'outgoing_parcels') : null,
-            entity_outgoing_delivered:preset.supports_outgoing !== false ? s('outgoing_delivered','outgoing_delivered_parcels') : null,
+            entity_outgoing:          preset.supports_outgoing !== false ? s('outgoing',          outgoingSuffix) : null,
+            entity_outgoing_delivered:preset.supports_outgoing !== false ? s('outgoing_delivered',outgoingDeliveredSuffix) : null,
             entity_letters: preset.supports_letters ? s('letters', 'letters') : null
         };
     }
@@ -481,8 +492,8 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false) {
     return {
         entity_incoming:          `sensor.${prefix}${slug}_incoming_parcels`,
         entity_delivered:         `sensor.${prefix}${slug}_delivered_parcels`,
-        entity_outgoing:          preset.supports_outgoing !== false ? `sensor.${prefix}${slug}_outgoing_parcels` : null,
-        entity_outgoing_delivered:preset.supports_outgoing !== false ? `sensor.${prefix}${slug}_outgoing_delivered_parcels` : null,
+        entity_outgoing:          preset.supports_outgoing !== false ? `sensor.${prefix}${slug}_${outgoingSuffix}` : null,
+        entity_outgoing_delivered:preset.supports_outgoing !== false ? `sensor.${prefix}${slug}_${outgoingDeliveredSuffix}` : null,
         entity_letters: preset.supports_letters ? `sensor.${prefix}${slug}_letters` : null
     };
 }
@@ -582,8 +593,8 @@ class HkiParcelsCard extends HTMLElement {
                     logo_path: '', van_path: '', banner_path: '',
                     entity_incoming: 'sensor.dhl_incoming_parcels',
                     entity_delivered: 'sensor.dhl_delivered_parcels',
-                    entity_outgoing: 'sensor.dhl_outgoing_parcels',
-                    entity_outgoing_delivered: 'sensor.dhl_outgoing_delivered_parcels',
+                    entity_outgoing: 'sensor.dhl_returning_parcels',
+                    entity_outgoing_delivered: 'sensor.dhl_delivered_outgoing_parcels',
                     entity_letters: ''
                 }
             ],
@@ -2445,8 +2456,8 @@ class HkiParcelsCardEditor extends LitElement {
                             ${this._renderEntityPicker(this._t('entity_incoming'), carrier.entity_incoming, 'e.g. sensor.dhl_incoming_parcels', (ev) => this._carrierChanged(index, 'entity_incoming', ev))}
                             ${this._renderEntityPicker(this._t('entity_delivered'), carrier.entity_delivered, 'e.g. sensor.dhl_delivered_parcels', (ev) => this._carrierChanged(index, 'entity_delivered', ev))}
                             ${supportsOutgoing ? html`
-                            ${this._renderEntityPicker(this._t('entity_outgoing'), carrier.entity_outgoing, 'e.g. sensor.dhl_outgoing_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing', ev))}
-                            ${this._renderEntityPicker(this._t('entity_outgoing_delivered'), carrier.entity_outgoing_delivered, 'e.g. sensor.dhl_outgoing_delivered_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing_delivered', ev))}
+                            ${this._renderEntityPicker(this._t('entity_outgoing'), carrier.entity_outgoing, 'e.g. sensor.dhl_returning_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing', ev))}
+                            ${this._renderEntityPicker(this._t('entity_outgoing_delivered'), carrier.entity_outgoing_delivered, 'e.g. sensor.dhl_delivered_outgoing_parcels', (ev) => this._carrierChanged(index, 'entity_outgoing_delivered', ev))}
                             ` : html`<div class="helper-text">${this._t('no_outgoing_support')}</div>`}
                             ${supportsLetters
                                 ? this._renderEntityPicker(this._t('entity_letters'), carrier.entity_letters, this._t('letters_entity_help'), (ev) => this._carrierChanged(index, 'entity_letters', ev))
