@@ -441,7 +441,17 @@ const STATUS_STEP_ORDER = ['registered', 'in_transit', 'out_for_delivery', 'deli
 const CARRIER_PRESETS = {
     postnl_v4:    { label: 'PostNL',                    icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: true,  sensor_slug: 'postnl' },
     postnl:       { label: 'PostNL (peternijssen v3.x)', icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'legacy',        supports_letters: true,  sensor_slug: 'postnl' },
-    dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl'    },
+    dhl:          { label: 'DHL',                        icon: 'mdi:package-variant-closed', color: '#ffcc00', schema: 'canonical',     supports_letters: false, sensor_slug: 'dhl',
+                    // "Delivered outgoing parcels" is a has_entity_name entity, so a
+                    // brand-new one's entity_id is derived from whatever language HA
+                    // was showing when it was first created — not from the English
+                    // translation_key. Give buildTemplatedEntities' hass-aware
+                    // verification (see resolve() below) both the English and Dutch
+                    // possibilities to check against real state before falling back
+                    // to the plain guess.
+                    translated_suffixes: {
+                        outgoing_delivered: ['delivered_outgoing_parcels', 'bezorgde_uitgaande_pakketten'],
+                    } },
     dpd:          { label: 'DPD',                        icon: 'mdi:package-variant-closed', color: '#dc0032', schema: 'canonical',     supports_letters: false, sensor_slug: 'dpd',
                     slug_first_suffixes: { incoming: 'binnenkomende_pakketten', delivered: 'bezorgde_pakketten', outgoing: 'uitgaande_pakketten', outgoing_delivered: null, letters: null } },
     gls:          { label: 'GLS',                        icon: 'mdi:package-variant-closed', color: '#061ab1', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'gls'    },
@@ -457,7 +467,27 @@ function slugifyUserSlug(text) {
         .replace(/^_+|_+$/g, '');
 }
 
-function buildTemplatedEntities(user, carrierType, slugFirst = false) {
+// Builds a candidate entity_id and, when `hass` is available, verifies it
+// against real state before accepting it. A has_entity_name entity's
+// entity_id is derived from whatever language HA was displaying at the
+// moment it was first created, not from the (English) translation_key —
+// so a fresh Dutch-language install can produce a different suffix than a
+// fresh English one for the exact same integration code. `preset.translated_suffixes[slotKey]`
+// lists alternate suffixes to try, in order, before giving up and
+// returning the plain guess (used as a placeholder when nothing exists
+// yet, e.g. a carrier that hasn't been set up at all).
+function resolveEntityId(hass, base, slotKey, suffix, preset) {
+    const guess = `sensor.${base}_${suffix}`;
+    if (!hass?.states) return guess;
+    if (hass.states[guess]) return guess;
+    for (const altSuffix of preset.translated_suffixes?.[slotKey] || []) {
+        const candidate = `sensor.${base}_${altSuffix}`;
+        if (hass.states[candidate]) return candidate;
+    }
+    return guess;
+}
+
+function buildTemplatedEntities(user, carrierType, slugFirst = false, hass = null) {
     const preset = CARRIER_PRESETS[carrierType] || CARRIER_PRESETS.custom;
     const slug = preset.sensor_slug;
     if (!slug) {
@@ -468,7 +498,10 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false) {
     // userFirst: sensor.<user>_<slug>_* or sensor.<slug>_* when no prefix
     if (slugFirst && u) {
         const sf = preset.slug_first_suffixes;
-        const s = (key, fallback) => sf?.[key] != null ? `sensor.${slug}_${u}_${sf[key]}` : (sf?.[key] === null ? null : `sensor.${slug}_${u}_${fallback}`);
+        const base = `${slug}_${u}`;
+        const s = (key, fallback) => sf?.[key] != null
+            ? resolveEntityId(hass, base, key, sf[key], preset)
+            : (sf?.[key] === null ? null : resolveEntityId(hass, base, key, fallback, preset));
         return {
             entity_incoming:          s('incoming',          'incoming_parcels'),
             entity_delivered:         s('delivered',         'delivered_parcels'),
@@ -478,12 +511,13 @@ function buildTemplatedEntities(user, carrierType, slugFirst = false) {
         };
     }
     const prefix = u ? `${u}_` : '';
+    const base = `${prefix}${slug}`;
     return {
-        entity_incoming:          `sensor.${prefix}${slug}_incoming_parcels`,
-        entity_delivered:         `sensor.${prefix}${slug}_delivered_parcels`,
-        entity_outgoing:          preset.supports_outgoing !== false ? `sensor.${prefix}${slug}_outgoing_parcels` : null,
-        entity_outgoing_delivered:preset.supports_outgoing !== false ? `sensor.${prefix}${slug}_outgoing_delivered_parcels` : null,
-        entity_letters: preset.supports_letters ? `sensor.${prefix}${slug}_letters` : null
+        entity_incoming:          resolveEntityId(hass, base, 'incoming', 'incoming_parcels', preset),
+        entity_delivered:         resolveEntityId(hass, base, 'delivered', 'delivered_parcels', preset),
+        entity_outgoing:          preset.supports_outgoing !== false ? resolveEntityId(hass, base, 'outgoing', 'outgoing_parcels', preset) : null,
+        entity_outgoing_delivered:preset.supports_outgoing !== false ? resolveEntityId(hass, base, 'outgoing_delivered', 'outgoing_delivered_parcels', preset) : null,
+        entity_letters: preset.supports_letters ? resolveEntityId(hass, base, 'letters', 'letters', preset) : null
     };
 }
 
@@ -1639,7 +1673,7 @@ class HkiParcelsCardEditor extends LitElement {
         const detectedEntry = detected.length === 1 ? detected[0] : null;
         const autoUser     = current.user != null ? current.user : (detectedEntry?.user ?? '');
         const slugFirst    = detectedEntry?.slugFirst ?? false;
-        const templated    = !isSingle && detectedEntry !== null ? buildTemplatedEntities(autoUser, type, slugFirst) : {};
+        const templated    = !isSingle && detectedEntry !== null ? buildTemplatedEntities(autoUser, type, slugFirst, this.hass) : {};
         carriers[index] = {
             ...current, type,
             name: preset.label, icon: getDefaultIcon(type), color: preset.color, schema: preset.schema,
@@ -1663,7 +1697,7 @@ class HkiParcelsCardEditor extends LitElement {
         const user    = this._val(ev);
         const carriers = [...(this._config.carriers || [])];
         const current = carriers[index] || {};
-        const templated = buildTemplatedEntities(user, current.type);
+        const templated = buildTemplatedEntities(user, current.type, false, this.hass);
         const preset = CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom;
         carriers[index] = {
             ...current, user,
@@ -1686,7 +1720,7 @@ class HkiParcelsCardEditor extends LitElement {
         const autoEntry = detected.length === 1 ? detected[0] : null;
         const autoUser  = autoEntry?.user ?? null;
         const slugFirst = autoEntry?.slugFirst ?? false;
-        const templated = autoUser !== null ? buildTemplatedEntities(autoUser, type, slugFirst) : {};
+        const templated = autoUser !== null ? buildTemplatedEntities(autoUser, type, slugFirst, this.hass) : {};
         const carriers = [...(this._config.carriers || []), {
             type, name: preset.label, icon: getDefaultIcon(type), color: preset.color,
             schema: preset.schema, logo_path: '', van_path: '', banner_path: '',
@@ -1769,7 +1803,7 @@ class HkiParcelsCardEditor extends LitElement {
         const carriers = [...(this._config.carriers || [])];
         const current  = carriers[index] || {};
         const slugFirst = current._slugFirst ?? false;
-        const templated = buildTemplatedEntities(user, current.type, slugFirst);
+        const templated = buildTemplatedEntities(user, current.type, slugFirst, this.hass);
         const preset = CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom;
         carriers[index] = {
             ...current, user,
@@ -1789,7 +1823,7 @@ class HkiParcelsCardEditor extends LitElement {
         const detected = this._detectUsers(current.type);
         const entry    = detected.find(d => d.user === user);
         const slugFirst = entry?.slugFirst ?? current._slugFirst ?? false;
-        const templated = buildTemplatedEntities(user, current.type, slugFirst);
+        const templated = buildTemplatedEntities(user, current.type, slugFirst, this.hass);
         const supportsLetters = (CARRIER_PRESETS[current.type] || CARRIER_PRESETS.custom).supports_letters;
         carriers[index] = {
             ...current, user,

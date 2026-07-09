@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **Auto-detected entity IDs now verified against real state, with a language-aware fallback for DHL's delivered-outgoing sensor** — `buildTemplatedEntities` now accepts the `hass` object and checks whether its guessed entity_id actually exists before using it; when it doesn't, it tries known alternate suffixes (`preset.translated_suffixes`) before falling back to the plain guess (used as a placeholder when the carrier hasn't been set up at all yet). This fixes a real-world case: DHL's "Delivered outgoing parcels" sensor is a `has_entity_name` entity, so a brand-new one's entity_id is derived from whichever language Home Assistant was displaying when the entity was first created — not from the English translation key. On a Dutch-language installation this produces `..._bezorgde_uitgaande_pakketten` instead of the assumed `..._outgoing_delivered_parcels` (or `..._delivered_outgoing_parcels`), so auto-detection silently guessed wrong and the Sent tab's Delivered section stayed empty even though the sensor had data. No config change needed — existing carriers pick this up the next time their account/type field triggers a re-detect (or add the carrier fresh).
+
 ## [1.4.0b3] — 2026-07-08
 
 ### Added
