@@ -1,38 +1,19 @@
 # Changelog
 
-## [Unreleased]
-
-### Fixed
-
-- **Account detection and entity auto-detection now work regardless of language or `<account>_<carrier>` vs. `<carrier>_<account>` ordering, for every carrier** — replaced the old single hardcoded-English-suffix guess with a universal `CANONICAL_SUFFIXES` list (English + Dutch, for every slot: incoming/delivered/outgoing/outgoing delivered/letters), checked against real `hass.states` in both possible orderings, on top of any carrier-specific override (DPD's own Dutch word choices still take priority as the primary guess). Two concrete bugs this fixes:
-  - **GLS wasn't being auto-detected at all** on a Dutch-language install — `_detectUsers` only ever tried the literal English `incoming_parcels` suffix for GLS (unlike DPD, which already had its own Dutch override), so a real `sensor.gls_1363ln_inkomende_pakketten` was invisible to account detection and the user had to type the postcode manually every time.
-  - **DHL's "Delivered outgoing parcels" sensor guessed wrong** — it's a `has_entity_name` entity, so a brand-new one's entity_id is derived from whichever language HA was displaying when it was first created (not the English translation key), and always lands in the current `<device-name>_<entity-name>` ordering regardless of what ordering that account's older, pre-`has_entity_name` sensors use. On one real installation this meant `sensor.dhl_<account>_bezorgde_uitgaande_pakketten` (carrier-first, Dutch) coexisting with account-first, English incoming/outgoing sensors on the very same account — auto-detection picked a non-existent entity and the Sent tab's Delivered section stayed empty even though the sensor had data.
-
-  No config change needed — existing carriers pick this up the next time their account/type field triggers a re-detect (or add the carrier fresh).
-
-## [1.4.0b3] — 2026-07-08
-
-### Added
-
-- **Expected delivery window shown at every non-delivered step** — the step tracker's hero info
-  now always includes the expected delivery window (if known) alongside whatever else is shown
-  for that step (e.g. "Aangemeld om 08:15" *and* "Verwachte bezorging: Morgen tussen 09:00 en
-  11:00"), using the same relative-day wording as the parcel list. "Out for delivery" already
-  showed this info; it now uses the same "Today/Tomorrow/the day after tomorrow" wording as the
-  list instead of a bare time range. Nothing shown once a parcel is actually delivered — there's
-  nothing left to expect.
-
-## [1.4.0b2] — 2026-07-08
+## [1.4.0b4] — 2026-07-09
 
 ### Added
 
 - **4-step delivery tracker** — selecting a parcel shows a labelled progress row (Registered ·
   Sorting centre · Out for delivery · Delivered), each step with its own carrier-branded icon and
   a checkmark badge once that step is actually done, plus a larger illustration and a time/date
-  detail for the current step:
+  detail for the current step. The hero info always includes the expected delivery window (if
+  known) alongside whatever else is shown for that step (e.g. "Aangemeld om 08:15" *and*
+  "Verwachte bezorging: Morgen tussen 09:00 en 11:00"), using the same relative-day wording as the
+  parcel list; nothing is shown once a parcel is actually delivered — there's nothing left to
+  expect.
   - Registered / sorting-centre times need the integration's optional "include history" setting
-    to have data; out for delivery shows the expected delivery window; delivered shows the
-    delivery date and time
+    to have data; out for delivery and delivered work without it
   - The existing driving-van animation is used for "out for delivery"; new illustrations for the
     other three steps, per carrier (PostNL, DHL, DPD, GLS)
   - Parcels with a status outside this happy path (`at_pickup_point`, `returning`, `problem`,
@@ -58,10 +39,24 @@
   (`#FFCC00` yellow / `#D40511` red) instead of the original artwork's approximation; DHL's mark
   is kept on its yellow field rather than as a free-floating shape, matching how DHL's logo is
   actually used
-- **Step tracker icons overflowed on narrow/mobile cards** — now shrink gracefully instead of
-  clipping the last step off screen
-- **Step icons were nearly invisible on a light theme** — bolder outlines and a tile border fix
-  the contrast against a white card background
+- **Account detection and entity auto-detection now work regardless of language, and regardless
+  of `<account>_<carrier>` vs. `<carrier>_<account>` ordering, for every carrier** — replaced the
+  old single hardcoded-English-suffix guess with a universal English/Dutch suffix list for every
+  slot (incoming/delivered/outgoing/outgoing delivered/letters), checked against real state in
+  both possible orderings, on top of any carrier-specific override (e.g. DPD's own Dutch word
+  choices still take priority as the primary guess). Two concrete cases this fixes:
+  - **GLS wasn't being auto-detected at all** on a Dutch-language install — account detection only
+    ever tried the literal English `incoming_parcels` suffix for GLS (unlike DPD, which already
+    had its own Dutch override), so a real `sensor.gls_1363ln_inkomende_pakketten` was invisible
+    and the postcode had to be typed in manually every time.
+  - **DHL's delivered-outgoing sensor guessed wrong** — a `has_entity_name` entity's entity_id is
+    derived from whichever language Home Assistant was displaying when it was first created, not
+    the English translation key, and always lands in the current `<device-name>_<entity-name>`
+    ordering regardless of what ordering that account's older, pre-`has_entity_name` sensors use.
+    On one real installation this meant a carrier-first, Dutch entity coexisting with
+    account-first, English sensors on the very same account — auto-detection picked a
+    non-existent entity and the Sent tab's Delivered section stayed empty even though the sensor
+    had data.
 
 ### Changed
 
