@@ -7,6 +7,6 @@
   <rect x="47" y="112" width="42" height="30" rx="4" fill="#FFFFFF"/>
   <rect x="52" y="119" width="30" height="4" rx="2" fill="#8FA3AD"/>
   <rect x="52" y="128" width="22" height="4" rx="2" fill="#8FA3AD"/>
-  <circle cx="142" cy="62" r="34" fill="#13A58F"/>
+  <circle cx="142" cy="62" r="34" fill="#05a68f"/>
   <path d="M126 62 l11 11 21 -22" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
   <!-- Flat-vector Dragonfly delivery van, drawn for this card in the brand palette
-       (teal #13A58F from the official logo). Faces right, transparent background. -->
+       (teal #05a68f from the official logo). Faces right, transparent background. -->
   <g>
     <!-- body -->
-    <rect x="20" y="60" width="190" height="80" rx="10" fill="#13A58F"/>
+    <rect x="20" y="60" width="190" height="80" rx="10" fill="#05a68f"/>
     <!-- cabin -->
-    <path d="M210 70 h38 c6 0 11 3 14 8 l16 28 c2 4 3 8 3 12 v22 h-71 Z" fill="#13A58F"/>
+    <path d="M210 70 h38 c6 0 11 3 14 8 l16 28 c2 4 3 8 3 12 v22 h-71 Z" fill="#05a68f"/>
     <!-- cabin window -->
     <path d="M218 78 h28 c3 0 6 2 8 5 l12 21 h-48 Z" fill="#B7E9FA"/>
     <!-- roofline highlight -->
