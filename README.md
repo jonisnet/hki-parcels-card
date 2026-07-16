@@ -7,7 +7,7 @@
 [![Downloads](https://img.shields.io/github/downloads/jonisnet/hki-parcels-card/total?style=flat-square&label=downloads)](https://github.com/jonisnet/hki-parcels-card/releases)
 [![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-ea4aaa?style=flat-square&logo=githubsponsors)](https://github.com/sponsors/jonisnet)
 
-**Track parcels from PostNL, DHL, DPD and GLS in a single Home Assistant card** — with animated banners, letter scan images, automatic sensor detection and a full visual editor.
+**Track parcels from PostNL, DHL, DPD, GLS and Dragonfly in a single Home Assistant card** — with animated banners, letter scan images, automatic sensor detection and a full visual editor.
 
 ![Dashboard screenshot](https://raw.githubusercontent.com/jonisnet/hki-parcels-card/main/images/screenshot-dashboard.png)
 
@@ -35,7 +35,7 @@
 
 ### 📦 Parcel tracking
 
-- **Multi-carrier** — PostNL, DHL, DPD and GLS side by side in one card; add the same carrier multiple times for multiple accounts
+- **Multi-carrier** — PostNL, DHL, DPD, GLS and Dragonfly side by side in one card; add the same carrier multiple times for multiple accounts
 - **Four tabs** — In Transit · Delivered · Sent · Letters
 - **Split sections** — both Sent and Letters are split into *Still to be delivered* and *Delivered*
 - **Parcel details** — click any parcel for barcode, delivery type and a direct tracking link
@@ -95,15 +95,18 @@ The card supports three PostNL variants:
 
 > **Upgrading from ha-postnl v3 to v4?** Change the card type from `postnl` to `postnl_v4`. Your sensor entity IDs stay the same.
 
-### DHL, DPD and GLS
+### DHL, DPD, GLS and Dragonfly
 
 | Carrier | Integration |
 | ------- | ----------- |
 | **DHL** | [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) |
 | **DPD** | [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) |
 | **GLS** | [peternijssen/ha-gls](https://github.com/peternijssen/ha-gls) |
+| **Dragonfly** | [HummelsTech/ha-dragonfly](https://github.com/HummelsTech/ha-dragonfly) |
 
 > **GLS has no sender/account** — you track parcels by tracking number and postal code, not a login. The card's `user` field maps to the hub's postal code (e.g. `1234ab`), and the Sent tab is not available for this carrier.
+
+> **Dragonfly has no account at all** — parcels are tracked by Track & Trace code alone. Leave the card's `user` field empty (the sensors are simply `sensor.dragonfly_*`); the Sent tab is not available for this carrier.
 
 ### Tested versions
 
@@ -113,6 +116,7 @@ The card supports three PostNL variants:
 | peternijssen/ha-dhl-nl | 2.4.0 |
 | peternijssen/ha-dpd | 2.4.0 |
 | peternijssen/ha-gls | 1.0.0 |
+| HummelsTech/ha-dragonfly | 1.0.0 |
 
 ---
 
@@ -140,7 +144,7 @@ Install [custom-brand-icons](https://github.com/elax46/custom-brand-icons) via H
 
 ## Quick start
 
-Add the card to your dashboard — it auto-detects every installed carrier integration (PostNL, DHL, DPD, GLS) and pre-fills a fully configured entry for each one it finds, including `days_back` (based on the oldest delivered parcel currently visible across your carriers). Open the visual editor afterwards only if you want to tweak something; the editor itself also auto-fills entity IDs when you pick a carrier type and confirm the account.
+Add the card to your dashboard — it auto-detects every installed carrier integration (PostNL, DHL, DPD, GLS, Dragonfly) and pre-fills a fully configured entry for each one it finds, including `days_back` (based on the oldest delivered parcel currently visible across your carriers). Open the visual editor afterwards only if you want to tweak something; the editor itself also auto-fills entity IDs when you pick a carrier type and confirm the account.
 
 Alternatively, add it via YAML:
 
@@ -204,8 +208,8 @@ Normally the card generates sensor entity IDs automatically. Use these only if y
 | ------ | ----------- |
 | `entity_incoming` | Incoming parcels in transit |
 | `entity_delivered` | Delivered incoming parcels |
-| `entity_outgoing` | Outgoing parcels in transit (not available for GLS) |
-| `entity_outgoing_delivered` | Delivered outgoing parcels (not available for GLS) |
+| `entity_outgoing` | Outgoing parcels in transit (not available for GLS and Dragonfly) |
+| `entity_outgoing_delivered` | Delivered outgoing parcels (not available for GLS and Dragonfly) |
 | `entity_letters` | PostNL letterbox mail (PostNL only) |
 
 #### PostNL Legacy (arjenbos)
@@ -279,10 +283,11 @@ The correct scheme is detected automatically. Leave `user` empty if your sensors
 | `dhl` | DHL | peternijssen/ha-dhl-nl | canonical | — |
 | `dpd` | DPD | peternijssen/ha-dpd | canonical | — |
 | `gls` | GLS | peternijssen/ha-gls | canonical | — |
+| `dragonfly` | Dragonfly | HummelsTech/ha-dragonfly | canonical | — |
 | `postnl_legacy` | PostNL (arjenbos) | arjenbos/ha-postnl | single_entity | — |
 | `custom` | Custom | any | canonical | — |
 
-> **Note:** `gls` has no Sent tab — GLS tracks parcels by number/postal code with no sender/account concept, so `entity_outgoing` and `entity_outgoing_delivered` are not applicable.
+> **Note:** `gls` has no Sent tab — GLS tracks parcels by number/postal code with no sender/account concept, so `entity_outgoing` and `entity_outgoing_delivered` are not applicable. The same applies to `dragonfly`, which is tracked by code alone (no account and no postal code — leave `user` empty).
 
 ---
 
@@ -301,6 +306,7 @@ This card is free and maintained in my spare time. If it's useful to you, a smal
 - [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) — DHL integration
 - [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) — DPD integration
 - [peternijssen/ha-gls](https://github.com/peternijssen/ha-gls) — GLS integration
+- [HummelsTech/ha-dragonfly](https://github.com/HummelsTech/ha-dragonfly) — Dragonfly Shipping integration
 - [arjenbos/ha-postnl](https://github.com/arjenbos/ha-postnl) — legacy PostNL integration
 
 ---

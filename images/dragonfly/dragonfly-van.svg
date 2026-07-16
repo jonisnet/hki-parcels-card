@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <!-- Flat-vector Dragonfly delivery van, drawn for this card in the brand palette
+       (teal #13A58F from the official logo). Faces right, transparent background. -->
+  <g>
+    <!-- body -->
+    <rect x="20" y="60" width="190" height="80" rx="10" fill="#13A58F"/>
+    <!-- cabin -->
+    <path d="M210 70 h38 c6 0 11 3 14 8 l16 28 c2 4 3 8 3 12 v22 h-71 Z" fill="#13A58F"/>
+    <!-- cabin window -->
+    <path d="M218 78 h28 c3 0 6 2 8 5 l12 21 h-48 Z" fill="#B7E9FA"/>
+    <!-- roofline highlight -->
+    <rect x="20" y="60" width="190" height="10" rx="5" fill="#0E8271"/>
+    <!-- logo glyph on the body (official mark, white) -->
+    <g transform="translate(75,72) scale(0.22)" fill="#FFFFFF">
+      <path d="M51 236H141.923C147.187 236 152.287 233.895 156.016 230.127L170 216H51V236Z"/>
+      <path d="M204.176 77.6952L190.111 63.6543V176.036H170.223V83.5089V63.6543V43.9094C170.223 32.9401 161.322 24 150.279 24H51V43.8546H150.389V63.7092H51V83.5638H150.389V176.145H51V196H190.056C201.1 196 210 187.06 210 176.091V91.736C210 86.4707 207.912 81.4247 204.176 77.6952Z"/>
+    </g>
+    <!-- bumper -->
+    <rect x="272" y="130" width="12" height="12" rx="4" fill="#1D2125"/>
+    <!-- headlight -->
+    <rect x="274" y="112" width="8" height="14" rx="3" fill="#FDED50"/>
+    <!-- wheels -->
+    <circle cx="70" cy="145" r="22" fill="#1D2125"/>
+    <circle cx="70" cy="145" r="10" fill="#C9D7DF"/>
+    <circle cx="230" cy="145" r="22" fill="#1D2125"/>
+    <circle cx="230" cy="145" r="10" fill="#C9D7DF"/>
+    <!-- motion lines -->
+    <rect x="0" y="85" width="14" height="6" rx="3" fill="#99DBD2"/>
+    <rect x="4" y="102" width="10" height="6" rx="3" fill="#99DBD2"/>
+  </g>
+</svg>

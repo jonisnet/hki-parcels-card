@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Delivered: parcel at the front door, with confirmation badge. -->
+  <rect x="95" y="35" width="70" height="130" rx="6" fill="#1069A9"/>
+  <rect x="106" y="48" width="48" height="104" rx="4" fill="#4BC8F3" opacity="0.35"/>
+  <circle cx="150" cy="102" r="5" fill="#FDED50"/>
+  <rect x="30" y="108" width="58" height="57" rx="6" fill="#D9A066"/>
+  <rect x="30" y="108" width="58" height="16" rx="6" fill="#C4894F"/>
+  <rect x="54" y="108" width="10" height="57" fill="#F3E2C7"/>
+  <circle cx="52" cy="72" r="28" fill="#13A58F"/>
+  <path d="M39 72 l9 9 17 -18" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
