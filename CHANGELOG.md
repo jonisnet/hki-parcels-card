@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Dragonfly Shipping support** (`type: dragonfly`) — new carrier backed by
+  [HummelsTech/ha-dragonfly](https://github.com/HummelsTech/ha-dragonfly).
+  Dragonfly is account-less *and* postcode-less: leave the card's `user`
+  field empty (sensors are `sensor.dragonfly_*`). Includes official logo and
+  banner artwork plus a flat-vector van and step illustrations in the
+  Dragonfly brand palette (`images/dragonfly/`). No Sent tab (the carrier
+  has no outgoing concept), no letters.
+
 ## [1.4.1] — 2026-07-09
 
 ### Fixed

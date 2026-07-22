@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Registered (mini, no baked-in checkmark — the card overlays its own badge). -->
+  <rect x="40" y="55" width="120" height="100" rx="10" fill="#D9A066"/>
+  <rect x="40" y="55" width="120" height="28" rx="10" fill="#C4894F"/>
+  <rect x="92" y="55" width="16" height="100" fill="#F3E2C7"/>
+  <rect x="54" y="100" width="46" height="32" rx="4" fill="#FFFFFF"/>
+  <rect x="60" y="108" width="32" height="4" rx="2" fill="#8FA3AD"/>
+  <rect x="60" y="117" width="24" height="4" rx="2" fill="#8FA3AD"/>
+</svg>

@@ -180,6 +180,7 @@ const TRANSLATIONS = {
         label_account:          'Account / gebruikersdeel van de sensornaam',
         account_help_suffix:    '_incoming_parcels" etc. De 4 sensoren worden automatisch opgebouwd.',
         gls_account_help:       'GLS heeft geen account — vul de postcode van je GLS-hub in (bv. 1234AB, zoals ingesteld bij het toevoegen van de integratie).',
+        dragonfly_account_help: 'Dragonfly heeft geen account of postcode — laat dit veld leeg; de sensoren heten sensor.dragonfly_*.',
         adv_sensors:            'Geavanceerd: sensoren handmatig overschrijven',
         adv_sensors_help:       'Normaal hoef je dit niet aan te passen. Gebruik dit alleen als je sensoren een afwijkende naam hebben.',
         entity_incoming:        'Onderweg Entity (incoming)',
@@ -304,6 +305,7 @@ const TRANSLATIONS = {
         label_account:          'Account / user part of the sensor name',
         account_help_suffix:    '_incoming_parcels" etc. The 4 sensors are built automatically.',
         gls_account_help:       'GLS has no account — enter the postal code of your GLS hub (e.g. 1234AB, as set when adding the integration).',
+        dragonfly_account_help: 'Dragonfly has no account or postal code — leave this field empty; the sensors are named sensor.dragonfly_*.',
         adv_sensors:            'Advanced: override sensors manually',
         adv_sensors_help:       'You normally don\'t need to change this. Use this only if your sensors have a non-standard name.',
         entity_incoming:        'In Transit entity (incoming)',
@@ -354,10 +356,11 @@ const REPO_BASE = 'https://github.com/jonisnet/hki-parcels-card/blob/main/images
 // Per-carrier asset folders (images/<carrier>/...). Keeps the images directory navigable as
 // more carriers are added, instead of one flat folder of prefixed filenames.
 const IMG = {
-    postnl: `${REPO_BASE}/postnl`,
-    dhl:    `${REPO_BASE}/dhl`,
-    dpd:    `${REPO_BASE}/dpd`,
-    gls:    `${REPO_BASE}/gls`,
+    postnl:    `${REPO_BASE}/postnl`,
+    dhl:       `${REPO_BASE}/dhl`,
+    dpd:       `${REPO_BASE}/dpd`,
+    gls:       `${REPO_BASE}/gls`,
+    dragonfly: `${REPO_BASE}/dragonfly`,
 };
 
 const CARRIER_REPO_URLS = {
@@ -365,6 +368,7 @@ const CARRIER_REPO_URLS = {
     dhl:       'https://github.com/peternijssen/ha-dhl-nl',
     dpd:       'https://github.com/peternijssen/ha-dpd',
     gls:       'https://github.com/peternijssen/ha-gls',
+    dragonfly: 'https://github.com/HummelsTech/ha-dragonfly',
 };
 
 const CARRIER_ASSETS = {
@@ -425,6 +429,19 @@ const CARRIER_ASSETS = {
             delivered_mini:  `${IMG.gls}/GLS_step_delivered_mini.png?raw=true`
         }
     },
+    dragonfly: {
+        logo:   `${IMG.dragonfly}/dragonfly-logo.svg?raw=true`,
+        van:    `${IMG.dragonfly}/dragonfly-van.svg?raw=true`,
+        banner: `${IMG.dragonfly}/dragonfly-banner.svg?raw=true`,
+        steps: {
+            registered:      `${IMG.dragonfly}/dragonfly_step_registered.svg?raw=true`,
+            registered_mini: `${IMG.dragonfly}/dragonfly_step_registered_mini.svg?raw=true`,
+            sorting:         `${IMG.dragonfly}/dragonfly_step_sorting.svg?raw=true`,
+            transit:         `${IMG.dragonfly}/dragonfly_step_transit.svg?raw=true`,
+            delivered:       `${IMG.dragonfly}/dragonfly_step_delivered.svg?raw=true`,
+            delivered_mini:  `${IMG.dragonfly}/dragonfly_step_delivered_mini.svg?raw=true`
+        }
+    },
     postnl_legacy: {
         logo:   `${IMG.postnl}/postnl-logo.png?raw=true`,
         van:    `${IMG.postnl}/postnl-van.gif?raw=true`,
@@ -452,6 +469,7 @@ const CARRIER_PRESETS = {
                     // true historically.
                     slug_first_suffixes: { incoming: 'binnenkomende_pakketten', delivered: 'bezorgde_pakketten', outgoing: 'uitgaande_pakketten', letters: null } },
     gls:          { label: 'GLS',                        icon: 'mdi:package-variant-closed', color: '#061ab1', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'gls'    },
+    dragonfly:    { label: 'Dragonfly',                  icon: 'mdi:package-variant-closed', color: '#13a58f', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'dragonfly' },
     postnl_legacy:{ label: 'PostNL (arjenbos)',          icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null     },
     custom:       { label: 'Custom',                     icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: false, sensor_slug: null     }
 };
@@ -582,7 +600,7 @@ function detectCarrierUsers(hass, carrierType) {
 // recommended default and the user can switch the type manually if they're
 // still on v3.x) and postnl_legacy / custom (sensor_slug is null — no
 // entity-based detection is possible for those).
-const AUTO_DETECT_CARRIER_TYPES = ['postnl_v4', 'dhl', 'dpd', 'gls'];
+const AUTO_DETECT_CARRIER_TYPES = ['postnl_v4', 'dhl', 'dpd', 'gls', 'dragonfly'];
 
 // Infers a sensible days_back for a freshly auto-populated card: the number
 // of days since the oldest currently-visible delivered parcel, across every
@@ -2510,11 +2528,11 @@ class HkiParcelsCardEditor extends LitElement {
                 </div>`}
             <div class="plain-field" style="margin-top:8px;">
                 <label for="hki-carrier-user-${index}">${this._t('label_account')}</label>
-                <input id="hki-carrier-user-${index}" type="text" placeholder="${carrier.type === 'gls' ? 'e.g. 1234ab' : 'e.g. my_account'}"
+                <input id="hki-carrier-user-${index}" type="text" placeholder="${carrier.type === 'gls' ? 'e.g. 1234ab' : carrier.type === 'dragonfly' ? '' : 'e.g. my_account'}"
                     .value=${carrier.user || ''}
                     @change=${(ev) => this._carrierUserInputChanged(index, ev)} />
             </div>
-            <div class="helper-text">${carrier.type === 'gls' ? this._t('gls_account_help') : html`"_${preset.sensor_slug}${this._t('account_help_suffix')}`}</div>
+            <div class="helper-text">${carrier.type === 'gls' ? this._t('gls_account_help') : carrier.type === 'dragonfly' ? this._t('dragonfly_account_help') : html`"_${preset.sensor_slug}${this._t('account_help_suffix')}`}</div>
             ${entityPreview}`;
     }
 
@@ -2553,6 +2571,7 @@ class HkiParcelsCardEditor extends LitElement {
                             { value: 'dhl',           label: 'DHL' },
                             { value: 'dpd',           label: 'DPD' },
                             { value: 'gls',           label: 'GLS' },
+                            { value: 'dragonfly',     label: 'Dragonfly' },
                             { value: 'postnl',        label: 'PostNL (<v4.x)' },
                             { value: 'postnl_legacy', label: 'PostNL (ArjenBos)' },
                             { value: 'custom',        label: 'Custom' }

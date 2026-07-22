@@ -99,6 +99,8 @@ Automatic sensor detection, animated banners, letterbox mail with scan images, a
 | **PostNL** (arjenbos) | [arjenbos/ha-postnl](https://github.com/arjenbos/ha-postnl) | `postnl_legacy` |
 | **DHL** | [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) | `dhl` |
 | **DPD** | [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) | `dpd` |
+| **GLS** | [peternijssen/ha-gls](https://github.com/peternijssen/ha-gls) | `gls` |
+| **Dragonfly** | [HummelsTech/ha-dragonfly](https://github.com/HummelsTech/ha-dragonfly) | `dragonfly` |
 
 ---
 
