@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.5.0b1] — 2026-07-22
+## [1.5.0b2] — 2026-07-22
 
 ### Added
 
@@ -13,10 +13,11 @@
   only maps the `SHIPMENT_DELIVERED` status; everything else reports `unknown`.
 - **Dragonfly carrier support brought into this checkout** — `dragonfly` (account-less, Track &
   Trace code only) was already merged on `main` via PR #6; this release folds it into the same
-  working copy as the Trunkrs/Cainiao additions above so all three ship together. Credit for the
-  Dragonfly integration itself goes to [Alwin Hummels (@HummelsTech)](https://github.com/HummelsTech),
-  who built it from scratch and transferred it into the ha-parcel-integrations org — see that
-  repo's [Credits](https://github.com/ha-parcel-integrations/ha-dragonfly#credits) section.
+  working copy as the Trunkrs/Cainiao additions above so all three ship together, now fully
+  restyled to match every other carrier (see Branding below). Credit for the Dragonfly integration
+  itself goes to [Alwin Hummels (@HummelsTech)](https://github.com/HummelsTech), who built it from
+  scratch and transferred it into the ha-parcel-integrations org — see that repo's
+  [Credits](https://github.com/ha-parcel-integrations/ha-dragonfly#credits) section.
 - **"+ Add parcel" control on the card itself** — for the account-less carriers (GLS, Dragonfly,
   Trunkrs, Cainiao), the card now shows a small "+ Add parcel" row. Typing a Track & Trace number
   and submitting calls the integration's own `<domain>.track_parcel` service directly (`gls`,
@@ -24,17 +25,44 @@
   not just added to the card's own view. For GLS and Trunkrs, which can have multiple hubs (one per
   postal code), the carrier's configured `user` value (the postal code) is passed along
   automatically so the parcel lands on the right hub. New `show_add_parcel` option (default `true`)
-  hides it if you'd rather add parcels through each integration's own Configure dialog.
+  hides it if you'd rather add parcels through each integration's own Configure dialog. Not
+  available for PostNL, DHL or DPD — those integrations are account-based (they auto-sync every
+  parcel tied to the logged-in account) and don't expose a service for registering an individual
+  parcel by tracking number.
+- **Carrier overview popup** — clicking a carrier's logo in the multi-carrier combo banner now
+  opens a popup listing every item for that carrier across all four tabs (In Transit / Delivered /
+  Sent / Letters) in one place, grouped by section. Clicking an item expands its details
+  (tracking number, status, delivery type, tracking link) in place, the same accordion behaviour
+  as the main list — the popup stays open so you can keep browsing.
 - **Trunkrs and Cainiao branding** — logo, van, step icons and banner added under
   `images/trunkrs/` and `images/cainiao/`, matching the existing DHL/DPD/GLS folder convention.
   The logo files are each carrier's real official artwork (trimmed and scaled from the source
   logos); the step icons and animated van are the shared master illustration recoloured to match
-  (the same technique the whole `images/` set already uses for every other carrier); the banner is
-  that real logo centred on a plain background, since no official banner artwork exists. Accent
-  colours were confirmed by pixel-sampling the official logos directly: Trunkrs `#2ce27e`
-  (previously an unverified guess of `#39b54a`), Cainiao `#0066ff` (unchanged — matches the
-  earlier best-effort value exactly), and Dragonfly's colour was corrected from `#13a58f` to the
-  confirmed `#00a78f` while we had the source logo in hand.
+  (the same technique the whole `images/` set already uses for every other carrier) **with the
+  real logo composited onto the building sign, the small transit van icon and the animated van**,
+  replacing the placeholder text those three used at first. The banner is that real logo centred
+  on a plain background, since no official banner artwork exists. Accent colours were confirmed by
+  pixel-sampling the official logos directly: Trunkrs `#2ce27e` (previously an unverified guess of
+  `#39b54a`), Cainiao `#0066ff` (unchanged — matches the earlier best-effort value exactly).
+- **Dragonfly branding overhauled to match every other carrier** — previously used its own,
+  differently-styled artwork carried over from the original PR (flat parcel/box scenes with no
+  shared building/signboard concept). Regenerated from the same shared master illustration as
+  every other carrier, recoloured to the confirmed brand teal `#00a78f` (corrected from `#13a58f`
+  while we had the source logo in hand), with the real logo mark composited onto the building
+  sign, the small transit van icon and the animated van — the same treatment Trunkrs/Cainiao got
+  above. The banner is that same logo centred on a plain background.
+
+### Fixed
+
+- **DHL's banner was cropped at the edges in the multi-carrier combo banner** — the DHL logo
+  artwork extended edge-to-edge with no margin, unlike every other carrier's banner (which centres
+  its logo with generous padding), so the side panels in the combo view sliced straight through it.
+  Rebuilt with the same centred, padded layout as the others.
+- **Hover on a combo-banner logo flickered / repeatedly zoomed in and out** — the banner is built
+  purely from static carrier config and never actually changes, but it was being torn down and
+  rebuilt from scratch on every hass update tick regardless, resetting `:hover` state mid-hover.
+  The rebuild is now skipped once the banner is already showing correctly; a config change still
+  triggers a full rebuild as normal.
 
 ### Changed
 

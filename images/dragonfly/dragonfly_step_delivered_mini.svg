@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <!-- Delivered (mini, no baked-in checkmark): open parcel. -->
-  <rect x="45" y="90" width="110" height="70" rx="8" fill="#D9A066"/>
-  <path d="M45 96 L20 62 L75 72 Z" fill="#C4894F"/>
-  <path d="M155 96 L180 62 L125 72 Z" fill="#C4894F"/>
-  <path d="M75 72 L100 96 L125 72 L100 55 Z" fill="#F3E2C7"/>
-  <rect x="60" y="115" width="50" height="6" rx="3" fill="#C4894F"/>
-</svg>
