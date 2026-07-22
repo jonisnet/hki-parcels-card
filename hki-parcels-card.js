@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.4.1';
+const CARD_VERSION = 'v1.5.0';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -181,6 +181,16 @@ const TRANSLATIONS = {
         account_help_suffix:    '_incoming_parcels" etc. De 4 sensoren worden automatisch opgebouwd.',
         gls_account_help:       'GLS heeft geen account — vul de postcode van je GLS-hub in (bv. 1234AB, zoals ingesteld bij het toevoegen van de integratie).',
         dragonfly_account_help: 'Dragonfly heeft geen account of postcode — laat dit veld leeg; de sensoren heten sensor.dragonfly_*.',
+        trunkrs_account_help:   'Trunkrs heeft geen account — vul de postcode van je Trunkrs-hub in (bv. 1234AB, zoals ingesteld bij het toevoegen van de integratie).',
+        cainiao_account_help:   'Cainiao heeft geen account of postcode — laat dit veld leeg; de sensoren heten sensor.cainiao_*.',
+        show_add_parcel:        'Toon "Pakket toevoegen" op de kaart',
+        add_parcel_toggle:      '+ Pakket toevoegen',
+        add_parcel_carrier:     'Dienst',
+        add_parcel_number:      'Track & Trace nummer',
+        add_parcel_submit:      'Toevoegen',
+        add_parcel_busy:        'Bezig...',
+        add_parcel_success:     'Pakket toegevoegd',
+        add_parcel_error:       'Toevoegen mislukt — controleer het nummer.',
         adv_sensors:            'Geavanceerd: sensoren handmatig overschrijven',
         adv_sensors_help:       'Normaal hoef je dit niet aan te passen. Gebruik dit alleen als je sensoren een afwijkende naam hebben.',
         entity_incoming:        'Onderweg Entity (incoming)',
@@ -306,6 +316,16 @@ const TRANSLATIONS = {
         account_help_suffix:    '_incoming_parcels" etc. The 4 sensors are built automatically.',
         gls_account_help:       'GLS has no account — enter the postal code of your GLS hub (e.g. 1234AB, as set when adding the integration).',
         dragonfly_account_help: 'Dragonfly has no account or postal code — leave this field empty; the sensors are named sensor.dragonfly_*.',
+        trunkrs_account_help:   'Trunkrs has no account — enter the postal code of your Trunkrs hub (e.g. 1234AB, as set when adding the integration).',
+        cainiao_account_help:   'Cainiao has no account or postal code — leave this field empty; the sensors are named sensor.cainiao_*.',
+        show_add_parcel:        'Show "Add parcel" on the card',
+        add_parcel_toggle:      '+ Add parcel',
+        add_parcel_carrier:     'Carrier',
+        add_parcel_number:      'Tracking number',
+        add_parcel_submit:      'Add',
+        add_parcel_busy:        'Adding...',
+        add_parcel_success:     'Parcel added',
+        add_parcel_error:       'Failed to add — check the number.',
         adv_sensors:            'Advanced: override sensors manually',
         adv_sensors_help:       'You normally don\'t need to change this. Use this only if your sensors have a non-standard name.',
         entity_incoming:        'In Transit entity (incoming)',
@@ -361,14 +381,24 @@ const IMG = {
     dpd:       `${REPO_BASE}/dpd`,
     gls:       `${REPO_BASE}/gls`,
     dragonfly: `${REPO_BASE}/dragonfly`,
+    trunkrs:   `${REPO_BASE}/trunkrs`,
+    cainiao:   `${REPO_BASE}/cainiao`,
 };
 
+// Points at the ha-parcel-integrations org, not the individual maintainers' personal repos
+// (peternijssen/ha-postnl, peternijssen/ha-dhl-nl, peternijssen/ha-dpd, peternijssen/ha-gls,
+// HummelsTech/ha-dragonfly). All of those integrations were moved into the org so they can be
+// maintained together and now ship newer releases there than on the old personal forks (e.g.
+// peternijssen/ha-gls has had no release at all since the move) — pointing here keeps the
+// "integration not found" link in the editor from sending people to a stale/abandoned repo.
 const CARRIER_REPO_URLS = {
-    postnl_v4: 'https://github.com/peternijssen/ha-postnl',
-    dhl:       'https://github.com/peternijssen/ha-dhl-nl',
-    dpd:       'https://github.com/peternijssen/ha-dpd',
-    gls:       'https://github.com/peternijssen/ha-gls',
-    dragonfly: 'https://github.com/HummelsTech/ha-dragonfly',
+    postnl_v4: 'https://github.com/ha-parcel-integrations/ha-postnl',
+    dhl:       'https://github.com/ha-parcel-integrations/ha-dhl-nl',
+    dpd:       'https://github.com/ha-parcel-integrations/ha-dpd',
+    gls:       'https://github.com/ha-parcel-integrations/ha-gls',
+    dragonfly: 'https://github.com/ha-parcel-integrations/ha-dragonfly',
+    trunkrs:   'https://github.com/ha-parcel-integrations/ha-trunkrs',
+    cainiao:   'https://github.com/ha-parcel-integrations/ha-cainiao',
 };
 
 const CARRIER_ASSETS = {
@@ -429,6 +459,8 @@ const CARRIER_ASSETS = {
             delivered_mini:  `${IMG.gls}/GLS_step_delivered_mini.png?raw=true`
         }
     },
+    // Dragonfly art (SVG) lives in images/dragonfly/ on the main repo, added alongside the
+    // dragonfly carrier type itself — see CARRIER_PRESETS.dragonfly.
     dragonfly: {
         logo:   `${IMG.dragonfly}/dragonfly-logo.svg?raw=true`,
         van:    `${IMG.dragonfly}/dragonfly-van.svg?raw=true`,
@@ -440,6 +472,38 @@ const CARRIER_ASSETS = {
             transit:         `${IMG.dragonfly}/dragonfly_step_transit.svg?raw=true`,
             delivered:       `${IMG.dragonfly}/dragonfly_step_delivered.svg?raw=true`,
             delivered_mini:  `${IMG.dragonfly}/dragonfly_step_delivered_mini.svg?raw=true`
+        }
+    },
+    // Trunkrs/Cainiao art: step icons and the animated van are generated by recolouring the
+    // shared GLS master illustration (same technique every other carrier's art already uses —
+    // one master drawing, hue-shifted per brand) to each carrier's confirmed accent colour.
+    // The logo is the real official logo artwork (trimmed/scaled, transparent background).
+    // The banner is a plain-background placeholder built from that same real logo — there's no
+    // official banner-style artwork to draw from, so this is the one piece that's still "ours".
+    trunkrs: {
+        logo:   `${IMG.trunkrs}/TRUNKRS_logo.png?raw=true`,
+        van:    `${IMG.trunkrs}/TRUNKRS_van.gif?raw=true`,
+        banner: `${IMG.trunkrs}/TRUNKRS_banner.png?raw=true`,
+        steps: {
+            registered:      `${IMG.trunkrs}/TRUNKRS_step_registered.png?raw=true`,
+            registered_mini: `${IMG.trunkrs}/TRUNKRS_step_registered_mini.png?raw=true`,
+            sorting:         `${IMG.trunkrs}/TRUNKRS_step_sorting.png?raw=true`,
+            transit:         `${IMG.trunkrs}/TRUNKRS_step_transit.png?raw=true`,
+            delivered:       `${IMG.trunkrs}/TRUNKRS_step_delivered.png?raw=true`,
+            delivered_mini:  `${IMG.trunkrs}/TRUNKRS_step_delivered_mini.png?raw=true`
+        }
+    },
+    cainiao: {
+        logo:   `${IMG.cainiao}/CAINIAO_logo.png?raw=true`,
+        van:    `${IMG.cainiao}/CAINIAO_van.gif?raw=true`,
+        banner: `${IMG.cainiao}/CAINIAO_banner.png?raw=true`,
+        steps: {
+            registered:      `${IMG.cainiao}/CAINIAO_step_registered.png?raw=true`,
+            registered_mini: `${IMG.cainiao}/CAINIAO_step_registered_mini.png?raw=true`,
+            sorting:         `${IMG.cainiao}/CAINIAO_step_sorting.png?raw=true`,
+            transit:         `${IMG.cainiao}/CAINIAO_step_transit.png?raw=true`,
+            delivered:       `${IMG.cainiao}/CAINIAO_step_delivered.png?raw=true`,
+            delivered_mini:  `${IMG.cainiao}/CAINIAO_step_delivered_mini.png?raw=true`
         }
     },
     postnl_legacy: {
@@ -468,8 +532,32 @@ const CARRIER_PRESETS = {
                     // not hardcode it back to `null` ("unsupported"), that was only ever
                     // true historically.
                     slug_first_suffixes: { incoming: 'binnenkomende_pakketten', delivered: 'bezorgde_pakketten', outgoing: 'uitgaande_pakketten', letters: null } },
-    gls:          { label: 'GLS',                        icon: 'mdi:package-variant-closed', color: '#061ab1', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'gls'    },
-    dragonfly:    { label: 'Dragonfly',                  icon: 'mdi:package-variant-closed', color: '#13a58f', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'dragonfly' },
+    // gls / dragonfly / trunkrs / cainiao are all account-less carriers from the same
+    // ha-parcel-integrations family: one "hub" (global, or per postal code for gls/trunkrs)
+    // holds a dynamically managed list of tracked parcels, added either through the
+    // integration's own Options dialog or by calling its `<domain>.track_parcel` service —
+    // which is exactly what `track_parcel_service` below wires up to the card's own
+    // "+ Add parcel" control (see _getTrackableCarriers()/_submitAddParcel() on the card).
+    // `field` is the service's tracking-number parameter name (it differs per integration);
+    // `supports_postal_code` means the service also accepts an optional `postal_code` to pick
+    // the right hub when more than one is configured — the card passes the carrier's own
+    // `user` value (which for these carriers IS the postal code, see gls/trunkrs_account_help).
+    gls:          { label: 'GLS',                        icon: 'mdi:package-variant-closed', color: '#061ab1', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'gls',
+                    track_parcel_service: { domain: 'gls', field: 'parcel_no', supports_postal_code: true } },
+    // Brand colour confirmed by pixel-sampling the official Dragonfly wordmark (teal, #00a78f).
+    dragonfly:    { label: 'Dragonfly',                  icon: 'mdi:package-variant-closed', color: '#00a78f', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'dragonfly',
+                    track_parcel_service: { domain: 'dragonfly', field: 'tracking_code', supports_postal_code: false } },
+    // Brand colour confirmed by pixel-sampling the official Trunkrs logo: the wordmark itself is
+    // a dark navy/indigo (#220c4a), with a bright mint-green (#2ce27e) accent shape. The green is
+    // used here as the UI accent (chips, borders, "+ Add parcel" button) since it's the more
+    // legible/vivid of the two against the card's light and dark themes — same role the accent
+    // colour plays for every other carrier.
+    trunkrs:      { label: 'Trunkrs',                    icon: 'mdi:package-variant-closed', color: '#2ce27e', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'trunkrs',
+                    track_parcel_service: { domain: 'trunkrs', field: 'trunkrs_nr', supports_postal_code: true } },
+    // Brand colour confirmed by pixel-sampling the official Cainiao logo (#0066ff) — matches the
+    // "Brandeis Blue" value from https://www.schemecolor.com/cainiao-logo-color.php exactly.
+    cainiao:      { label: 'Cainiao',                    icon: 'mdi:package-variant-closed', color: '#0066ff', schema: 'canonical',     supports_letters: false, supports_outgoing: false, sensor_slug: 'cainiao',
+                    track_parcel_service: { domain: 'cainiao', field: 'tracking_code', supports_postal_code: false } },
     postnl_legacy:{ label: 'PostNL (arjenbos)',          icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'single_entity', supports_letters: false, sensor_slug: null     },
     custom:       { label: 'Custom',                     icon: 'mdi:package-variant-closed', color: '#ed8c00', schema: 'canonical',     supports_letters: false, sensor_slug: null     }
 };
@@ -600,7 +688,7 @@ function detectCarrierUsers(hass, carrierType) {
 // recommended default and the user can switch the type manually if they're
 // still on v3.x) and postnl_legacy / custom (sensor_slug is null — no
 // entity-based detection is possible for those).
-const AUTO_DETECT_CARRIER_TYPES = ['postnl_v4', 'dhl', 'dpd', 'gls', 'dragonfly'];
+const AUTO_DETECT_CARRIER_TYPES = ['postnl_v4', 'dhl', 'dpd', 'gls', 'dragonfly', 'trunkrs', 'cainiao'];
 
 // Infers a sensible days_back for a freshly auto-populated card: the number
 // of days since the oldest currently-visible delivered parcel, across every
@@ -643,6 +731,12 @@ class HkiParcelsCard extends HTMLElement {
         this._activeTab = 'onderweg';
         this._selectedParcel = null;
         this._isRendered = false;
+        // "+ Add parcel" mini-form state (see _renderAddParcelForm / _submitAddParcel).
+        this._addParcelOpen = false;
+        this._addParcelCarrierIndex = 0;
+        this._addParcelValue = '';
+        this._addParcelBusy = false;
+        this._addParcelMessage = null;
     }
 
     // Shorthand: resolve a translation key using hass.language.
@@ -670,6 +764,7 @@ class HkiParcelsCard extends HTMLElement {
             show_header: true,
             show_placeholder: true,
             show_tracking_link: true,
+            show_add_parcel: true,
             header_color: '',
             header_text_color: '',
             placeholder_image: DEFAULT_PLACEHOLDER_IMAGE,
@@ -766,6 +861,7 @@ class HkiParcelsCard extends HTMLElement {
             placeholder_image: DEFAULT_PLACEHOLDER_IMAGE,
             carriers,
             show_tracking_link: true,
+            show_add_parcel: true,
             layout_order: ['header', 'animation', 'tabs', 'list']
         };
     }
@@ -1188,6 +1284,127 @@ class HkiParcelsCard extends HTMLElement {
 
     _closeLetterPopup() {
         this.shadowRoot.querySelector('.letter-popup-overlay')?.classList.remove('open');
+    }
+
+    // ------------------------------------------------------------------
+    // "+ Add parcel" — calls the carrier integration's own `<domain>.track_parcel`
+    // service so a Track & Trace number entered on the live card actually starts being
+    // tracked by the integration, not just displayed. Only offered for carriers whose
+    // preset declares `track_parcel_service` (gls/dragonfly/trunkrs/cainiao — the
+    // account-less "hub + dynamically added parcels" family, see CARRIER_PRESETS).
+    // ------------------------------------------------------------------
+
+    // { carrier, index, preset }[] for every configured carrier that supports adding a
+    // parcel via service call. Re-evaluated on every render — cheap, and always reflects
+    // the current carrier list (e.g. right after the editor adds/removes a carrier).
+    _getTrackableCarriers() {
+        return (this.config.carriers || [])
+            .map((carrier, index) => ({ carrier, index, preset: CARRIER_PRESETS[carrier.type] || CARRIER_PRESETS.custom }))
+            .filter(({ preset }) => !!preset.track_parcel_service);
+    }
+
+    _renderAddParcelForm() {
+        if (this.config.show_add_parcel === false) return '';
+        const trackable = this._getTrackableCarriers();
+        if (!trackable.length) return '';
+
+        if (!this._addParcelOpen) {
+            return `
+            <div class="add-parcel-bar">
+                <button class="add-parcel-toggle" type="button">
+                    <ha-icon icon="mdi:plus-circle-outline"></ha-icon> ${this._t('add_parcel_toggle')}
+                </button>
+            </div>`;
+        }
+
+        const stillValid = trackable.some(t => t.index === this._addParcelCarrierIndex);
+        const selIndex = stillValid ? this._addParcelCarrierIndex : trackable[0].index;
+        const options = trackable.map(({ carrier, index, preset }) => {
+            const label = carrier.user ? `${carrier.name || preset.label} (${carrier.user})` : (carrier.name || preset.label);
+            return `<option value="${index}" ${index === selIndex ? 'selected' : ''}>${label}</option>`;
+        }).join('');
+
+        const busy = this._addParcelBusy;
+        const msg = this._addParcelMessage;
+
+        return `
+        <div class="add-parcel-bar open">
+            <div class="add-parcel-row">
+                ${trackable.length > 1 ? `
+                <select class="add-parcel-select" aria-label="${this._t('add_parcel_carrier')}" ${busy ? 'disabled' : ''}>${options}</select>
+                ` : ''}
+                <input class="add-parcel-input" type="text" placeholder="${this._t('add_parcel_number')}"
+                    value="${(this._addParcelValue || '').replace(/"/g, '&quot;')}" ${busy ? 'disabled' : ''} />
+                <button class="add-parcel-submit" type="button" ${busy ? 'disabled' : ''}>${busy ? this._t('add_parcel_busy') : this._t('add_parcel_submit')}</button>
+                <button class="add-parcel-cancel" type="button" title="Cancel" ${busy ? 'disabled' : ''}><ha-icon icon="mdi:close"></ha-icon></button>
+            </div>
+            ${msg ? `<div class="add-parcel-msg ${msg.type}">${msg.text}</div>` : ''}
+        </div>`;
+    }
+
+    // (Re)binds event listeners for the add-parcel container. Called after every
+    // (re)render of that container's innerHTML, same pattern as renderList()/render().
+    _bindAddParcelEvents(container) {
+        if (!container) return;
+        container.querySelector('.add-parcel-toggle')?.addEventListener('click', () => {
+            this._addParcelOpen = true;
+            this._addParcelMessage = null;
+            this._updateAddParcelBar();
+        });
+        container.querySelector('.add-parcel-cancel')?.addEventListener('click', () => {
+            this._addParcelOpen = false;
+            this._addParcelMessage = null;
+            this._updateAddParcelBar();
+        });
+        container.querySelector('.add-parcel-select')?.addEventListener('change', (ev) => {
+            this._addParcelCarrierIndex = parseInt(ev.target.value, 10);
+        });
+        const input = container.querySelector('.add-parcel-input');
+        if (input) {
+            input.addEventListener('input', (ev) => { this._addParcelValue = ev.target.value; });
+            input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') this._submitAddParcel(); });
+        }
+        container.querySelector('.add-parcel-submit')?.addEventListener('click', () => this._submitAddParcel());
+    }
+
+    _updateAddParcelBar() {
+        const container = this.shadowRoot.querySelector('.add-parcel-container');
+        if (!container) return;
+        container.innerHTML = this._renderAddParcelForm();
+        this._bindAddParcelEvents(container);
+        // Focus the number field the moment the form opens, so typing can start immediately.
+        if (this._addParcelOpen) container.querySelector('.add-parcel-input')?.focus();
+    }
+
+    async _submitAddParcel() {
+        const trackable = this._getTrackableCarriers();
+        const entry = trackable.find(t => t.index === this._addParcelCarrierIndex) || trackable[0];
+        if (!entry) return;
+        const value = (this._addParcelValue || '').trim();
+        if (!value || !this._hass?.callService) return;
+
+        const { carrier, preset } = entry;
+        const svc = preset.track_parcel_service;
+        if (!svc) return;
+
+        this._addParcelBusy = true;
+        this._addParcelMessage = null;
+        this._updateAddParcelBar();
+
+        const data = { [svc.field]: value };
+        if (svc.supports_postal_code && carrier.user) data.postal_code = carrier.user;
+
+        try {
+            await this._hass.callService(svc.domain, 'track_parcel', data);
+            this._addParcelBusy = false;
+            this._addParcelValue = '';
+            this._addParcelMessage = { type: 'success', text: this._t('add_parcel_success') };
+        } catch (err) {
+            this._addParcelBusy = false;
+            const detail = err?.message || err?.error?.message;
+            this._addParcelMessage = { type: 'error', text: detail ? `${this._t('add_parcel_error')} (${detail})` : this._t('add_parcel_error') };
+        }
+        this._updateAddParcelBar();
     }
 
     // ------------------------------------------------------------------
@@ -1690,6 +1907,22 @@ class HkiParcelsCard extends HTMLElement {
             .letter-popup-caption { color: var(--primary-text-color); font-size: 0.95em; text-align: center; }
             .letter-popup-close { position: absolute; top: 8px; right: 8px; background: var(--secondary-background-color); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--primary-text-color); }
             .letter-popup-close:hover { background: var(--divider-color); }
+            .add-parcel-container:empty { display: none; }
+            .add-parcel-bar { padding: 10px 16px; border-top: 1px solid var(--divider-color); background: var(--secondary-background-color, #f5f5f5); }
+            .add-parcel-toggle { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; color: var(--accent); font-size: 0.9em; font-weight: 600; cursor: pointer; padding: 4px 0; font-family: inherit; }
+            .add-parcel-toggle:hover { text-decoration: underline; }
+            .add-parcel-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+            .add-parcel-select { flex: 0 1 auto; min-width: 0; max-width: 45%; padding: 8px 10px; font-size: 0.85em; border: 1px solid var(--divider-color); border-radius: 6px; background: var(--card-background-color, white); color: var(--primary-text-color); font-family: inherit; }
+            .add-parcel-input { flex: 1 1 120px; min-width: 0; padding: 8px 10px; font-size: 0.9em; border: 1px solid var(--divider-color); border-radius: 6px; background: var(--card-background-color, white); color: var(--primary-text-color); font-family: inherit; box-sizing: border-box; }
+            .add-parcel-input:focus { outline: none; border-color: var(--accent); }
+            .add-parcel-submit { flex-shrink: 0; background: var(--accent); color: white; border: none; border-radius: 6px; padding: 8px 14px; font-size: 0.85em; font-weight: 600; cursor: pointer; font-family: inherit; }
+            .add-parcel-submit:disabled { opacity: 0.6; cursor: default; }
+            .add-parcel-submit:hover:not(:disabled) { box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+            .add-parcel-cancel { flex-shrink: 0; background: none; border: none; color: var(--secondary-text-color); cursor: pointer; display: flex; align-items: center; padding: 6px; border-radius: 50%; }
+            .add-parcel-cancel:hover { background: var(--divider-color); }
+            .add-parcel-msg { margin-top: 8px; font-size: 0.85em; }
+            .add-parcel-msg.success { color: var(--success-color, #4caf50); }
+            .add-parcel-msg.error { color: var(--error-color, red); }
         </style>`;
 
         const headerLogo = (this.config.carriers || []).length === 1
@@ -1719,7 +1952,7 @@ class HkiParcelsCard extends HTMLElement {
         };
 
         const layoutOrder = this.config.layout_order || ['header', 'animation', 'tabs', 'list'];
-        this.shadowRoot.innerHTML = cssBlock + `<ha-card>${layoutOrder.map(b => blocks[b] || '').join('')}</ha-card>`;
+        this.shadowRoot.innerHTML = cssBlock + `<ha-card>${layoutOrder.map(b => blocks[b] || '').join('')}<div class="add-parcel-container">${this._renderAddParcelForm()}</div></ha-card>`;
         this._isRendered = true;
 
         this.shadowRoot.querySelectorAll('.tab').forEach(el =>
@@ -1731,6 +1964,7 @@ class HkiParcelsCard extends HTMLElement {
         this.shadowRoot.querySelectorAll('.letter-thumb').forEach(el =>
             el.addEventListener('click', this.handleLetterThumbClick.bind(this))
         );
+        this._bindAddParcelEvents(this.shadowRoot.querySelector('.add-parcel-container'));
         this.updateAnimation(displayed);
     }
 }
@@ -1766,6 +2000,7 @@ class HkiParcelsCardEditor extends LitElement {
             show_header: true,
             show_placeholder: true,
             show_tracking_link: true,
+            show_add_parcel: true,
             header_color: '',
             header_text_color: '',
             placeholder_image: DEFAULT_PLACEHOLDER_IMAGE,
@@ -1791,7 +2026,7 @@ class HkiParcelsCardEditor extends LitElement {
         if (!field || !this._config) return;
         let value = this._val(ev);
         if (new Set(['days_back']).has(field)) value = parseInt(value, 10);
-        if (new Set(['show_delivered','show_sent','show_letters','show_animation','show_header','show_placeholder','show_tracking_link']).has(field))
+        if (new Set(['show_delivered','show_sent','show_letters','show_animation','show_header','show_placeholder','show_tracking_link','show_add_parcel']).has(field))
             value = !!(ev.target?.checked ?? value);
         this._config = { ...this._config, [field]: value };
         this._emit();
@@ -2423,6 +2658,20 @@ class HkiParcelsCardEditor extends LitElement {
             </div>` : ''}`;
     }
 
+    // Per-type wording for the "0 detected" manual account/postcode input — one entry per
+    // account-less carrier (see CARRIER_PRESETS); everything else falls back to the generic
+    // "account part of the sensor name" explanation built from the carrier's sensor_slug.
+    _accountHelpText(carrierType, preset) {
+        const key = {
+            gls: 'gls_account_help',
+            trunkrs: 'trunkrs_account_help',
+            dragonfly: 'dragonfly_account_help',
+            cainiao: 'cainiao_account_help',
+        }[carrierType];
+        if (key) return this._t(key);
+        return html`"_${preset.sensor_slug}${this._t('account_help_suffix')}`;
+    }
+
     // Renders the user/account detection block: badge if 1 found, dropdown if multiple, manual if none.
     // Never mutates state during render — auto-fill happens in _addCarrier / _carrierTypeChanged.
     _renderUserDetection(carrier, index, preset, supportsLetters, supportsOutgoing = true) {
@@ -2528,11 +2777,11 @@ class HkiParcelsCardEditor extends LitElement {
                 </div>`}
             <div class="plain-field" style="margin-top:8px;">
                 <label for="hki-carrier-user-${index}">${this._t('label_account')}</label>
-                <input id="hki-carrier-user-${index}" type="text" placeholder="${carrier.type === 'gls' ? 'e.g. 1234ab' : carrier.type === 'dragonfly' ? '' : 'e.g. my_account'}"
+                <input id="hki-carrier-user-${index}" type="text" placeholder="${['gls', 'trunkrs'].includes(carrier.type) ? 'e.g. 1234ab' : 'e.g. my_account'}"
                     .value=${carrier.user || ''}
                     @change=${(ev) => this._carrierUserInputChanged(index, ev)} />
             </div>
-            <div class="helper-text">${carrier.type === 'gls' ? this._t('gls_account_help') : carrier.type === 'dragonfly' ? this._t('dragonfly_account_help') : html`"_${preset.sensor_slug}${this._t('account_help_suffix')}`}</div>
+            <div class="helper-text">${this._accountHelpText(carrier.type, preset)}</div>
             ${entityPreview}`;
     }
 
@@ -2572,6 +2821,8 @@ class HkiParcelsCardEditor extends LitElement {
                             { value: 'dpd',           label: 'DPD' },
                             { value: 'gls',           label: 'GLS' },
                             { value: 'dragonfly',     label: 'Dragonfly' },
+                            { value: 'trunkrs',       label: 'Trunkrs' },
+                            { value: 'cainiao',       label: 'Cainiao' },
                             { value: 'postnl',        label: 'PostNL (<v4.x)' },
                             { value: 'postnl_legacy', label: 'PostNL (ArjenBos)' },
                             { value: 'custom',        label: 'Custom' }
@@ -2686,6 +2937,7 @@ class HkiParcelsCardEditor extends LitElement {
                     <div class="switch-row"><ha-switch .checked=${this._config.show_animation !== false} data-field="show_animation" @change=${this._changed}></ha-switch><span>${this._t('show_animation')}</span></div>
                     <div class="switch-row"><ha-switch .checked=${this._config.show_placeholder !== false} data-field="show_placeholder" @change=${this._changed}></ha-switch><span>${this._t('show_placeholder')}</span></div>
                     <div class="switch-row"><ha-switch .checked=${this._config.show_tracking_link !== false} data-field="show_tracking_link" @change=${this._changed}></ha-switch><span>${this._t('show_tracking_link')}</span></div>
+                    <div class="switch-row"><ha-switch .checked=${this._config.show_add_parcel !== false} data-field="show_add_parcel" @change=${this._changed}></ha-switch><span>${this._t('show_add_parcel')}</span></div>
                 </details>
 
                 <details class="section-details">
@@ -2724,7 +2976,7 @@ window.customCards = window.customCards || [];
 window.customCards.push({
     type: "hki-parcels-card",
     name: "HKI Parcels Card",
-    description: "Multi-carrier parcel tracker (PostNL, DHL, DPD, GLS) — fork of jimz011/hki-elements",
+    description: "Multi-carrier parcel tracker (PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao) — fork of jimz011/hki-elements",
     preview: true
 });
 

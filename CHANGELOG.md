@@ -1,16 +1,50 @@
 # Changelog
 
-## [Unreleased]
+## [1.5.0] — 2026-07-22
 
 ### Added
 
-- **Dragonfly Shipping support** (`type: dragonfly`) — new carrier backed by
-  [HummelsTech/ha-dragonfly](https://github.com/HummelsTech/ha-dragonfly).
-  Dragonfly is account-less *and* postcode-less: leave the card's `user`
-  field empty (sensors are `sensor.dragonfly_*`). Includes official logo and
-  banner artwork plus a flat-vector van and step illustrations in the
-  Dragonfly brand palette (`images/dragonfly/`). No Sent tab (the carrier
-  has no outgoing concept), no letters.
+- **Trunkrs and Cainiao carrier support** — two new carrier types, `trunkrs` and `cainiao`, for
+  [ha-parcel-integrations/ha-trunkrs](https://github.com/ha-parcel-integrations/ha-trunkrs) and
+  [ha-parcel-integrations/ha-cainiao](https://github.com/ha-parcel-integrations/ha-cainiao).
+  Same canonical schema as DHL/DPD/GLS; account detection, entity templating and the editor's
+  carrier-type dropdown all support them like any other carrier. Both now have full custom
+  branding — see below. Note that Trunkrs is an early-release integration upstream and currently
+  only maps the `SHIPMENT_DELIVERED` status; everything else reports `unknown`.
+- **Dragonfly carrier support brought into this checkout** — `dragonfly` (account-less, Track &
+  Trace code only) was already merged on `main` via PR #6; this release folds it into the same
+  working copy as the Trunkrs/Cainiao additions above so all three ship together. Credit for the
+  Dragonfly integration itself goes to [Alwin Hummels (@HummelsTech)](https://github.com/HummelsTech),
+  who built it from scratch and transferred it into the ha-parcel-integrations org — see that
+  repo's [Credits](https://github.com/ha-parcel-integrations/ha-dragonfly#credits) section.
+- **"+ Add parcel" control on the card itself** — for the account-less carriers (GLS, Dragonfly,
+  Trunkrs, Cainiao), the card now shows a small "+ Add parcel" row. Typing a Track & Trace number
+  and submitting calls the integration's own `<domain>.track_parcel` service directly (`gls`,
+  `dragonfly`, `trunkrs` or `cainiao`), so the parcel is genuinely registered with the integration —
+  not just added to the card's own view. For GLS and Trunkrs, which can have multiple hubs (one per
+  postal code), the carrier's configured `user` value (the postal code) is passed along
+  automatically so the parcel lands on the right hub. New `show_add_parcel` option (default `true`)
+  hides it if you'd rather add parcels through each integration's own Configure dialog.
+- **Trunkrs and Cainiao branding** — logo, van, step icons and banner added under
+  `images/trunkrs/` and `images/cainiao/`, matching the existing DHL/DPD/GLS folder convention.
+  The logo files are each carrier's real official artwork (trimmed and scaled from the source
+  logos); the step icons and animated van are the shared master illustration recoloured to match
+  (the same technique the whole `images/` set already uses for every other carrier); the banner is
+  that real logo centred on a plain background, since no official banner artwork exists. Accent
+  colours were confirmed by pixel-sampling the official logos directly: Trunkrs `#2ce27e`
+  (previously an unverified guess of `#39b54a`), Cainiao `#0066ff` (unchanged — matches the
+  earlier best-effort value exactly), and Dragonfly's colour was corrected from `#13a58f` to the
+  confirmed `#00a78f` while we had the source logo in hand.
+
+### Changed
+
+- **`CARRIER_REPO_URLS` now points at the `ha-parcel-integrations` org instead of the original
+  maintainers' personal repos** (`peternijssen/ha-postnl`, `-ha-dhl-nl`, `-ha-dpd`, `-ha-gls`,
+  `HummelsTech/ha-dragonfly`). Those integrations were moved into the org to be maintained
+  together and are now ahead in version there — `peternijssen/ha-gls` in particular has had no
+  release since the move. This only affects the "integration not found" link shown in the editor
+  when no sensors are detected yet; already-working sensor auto-detection is unaffected. README
+  links and credits updated to match.
 
 ## [1.4.1] — 2026-07-09
 
