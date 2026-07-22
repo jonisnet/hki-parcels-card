@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.5.0b2';
+const CARD_VERSION = 'v1.5.0b3';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -80,7 +80,7 @@ function hasPhuIcons() {
 }
 
 function getDefaultIcon(carrierType) {
-    const phuMap = { postnl: 'phu:postnl', postnl_v4: 'phu:postnl', dhl: 'phu:dhl', dpd: 'phu:dpd', gls: 'phu:gls-group', postnl_legacy: 'phu:postnl' };
+    const phuMap = { postnl: 'phu:postnl', postnl_v4: 'phu:postnl', dhl: 'phu:dhl', dpd: 'phu:dpd', gls: 'phu:gls-group', dragonfly: 'phu:dragonfly', postnl_legacy: 'phu:postnl' };
     if (hasPhuIcons() && phuMap[carrierType]) return phuMap[carrierType];
     return 'mdi:package-variant-closed';
 }
@@ -1305,8 +1305,13 @@ class HkiParcelsCard extends HTMLElement {
         if (!data) return;
         const sections = this._getCarrierSections(data, carrierName);
         const anyItem = sections[0]?.items[0];
-        const brandColor = anyItem?.carrier_color || DEFAULT_CARRIER_COLOR;
-        const brandIcon  = anyItem?.carrier_icon  || DEFAULT_CARRIER_ICON;
+        // Prefer the carrier's own config over an item's branding: a carrier with zero
+        // current parcels (e.g. "0 pakketten") has no item to read carrier_icon/color from,
+        // which would otherwise wrongly fall back to the generic default icon and colour.
+        const carrierConfig = (this.config.carriers || []).find(c => this._carrierBranding(c).carrier_name === carrierName);
+        const branding = carrierConfig ? this._carrierBranding(carrierConfig) : null;
+        const brandColor = branding?.carrier_color || anyItem?.carrier_color || DEFAULT_CARRIER_COLOR;
+        const brandIcon  = branding?.carrier_icon  || anyItem?.carrier_icon  || DEFAULT_CARRIER_ICON;
 
         let popup = this.shadowRoot.querySelector('.carrier-popup-overlay');
         if (!popup) {

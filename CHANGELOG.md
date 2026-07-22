@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.0b3] — 2026-07-23
+
+### Fixed
+
+- **Carrier popup showed the wrong icon/colour for carriers with zero current parcels** — the
+  popup header derived its brand icon and accent colour from the first matching parcel item, so a
+  carrier with nothing currently in transit/delivered/sent (e.g. "0 pakketten") had no item to read
+  from and silently fell back to the generic default icon and colour instead of the carrier's own
+  configured branding. The header now reads the icon/colour from the carrier's own config first,
+  falling back to an item only if no matching carrier config is found.
+- **Dragonfly was missing from the PHU icon map** — `custom-brand-icons` now ships a `phu:dragonfly`
+  icon alongside the existing `phu:dpd` and `phu:gls-group` ones, but it had never been added to
+  this card's own carrier→PHU lookup table, so it always fell back to the generic mdi icon even
+  when custom-brand-icons was installed. Added.
+
 ## [1.5.0b2] — 2026-07-22
 
 ### Added
