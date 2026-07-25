@@ -531,10 +531,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#postnl-legacy-arjenbos-options" class="md-nav__link">
+  <a href="#postnl-arjenbos-options" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PostNL Legacy (arjenbos) options
+        PostNL (ArjenBos) options
       
     </span>
   </a>
@@ -806,10 +806,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#postnl-legacy-arjenbos-options" class="md-nav__link">
+  <a href="#postnl-arjenbos-options" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PostNL Legacy (arjenbos) options
+        PostNL (ArjenBos) options
       
     </span>
   </a>
@@ -1087,7 +1087,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="postnl-legacy-arjenbos-options">PostNL Legacy (arjenbos) options<a class="headerlink" href="#postnl-legacy-arjenbos-options" title="Permanent link">&para;</a></h3>
+<h3 id="postnl-arjenbos-options">PostNL (ArjenBos) options<a class="headerlink" href="#postnl-arjenbos-options" title="Permanent link">&para;</a></h3>
 <p>When <code>type: postnl_legacy</code> these options apply instead.</p>
 <table>
 <thead>
@@ -1134,7 +1134,7 @@
 </tr>
 <tr>
 <td><code>postnl</code></td>
-<td>PostNL (peternijssen v3.x)</td>
+<td>PostNL (&lt;v4.x)</td>
 <td>ha-parcel-integrations/ha-postnl ≤ 3.x</td>
 <td>legacy</td>
 <td style="text-align: center;">✅</td>
@@ -1190,7 +1190,7 @@
 </tr>
 <tr>
 <td><code>postnl_legacy</code></td>
-<td>PostNL (arjenbos)</td>
+<td>PostNL (ArjenBos)</td>
 <td>arjenbos/ha-postnl</td>
 <td>single_entity</td>
 <td style="text-align: center;">—</td>
@@ -1208,9 +1208,13 @@
 </table>
 <div class="admonition tip">
 <p class="admonition-title">Which PostNL type should I use?</p>
-<p>Use <code>postnl_v4</code> for new installations or if you have updated to ha-postnl 4.0.0 or later.
-Use <code>postnl</code> if you are still on version 3.x.
-Use <code>postnl_legacy</code> only for the arjenbos/ha-postnl integration.</p>
+<p>Use <code>postnl_v4</code> ("PostNL") for new installations or if you have updated to ha-postnl 4.0.0 or later.
+Use <code>postnl</code> ("PostNL (&lt;v4.x)") if you are still on version 3.x.
+Use <code>postnl_legacy</code> ("PostNL (ArjenBos)") only for the arjenbos/ha-postnl integration.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Deprecation notice</p>
+<p><strong>PostNL (&lt;v4.x)</strong> will no longer be supported starting from HKI Parcels Card v2.0. <strong>PostNL (ArjenBos)</strong> will also be removed from v2.0, unless arjenbos updates that integration before then. See <a href="../../installation/#postnl">Installation</a> for details.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

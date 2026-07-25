@@ -919,26 +919,34 @@
 <tr>
 <th>Situation</th>
 <th>Use type</th>
+<th>Label</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Fresh install, ha-postnl ≥ 4.0.0</td>
 <td><code>postnl_v4</code></td>
+<td>PostNL</td>
 </tr>
 <tr>
 <td>Existing install, ha-postnl ≤ 3.x</td>
 <td><code>postnl</code></td>
+<td>PostNL (&lt;v4.x)</td>
 </tr>
 <tr>
 <td>Using arjenbos/ha-postnl</td>
 <td><code>postnl_legacy</code></td>
+<td>PostNL (ArjenBos)</td>
 </tr>
 </tbody>
 </table>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>If you upgrade from ha-postnl v3.x to v4.x, change <code>type: postnl</code> to <code>type: postnl_v4</code> in the card configuration. Your sensor entity IDs stay the same — only the card type needs to change.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">PostNL (&lt;v4.x) and PostNL (ArjenBos) are being phased out</p>
+<p>Both will no longer be supported starting from HKI Parcels Card v2.0 — PostNL (ArjenBos) only sticks around past that point if arjenbos updates the integration before then. See <a href="../../installation/#postnl">Installation</a>.</p>
 </div>
 <hr />
 <h2 id="sensors-without-a-username-prefix">Sensors without a username prefix<a class="headerlink" href="#sensors-without-a-username-prefix" title="Permanent link">&para;</a></h2>

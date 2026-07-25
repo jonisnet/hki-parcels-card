@@ -782,7 +782,7 @@
 </code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Which PostNL type?</p>
-<p>Use <code>postnl_v4</code> for ha-postnl ≥ 4.0.0 (recommended), <code>postnl</code> for version 3.x, or <code>postnl_legacy</code> for arjenbos/ha-postnl.</p>
+<p>Use <code>postnl_v4</code> ("PostNL") for ha-postnl ≥ 4.0.0 (recommended). <code>postnl</code> ("PostNL (&lt;v4.x)") and <code>postnl_legacy</code> ("PostNL (ArjenBos)") are being phased out — see <a href="installation/#postnl">Installation</a>.</p>
 </div>
 </div>
 <div class="tabbed-block">
@@ -855,13 +855,13 @@
 <td>Account login</td>
 </tr>
 <tr>
-<td><strong>PostNL</strong> (v3.x)</td>
+<td><strong>PostNL (&lt;v4.x)</strong>²</td>
 <td><a href="https://github.com/ha-parcel-integrations/ha-postnl">ha-postnl</a> ≤ 3.x</td>
 <td><code>postnl</code></td>
 <td>Account login</td>
 </tr>
 <tr>
-<td><strong>PostNL</strong> (arjenbos)</td>
+<td><strong>PostNL (ArjenBos)</strong>²</td>
 <td><a href="https://github.com/arjenbos/ha-postnl">arjenbos/ha-postnl</a></td>
 <td><code>postnl_legacy</code></td>
 <td>Account login</td>
@@ -905,6 +905,7 @@
 </tbody>
 </table>
 <p>¹ Created by <a href="https://github.com/HummelsTech">Alwin Hummels (@HummelsTech)</a>, who also maintains it standalone at <a href="https://github.com/HummelsTech/ha-dragonfly">HummelsTech/ha-dragonfly</a> — see <a href="installation/#dragonfly-trunkrs-and-cainiao">Installation</a> for details.</p>
+<p>² Being phased out — see the <a href="installation/#postnl">deprecation notice</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Add parcel support</p>
 <p>Only the account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao) get the card's "+ Add parcel" control — PostNL, DHL and DPD auto-sync every parcel tied to the logged-in account and don't expose a service to register one manually. Full explanation on the <a href="card/overview/#add-parcel-support">Overview page</a>.</p>

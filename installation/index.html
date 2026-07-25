@@ -910,6 +910,7 @@
 <table>
 <thead>
 <tr>
+<th>Label</th>
 <th>Card type</th>
 <th>Integration</th>
 <th>When to use</th>
@@ -917,16 +918,19 @@
 </thead>
 <tbody>
 <tr>
+<td><strong>PostNL</strong></td>
 <td><code>postnl_v4</code></td>
 <td><a href="https://github.com/ha-parcel-integrations/ha-postnl">ha-parcel-integrations/ha-postnl</a> ≥ 4.0.0</td>
 <td><strong>Recommended</strong> — new installs and upgrades</td>
 </tr>
 <tr>
+<td><strong>PostNL (&lt;v4.x)</strong></td>
 <td><code>postnl</code></td>
 <td><a href="https://github.com/ha-parcel-integrations/ha-postnl">ha-parcel-integrations/ha-postnl</a> ≤ 3.x</td>
 <td>Still on version 3.x</td>
 </tr>
 <tr>
+<td><strong>PostNL (ArjenBos)</strong></td>
 <td><code>postnl_legacy</code></td>
 <td><a href="https://github.com/arjenbos/ha-postnl">arjenbos/ha-postnl</a></td>
 <td>Single-entity legacy mode</td>
@@ -936,6 +940,11 @@
 <div class="admonition tip">
 <p class="admonition-title">Upgrading from ha-postnl v3 to v4?</p>
 <p>Change the card type from <code>postnl</code> to <code>postnl_v4</code>. Your sensor entity IDs stay the same.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Deprecation notice</p>
+<p><strong>PostNL (&lt;v4.x)</strong> will no longer be supported starting from HKI Parcels Card v2.0 — upgrade to <code>ha-postnl</code> ≥ 4.0.0 and switch the card type to <code>postnl_v4</code> before then.</p>
+<p><strong>PostNL (ArjenBos)</strong> will also be removed starting from v2.0, unless <a href="https://github.com/arjenbos/ha-postnl">arjenbos/ha-postnl</a> receives an update of its own before that point.</p>
 </div>
 <h3 id="dhl-dpd-and-gls">DHL, DPD and GLS<a class="headerlink" href="#dhl-dpd-and-gls" title="Permanent link">&para;</a></h3>
 <table>
