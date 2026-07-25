@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs and Cainiao in a single Home Assistant card.">
+        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao and Hermes in a single Home Assistant card.">
       
       
       
@@ -480,10 +480,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao" class="md-nav__link">
+  <a href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao)
+        Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes)
       
     </span>
   </a>
@@ -755,10 +755,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao" class="md-nav__link">
+  <a href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao)
+        Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes)
       
     </span>
   </a>
@@ -851,8 +851,8 @@
 </code></pre></div>
 <p>With two or more carriers configured, the card automatically builds a combo banner from the logos of only the carriers you've actually added — no configuration needed.</p>
 <hr />
-<h2 id="account-less-carriers-gls-dragonfly-trunkrs-cainiao">Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao)<a class="headerlink" href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao" title="Permanent link">&para;</a></h2>
-<p>These carriers have no login — GLS and Trunkrs use a postal code, Dragonfly and Cainiao use nothing but the tracking number itself:</p>
+<h2 id="account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes">Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes)<a class="headerlink" href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes" title="Permanent link">&para;</a></h2>
+<p>These carriers have no login — GLS and Trunkrs use a postal code, Dragonfly, Cainiao and Hermes use nothing but the tracking number itself:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom:hki-parcels-card</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Parcels</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nt">carriers</span><span class="p">:</span>
@@ -862,6 +862,7 @@
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trunkrs</span>
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1234ab&quot;</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cainiao</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hermes</span>
 </code></pre></div>
 <p>Since there's no account to auto-sync from, each of these carriers shows a "+ Add parcel" control on the card so you can register a tracking number directly. Disable it per-card with <code>show_add_parcel: false</code>.</p>
 <hr />

@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs and Cainiao in a single Home Assistant card.">
+        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao and Hermes in a single Home Assistant card.">
       
       
       
@@ -930,7 +930,7 @@
 <li><code>days_back</code> is too short — increase the value to show older delivered parcels.</li>
 <li>The integration has not yet received data from the carrier — wait for the next update cycle or trigger a manual refresh.</li>
 <li>The sensor exists but has no attributes — verify the integration is authenticated (or, for account-less carriers, that at least one parcel has been registered).</li>
-<li>For account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao) — nothing has been tracked yet. Use the "+ Add parcel" control, or the integration's own Configure dialog, to register a tracking number.</li>
+<li>For account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes) — nothing has been tracked yet. Use the "+ Add parcel" control, or the integration's own Configure dialog, to register a tracking number.</li>
 </ol>
 <hr />
 <h2 id="delivered-parcels-not-visible">Delivered parcels not visible<a class="headerlink" href="#delivered-parcels-not-visible" title="Permanent link">&para;</a></h2>
@@ -947,7 +947,7 @@
 <p><strong>Causes and solutions:</strong></p>
 <ol>
 <li><code>show_sent</code> is set to <code>false</code> — enable it.</li>
-<li>The carrier is GLS, Dragonfly, Trunkrs or Cainiao — these carriers have no Sent tab at all, since there's no sender/account concept for account-less tracking. This is expected, not a bug.</li>
+<li>The carrier is GLS, Dragonfly, Trunkrs, Cainiao or Hermes — these carriers have no Sent tab at all, since there's no sender/account concept for account-less tracking. This is expected, not a bug.</li>
 <li>The <code>entity_outgoing</code> sensor is not configured and cannot be derived automatically — verify the sensor exists in Developer Tools and add a manual override if needed.</li>
 <li>For <code>postnl_legacy</code> — configure <code>distribution_entity</code> alongside <code>entity</code>.</li>
 </ol>
@@ -973,7 +973,7 @@
 <h2 id="add-parcel-is-missing-or-fails">"+ Add parcel" is missing or fails<a class="headerlink" href="#add-parcel-is-missing-or-fails" title="Permanent link">&para;</a></h2>
 <p><strong>Causes and solutions:</strong></p>
 <ol>
-<li>The control doesn't appear at all — it only shows when at least one configured carrier is account-less (GLS, Dragonfly, Trunkrs, Cainiao). PostNL, DHL and DPD don't support it; see <a href="../overview/#add-parcel-support">Add parcel support</a> for why.</li>
+<li>The control doesn't appear at all — it only shows when at least one configured carrier is account-less (GLS, Dragonfly, Trunkrs, Cainiao, Hermes). PostNL, DHL and DPD don't support it; see <a href="../overview/#add-parcel-support">Add parcel support</a> for why.</li>
 <li><code>show_add_parcel: false</code> is set — remove it or set to <code>true</code>.</li>
 <li>Submitting a tracking number does nothing / errors — the control calls the integration's own <code>track_parcel</code> service directly. Check <strong>Developer Tools → Actions</strong> to confirm that service exists for your carrier's integration (e.g. <code>gls.track_parcel</code>), and check the integration's own logs for the actual failure reason (invalid tracking number, carrier API error, etc.) — the card only relays the call, it doesn't validate tracking numbers itself.</li>
 <li>For GLS/Trunkrs specifically — the parcel may land on the wrong hub if <code>user</code> (the postal code) isn't set correctly on that carrier entry, since it's passed along automatically with the service call.</li>
@@ -983,7 +983,7 @@
 <p><strong>Causes and solutions:</strong></p>
 <ol>
 <li>If a carrier currently has zero parcels in every tab, the popup previously fell back to a generic icon and colour instead of the carrier's configured branding — fixed in v1.5.0b3. Update to the latest version.</li>
-<li>The icon shown is a plain generic shape or a text mark instead of a proper logo — this isn't a bug in the card. <a href="https://github.com/elax46/custom-brand-icons">custom-brand-icons</a> coverage varies per carrier; some (DPD, GLS) currently only have placeholder-style artwork upstream, and Trunkrs/Cainiao have no PHU icon at all yet. See <a href="../../installation/#optional-phu-carrier-icons">PHU carrier icons</a>.</li>
+<li>The icon shown is a plain generic shape or a text mark instead of a proper logo — this isn't a bug in the card. <a href="https://github.com/elax46/custom-brand-icons">custom-brand-icons</a> coverage varies per carrier; some (DPD, GLS) currently only have placeholder-style artwork upstream, and Trunkrs/Cainiao/Hermes have no PHU icon at all yet. See <a href="../../installation/#optional-phu-carrier-icons">PHU carrier icons</a>.</li>
 </ol>
 <hr />
 <h2 id="animation-not-showing">Animation not showing<a class="headerlink" href="#animation-not-showing" title="Permanent link">&para;</a></h2>
