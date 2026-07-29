@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao and Hermes in a single Home Assistant card.">
+        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos in a single Home Assistant card.">
       
       
       
@@ -880,7 +880,7 @@
 
 
 <h1 id="hki-parcels-card">HKI Parcels Card<a class="headerlink" href="#hki-parcels-card" title="Permanent link">&para;</a></h1>
-<p>A multi-carrier parcel tracking card for Home Assistant. Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao and Hermes in a single unified view, with support for letterbox mail images.</p>
+<p>A multi-carrier parcel tracking card for Home Assistant. Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos in a single unified view, with support for letterbox mail images.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>HKI Cards were created for the visual editor in Home Assistant. It is possible that the documentation is not complete for all features.</p>
@@ -928,13 +928,21 @@
 <td><strong>Hermes</strong></td>
 <td>Tracking number only</td>
 </tr>
+<tr>
+<td><strong>Packeta</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Correos</strong></td>
+<td>Tracking number only</td>
+</tr>
 </tbody>
 </table>
 <hr />
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
 <h3 id="parcel-tracking"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f4e6.svg" title=":package:" /> Parcel tracking<a class="headerlink" href="#parcel-tracking" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Multi-carrier</strong> — PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao and Hermes side by side; add the same carrier multiple times for multiple accounts or hubs</li>
+<li><strong>Multi-carrier</strong> — PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos side by side; add the same carrier multiple times for multiple accounts or hubs</li>
 <li><strong>Automatic sensor names</strong> — enter only the account name; the card builds all sensor entity IDs automatically, for both known naming schemes</li>
 <li><strong>Four tabs</strong> — In Transit · Delivered · Sent · Letters</li>
 <li><strong>Split sections</strong> — both Sent and Letters are split into <em>Still to be delivered</em> and <em>Delivered</em></li>
@@ -992,6 +1000,16 @@
 </tr>
 <tr>
 <td>Hermes</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Packeta</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Correos</td>
 <td style="text-align: center;">✅</td>
 <td>Account-less — tracked by number only</td>
 </tr>

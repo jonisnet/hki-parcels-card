@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao and Hermes in a single Home Assistant card.">
+        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos in a single Home Assistant card.">
       
       
       
@@ -962,7 +962,7 @@
 <td><code>show_add_parcel</code></td>
 <td>boolean</td>
 <td><code>true</code></td>
-<td>Show the "+ Add parcel" control at the bottom of the card (only appears when at least one configured carrier supports it — GLS, Dragonfly, Trunkrs, Cainiao, Hermes)</td>
+<td>Show the "+ Add parcel" control at the bottom of the card (only appears when at least one configured carrier supports it — GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos)</td>
 </tr>
 <tr>
 <td><code>show_raw_status</code></td>
@@ -1079,12 +1079,12 @@
 <tr>
 <td><code>entity_outgoing</code></td>
 <td>string</td>
-<td>Sensor for outgoing parcels in transit (not applicable for GLS, Dragonfly, Trunkrs, Cainiao, Hermes)</td>
+<td>Sensor for outgoing parcels in transit (not applicable for GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos)</td>
 </tr>
 <tr>
 <td><code>entity_outgoing_delivered</code></td>
 <td>string</td>
-<td>Sensor for delivered outgoing parcels (not applicable for GLS, Dragonfly, Trunkrs, Cainiao, Hermes)</td>
+<td>Sensor for delivered outgoing parcels (not applicable for GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos)</td>
 </tr>
 <tr>
 <td><code>entity_letters</code></td>
@@ -1203,6 +1203,22 @@
 <td style="text-align: center;">✅</td>
 </tr>
 <tr>
+<td><code>packeta</code></td>
+<td>Packeta</td>
+<td>ha-parcel-integrations/ha-packeta</td>
+<td>canonical</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td><code>correos</code></td>
+<td>Correos</td>
+<td>ha-parcel-integrations/ha-correos</td>
+<td>canonical</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
 <td><code>postnl_legacy</code></td>
 <td>PostNL (ArjenBos)</td>
 <td>arjenbos/ha-postnl</td>
@@ -1232,7 +1248,7 @@ Use <code>postnl_legacy</code> ("PostNL (ArjenBos)") only for the arjenbos/ha-po
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code>gls</code>, <code>dragonfly</code>, <code>trunkrs</code>, <code>cainiao</code> and <code>hermes</code> have no Sent tab — these carriers track parcels by number (plus postal code for GLS/Trunkrs) with no sender/account concept, so <code>entity_outgoing</code> and <code>entity_outgoing_delivered</code> are not applicable. See <a href="../overview/#add-parcel-support">Add parcel support</a> for why only these five carriers get the "+ Add parcel" control.</p>
+<p><code>gls</code>, <code>dragonfly</code>, <code>trunkrs</code>, <code>cainiao</code>, <code>hermes</code>, <code>packeta</code> and <code>correos</code> have no Sent tab — these carriers track parcels by number (plus postal code for GLS/Trunkrs) with no sender/account concept, so <code>entity_outgoing</code> and <code>entity_outgoing_delivered</code> are not applicable. See <a href="../overview/#add-parcel-support">Add parcel support</a> for why only these seven carriers get the "+ Add parcel" control.</p>
 </div>
 <hr />
 <h2 id="sensor-naming">Sensor naming<a class="headerlink" href="#sensor-naming" title="Permanent link">&para;</a></h2>
@@ -1255,11 +1271,11 @@ Use <code>postnl_legacy</code> ("PostNL (ArjenBos)") only for the arjenbos/ha-po
 </tr>
 <tr>
 <td><code>sensor.&lt;carrier&gt;_*</code> (no prefix)</td>
-<td>Dragonfly, Cainiao, Hermes — <code>sensor.dragonfly_incoming_parcels</code>, <code>sensor.cainiao_incoming_parcels</code>, <code>sensor.hermes_incoming_parcels</code></td>
+<td>Dragonfly, Cainiao, Hermes, Packeta, Correos — <code>sensor.dragonfly_incoming_parcels</code>, <code>sensor.cainiao_incoming_parcels</code>, <code>sensor.hermes_incoming_parcels</code>, <code>sensor.packeta_incoming_parcels</code>, <code>sensor.correos_incoming_parcels</code></td>
 </tr>
 </tbody>
 </table>
-<p>The correct scheme is detected automatically. Leave <code>user</code> empty if your sensors have no account prefix, or for any Dragonfly/Cainiao/Hermes sensor — those three have no account or postal code at all.</p>
+<p>The correct scheme is detected automatically. Leave <code>user</code> empty if your sensors have no account prefix, or for any Dragonfly/Cainiao/Hermes/Packeta/Correos sensor — those five have no account or postal code at all.</p>
 <hr />
 <h2 id="full-configuration-example">Full configuration example<a class="headerlink" href="#full-configuration-example" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom:hki-parcels-card</span>
@@ -1308,6 +1324,8 @@ Use <code>postnl_legacy</code> ("PostNL (ArjenBos)") only for the arjenbos/ha-po
 <a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1234ab&quot;</span>
 <a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cainiao</span>
 <a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hermes</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">packeta</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">correos</span>
 </code></pre></div>
 
 

@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao and Hermes in a single Home Assistant card.">
+        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos in a single Home Assistant card.">
       
       
       
@@ -405,10 +405,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dragonfly-trunkrs-cainiao-and-hermes" class="md-nav__link">
+  <a href="#dragonfly-trunkrs-cainiao-hermes-packeta-and-correos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dragonfly, Trunkrs, Cainiao and Hermes
+        Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos
       
     </span>
   </a>
@@ -815,10 +815,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dragonfly-trunkrs-cainiao-and-hermes" class="md-nav__link">
+  <a href="#dragonfly-trunkrs-cainiao-hermes-packeta-and-correos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dragonfly, Trunkrs, Cainiao and Hermes
+        Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos
       
     </span>
   </a>
@@ -973,8 +973,8 @@
 <p class="admonition-title">GLS has no sender/account</p>
 <p>You track parcels by tracking number and postal code, not a login. The card's <code>user</code> field maps to the hub's postal code (e.g. <code>1234ab</code>), and the Sent tab is not available for this carrier.</p>
 </div>
-<h3 id="dragonfly-trunkrs-cainiao-and-hermes">Dragonfly, Trunkrs, Cainiao and Hermes<a class="headerlink" href="#dragonfly-trunkrs-cainiao-and-hermes" title="Permanent link">&para;</a></h3>
-<p>These four, together with GLS above, are the "account-less" carriers in the family: instead of logging into an account, you register individual parcels by tracking number (plus a postal code for GLS and Trunkrs). None of them have a Sent tab, since there's no sender/account concept to distinguish outgoing parcels.</p>
+<h3 id="dragonfly-trunkrs-cainiao-hermes-packeta-and-correos">Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos<a class="headerlink" href="#dragonfly-trunkrs-cainiao-hermes-packeta-and-correos" title="Permanent link">&para;</a></h3>
+<p>These six, together with GLS above, are the "account-less" carriers in the family: instead of logging into an account, you register individual parcels by tracking number (plus a postal code for GLS and Trunkrs). None of them have a Sent tab, since there's no sender/account concept to distinguish outgoing parcels.</p>
 <table>
 <thead>
 <tr>
@@ -1004,6 +1004,16 @@
 <td><a href="https://github.com/ha-parcel-integrations/ha-hermes">ha-parcel-integrations/ha-hermes</a></td>
 <td>14-digit tracking code only — no account, no postal code. Germany ("Hermes Paket" / myhermes.de)</td>
 </tr>
+<tr>
+<td><strong>Packeta</strong></td>
+<td><a href="https://github.com/ha-parcel-integrations/ha-packeta">ha-parcel-integrations/ha-packeta</a></td>
+<td>"Z" tracking code only — no account, no postal code. Central Europe (CZ, SK, HU, PL, RO) pickup-point network, also known as Zásilkovna</td>
+</tr>
+<tr>
+<td><strong>Correos</strong></td>
+<td><a href="https://github.com/ha-parcel-integrations/ha-correos">ha-parcel-integrations/ha-correos</a></td>
+<td>Tracking code only — no account, no postal code. Spain's national postal service</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition info">
@@ -1014,7 +1024,11 @@
 <p class="admonition-title">Trunkrs is an early release</p>
 <p>The integration only recognises the <code>SHIPMENT_DELIVERED</code> status so far; every other state currently shows as <code>unknown</code> rather than guessing. It will improve as more statuses get mapped upstream.</p>
 </div>
-<p>For all five of these, the card's "+ Add parcel" control can register a new parcel directly from the dashboard by calling the integration's own <code>track_parcel</code> service — no need to open the integration's own Configure dialog. See <a href="../card/overview/#add-parcel-support">Add parcel support</a> for why PostNL/DHL/DPD don't have this control.</p>
+<div class="admonition note">
+<p class="admonition-title">Packeta and Correos expose no ETA</p>
+<p>Neither integration's public tracking includes an expected delivery time. The <code>next_delivery</code> sensor and Deliveries calendar stay empty for these two carriers, and no <code>delivery_time_changed</code> event ever fires — this is expected, not a bug.</p>
+</div>
+<p>For all seven of these, the card's "+ Add parcel" control can register a new parcel directly from the dashboard by calling the integration's own <code>track_parcel</code> service — no need to open the integration's own Configure dialog. See <a href="../card/overview/#add-parcel-support">Add parcel support</a> for why PostNL/DHL/DPD don't have this control.</p>
 <hr />
 <h2 id="optional-phu-carrier-icons">Optional: PHU carrier icons<a class="headerlink" href="#optional-phu-carrier-icons" title="Permanent link">&para;</a></h2>
 <p>Install <a href="https://github.com/elax46/custom-brand-icons">custom-brand-icons</a> via HACS to get branded <code>phu:</code> carrier icons. The card detects this automatically — no configuration needed.</p>
@@ -1057,6 +1071,14 @@
 </tr>
 <tr>
 <td>Hermes</td>
+<td style="text-align: center;">❌ not available yet</td>
+</tr>
+<tr>
+<td>Packeta</td>
+<td style="text-align: center;">❌ not available yet</td>
+</tr>
+<tr>
+<td>Correos</td>
 <td style="text-align: center;">❌ not available yet</td>
 </tr>
 </tbody>
@@ -1103,6 +1125,14 @@
 <tr>
 <td>ha-parcel-integrations/ha-hermes</td>
 <td>— (added 2026-07-23)</td>
+</tr>
+<tr>
+<td>ha-parcel-integrations/ha-packeta</td>
+<td>— (added 2026-07-29)</td>
+</tr>
+<tr>
+<td>ha-parcel-integrations/ha-correos</td>
+<td>— (added 2026-07-29)</td>
 </tr>
 </tbody>
 </table>
