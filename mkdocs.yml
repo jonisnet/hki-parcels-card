@@ -1,5 +1,5 @@
 site_name: HKI Parcels Card Documentation
-site_description: Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos in a single Home Assistant card.
+site_description: Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos in a single Home Assistant card.
 site_url: https://jonisnet.github.io/hki-parcels-card/
 repo_url: https://github.com/jonisnet/hki-parcels-card
 repo_name: jonisnet/hki-parcels-card

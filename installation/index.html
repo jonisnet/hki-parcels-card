@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Track parcels from PostNL, DHL, DPD, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos in a single Home Assistant card.">
+        <meta name="description" content="Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos in a single Home Assistant card.">
       
       
       
@@ -394,10 +394,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dhl-dpd-and-gls" class="md-nav__link">
+  <a href="#dhl-dpd-vinted-go-and-gls" class="md-nav__link">
     <span class="md-ellipsis">
       
-        DHL, DPD and GLS
+        DHL, DPD, Vinted Go and GLS
       
     </span>
   </a>
@@ -804,10 +804,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dhl-dpd-and-gls" class="md-nav__link">
+  <a href="#dhl-dpd-vinted-go-and-gls" class="md-nav__link">
     <span class="md-ellipsis">
       
-        DHL, DPD and GLS
+        DHL, DPD, Vinted Go and GLS
       
     </span>
   </a>
@@ -946,7 +946,7 @@
 <p><strong>PostNL (&lt;v4.x)</strong> will no longer be supported starting from HKI Parcels Card v2.0 — upgrade to <code>ha-postnl</code> ≥ 4.0.0 and switch the card type to <code>postnl_v4</code> before then.</p>
 <p><strong>PostNL (ArjenBos)</strong> will also be removed starting from v2.0, unless <a href="https://github.com/arjenbos/ha-postnl">arjenbos/ha-postnl</a> receives an update of its own before that point.</p>
 </div>
-<h3 id="dhl-dpd-and-gls">DHL, DPD and GLS<a class="headerlink" href="#dhl-dpd-and-gls" title="Permanent link">&para;</a></h3>
+<h3 id="dhl-dpd-vinted-go-and-gls">DHL, DPD, Vinted Go and GLS<a class="headerlink" href="#dhl-dpd-vinted-go-and-gls" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -964,6 +964,10 @@
 <td><a href="https://github.com/ha-parcel-integrations/ha-dpd">ha-parcel-integrations/ha-dpd</a></td>
 </tr>
 <tr>
+<td><strong>Vinted Go</strong></td>
+<td><a href="https://github.com/ha-parcel-integrations/ha-vinted-go">ha-parcel-integrations/ha-vinted-go</a></td>
+</tr>
+<tr>
 <td><strong>GLS</strong></td>
 <td><a href="https://github.com/ha-parcel-integrations/ha-gls">ha-parcel-integrations/ha-gls</a></td>
 </tr>
@@ -972,6 +976,10 @@
 <div class="admonition note">
 <p class="admonition-title">GLS has no sender/account</p>
 <p>You track parcels by tracking number and postal code, not a login. The card's <code>user</code> field maps to the hub's postal code (e.g. <code>1234ab</code>), and the Sent tab is not available for this carrier.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Vinted Go logs in with e-mail, not a password</p>
+<p>Login is an e-mail address plus a verification link — there's no password and no way to register a tracking number directly, so like PostNL/DHL/DPD it has no <code>track_parcel</code> service and doesn't get the card's "+ Add parcel" control. Unlike PostNL/DHL/DPD and every account-less carrier below, Vinted Go tracks both incoming <em>and</em> outgoing parcels (it's built around Vinted's peer-to-peer resale marketplace). There's no <code>next_delivery</code>/ETA sensor for this integration at all.</p>
 </div>
 <h3 id="dragonfly-trunkrs-cainiao-hermes-packeta-and-correos">Dragonfly, Trunkrs, Cainiao, Hermes, Packeta and Correos<a class="headerlink" href="#dragonfly-trunkrs-cainiao-hermes-packeta-and-correos" title="Permanent link">&para;</a></h3>
 <p>These six, together with GLS above, are the "account-less" carriers in the family: instead of logging into an account, you register individual parcels by tracking number (plus a postal code for GLS and Trunkrs). None of them have a Sent tab, since there's no sender/account concept to distinguish outgoing parcels.</p>
@@ -1028,7 +1036,7 @@
 <p class="admonition-title">Packeta and Correos expose no ETA</p>
 <p>Neither integration's public tracking includes an expected delivery time. The <code>next_delivery</code> sensor and Deliveries calendar stay empty for these two carriers, and no <code>delivery_time_changed</code> event ever fires — this is expected, not a bug.</p>
 </div>
-<p>For all seven of these, the card's "+ Add parcel" control can register a new parcel directly from the dashboard by calling the integration's own <code>track_parcel</code> service — no need to open the integration's own Configure dialog. See <a href="../card/overview/#add-parcel-support">Add parcel support</a> for why PostNL/DHL/DPD don't have this control.</p>
+<p>For all seven of these, the card's "+ Add parcel" control can register a new parcel directly from the dashboard by calling the integration's own <code>track_parcel</code> service — no need to open the integration's own Configure dialog. See <a href="../card/overview/#add-parcel-support">Add parcel support</a> for why PostNL/DHL/DPD/Vinted Go don't have this control.</p>
 <hr />
 <h2 id="optional-phu-carrier-icons">Optional: PHU carrier icons<a class="headerlink" href="#optional-phu-carrier-icons" title="Permanent link">&para;</a></h2>
 <p>Install <a href="https://github.com/elax46/custom-brand-icons">custom-brand-icons</a> via HACS to get branded <code>phu:</code> carrier icons. The card detects this automatically — no configuration needed.</p>
@@ -1079,6 +1087,10 @@
 </tr>
 <tr>
 <td>Correos</td>
+<td style="text-align: center;">❌ not available yet</td>
+</tr>
+<tr>
+<td>Vinted Go</td>
 <td style="text-align: center;">❌ not available yet</td>
 </tr>
 </tbody>
@@ -1133,6 +1145,10 @@
 <tr>
 <td>ha-parcel-integrations/ha-correos</td>
 <td>— (added 2026-07-29)</td>
+</tr>
+<tr>
+<td>ha-parcel-integrations/ha-vinted-go</td>
+<td>— (added 2026-07-30)</td>
 </tr>
 </tbody>
 </table>
