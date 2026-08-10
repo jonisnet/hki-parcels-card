@@ -547,6 +547,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#naming-a-parcel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming a parcel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#limiting-the-history-period" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -821,6 +832,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#naming-a-parcel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming a parcel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#limiting-the-history-period" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -981,6 +1003,9 @@
 <hr />
 <h2 id="registering-a-parcel-without-opening-the-integration">Registering a parcel without opening the integration<a class="headerlink" href="#registering-a-parcel-without-opening-the-integration" title="Permanent link">&para;</a></h2>
 <p>For GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou, use the "+ Add parcel" control at the bottom of the card instead of switching to the integration's own Configure dialog — it calls the same <code>track_parcel</code> service directly, so the parcel shows up in the card immediately. See <a href="../overview/#add-parcel-support">Add parcel support</a> for why this isn't available for PostNL/DHL/DPD/Vinted Go.</p>
+<hr />
+<h2 id="naming-a-parcel">Naming a parcel<a class="headerlink" href="#naming-a-parcel" title="Permanent link">&para;</a></h2>
+<p>Open a parcel's detail panel and click "+ Add name" to give it a short label of your own — "Birthday gift" is a lot easier to spot than a bare tracking code. The name is saved in your browser, so it's per-device rather than synced across everyone's phones and tablets. Disable the control entirely with <code>show_custom_names: false</code>.</p>
 <hr />
 <h2 id="limiting-the-history-period">Limiting the history period<a class="headerlink" href="#limiting-the-history-period" title="Permanent link">&para;</a></h2>
 <p>Use <code>days_back</code> to control how far back delivered parcels are shown. A shorter period keeps the Delivered tab manageable.</p>
