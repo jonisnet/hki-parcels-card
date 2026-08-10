@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic and Budbee in a single Home Assistant card.">
+        <meta name="description" content="Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou in a single Home Assistant card.">
       
       
       
@@ -491,10 +491,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee" class="md-nav__link">
+  <a href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee-nova-post-delhivery-sunyou" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee)
+        Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery, SunYou)
       
     </span>
   </a>
@@ -777,10 +777,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee" class="md-nav__link">
+  <a href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee-nova-post-delhivery-sunyou" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee)
+        Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery, SunYou)
       
     </span>
   </a>
@@ -882,7 +882,7 @@
 </code></pre></div>
 <p>Like PostNL/DHL/DPD, Vinted Go is account-based (login is an e-mail address plus a verification link, no password) — every parcel tied to the account appears automatically, so there's no <code>track_parcel</code> service and no "+ Add parcel" control for it. Unlike PostNL/DHL/DPD, Vinted Go tracks both incoming <em>and</em> outgoing parcels, and there's no <code>next_delivery</code>/ETA sensor for it at all.</p>
 <hr />
-<h2 id="account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee">Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee)<a class="headerlink" href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee" title="Permanent link">&para;</a></h2>
+<h2 id="account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee-nova-post-delhivery-sunyou">Account-less carriers (GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery, SunYou)<a class="headerlink" href="#account-less-carriers-gls-dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee-nova-post-delhivery-sunyou" title="Permanent link">&para;</a></h2>
 <p>These carriers have no login — GLS and Trunkrs use a postal code, the rest use nothing but the tracking number itself:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom:hki-parcels-card</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Parcels</span>
@@ -904,6 +904,9 @@
 <a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">helthjem</span>
 <a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dynalogic</span>
 <a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">budbee</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nova_post</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">delhivery</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sunyou</span>
 </code></pre></div>
 <p>Since there's no account to auto-sync from, each of these carriers shows a "+ Add parcel" control on the card so you can register a tracking number directly. Disable it per-card with <code>show_add_parcel: false</code>.</p>
 <hr />

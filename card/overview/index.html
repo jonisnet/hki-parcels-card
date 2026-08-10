@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic and Budbee in a single Home Assistant card.">
+        <meta name="description" content="Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou in a single Home Assistant card.">
       
       
       
@@ -880,7 +880,7 @@
 
 
 <h1 id="hki-parcels-card">HKI Parcels Card<a class="headerlink" href="#hki-parcels-card" title="Permanent link">&para;</a></h1>
-<p>A multi-carrier parcel tracking card for Home Assistant. Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic and Budbee in a single unified view, with support for letterbox mail images.</p>
+<p>A multi-carrier parcel tracking card for Home Assistant. Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou in a single unified view, with support for letterbox mail images.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>HKI Cards were created for the visual editor in Home Assistant. It is possible that the documentation is not complete for all features.</p>
@@ -940,13 +940,57 @@
 <td><strong>Correos</strong></td>
 <td>Tracking number only</td>
 </tr>
+<tr>
+<td><strong>PostNord</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Sameday</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Swiss Post</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Planzer</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Austrian Post</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Helthjem</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Dynalogic</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Budbee</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Nova Post</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>Delhivery</strong></td>
+<td>Tracking number only</td>
+</tr>
+<tr>
+<td><strong>SunYou</strong></td>
+<td>Tracking number only</td>
+</tr>
 </tbody>
 </table>
 <hr />
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
 <h3 id="parcel-tracking"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f4e6.svg" title=":package:" /> Parcel tracking<a class="headerlink" href="#parcel-tracking" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Multi-carrier</strong> — PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic and Budbee side by side; add the same carrier multiple times for multiple accounts or hubs</li>
+<li><strong>Multi-carrier</strong> — PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou side by side; add the same carrier multiple times for multiple accounts or hubs</li>
 <li><strong>Automatic sensor names</strong> — enter only the account name; the card builds all sensor entity IDs automatically, for both known naming schemes</li>
 <li><strong>Four tabs</strong> — In Transit · Delivered · Sent · Letters</li>
 <li><strong>Split sections</strong> — both Sent and Letters are split into <em>Still to be delivered</em> and <em>Delivered</em></li>
@@ -1019,6 +1063,61 @@
 </tr>
 <tr>
 <td>Correos</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>PostNord</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Sameday</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Swiss Post</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Planzer</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Austrian Post</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Helthjem</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Dynalogic</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Budbee</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Nova Post</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>Delhivery</td>
+<td style="text-align: center;">✅</td>
+<td>Account-less — tracked by number only</td>
+</tr>
+<tr>
+<td>SunYou</td>
 <td style="text-align: center;">✅</td>
 <td>Account-less — tracked by number only</td>
 </tr>

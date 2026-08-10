@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic and Budbee in a single Home Assistant card.">
+        <meta name="description" content="Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou in a single Home Assistant card.">
       
       
       
@@ -405,10 +405,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-and-budbee" class="md-nav__link">
+  <a href="#dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee-nova-post-delhivery-and-sunyou" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic and Budbee
+        Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou
       
     </span>
   </a>
@@ -815,10 +815,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-and-budbee" class="md-nav__link">
+  <a href="#dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee-nova-post-delhivery-and-sunyou" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic and Budbee
+        Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou
       
     </span>
   </a>
@@ -981,7 +981,7 @@
 <p class="admonition-title">Vinted Go logs in with e-mail, not a password</p>
 <p>Login is an e-mail address plus a verification link — there's no password and no way to register a tracking number directly, so like PostNL/DHL/DPD it has no <code>track_parcel</code> service and doesn't get the card's "+ Add parcel" control. Unlike PostNL/DHL/DPD and every account-less carrier below, Vinted Go tracks both incoming <em>and</em> outgoing parcels (it's built around Vinted's peer-to-peer resale marketplace). There's no <code>next_delivery</code>/ETA sensor for this integration at all.</p>
 </div>
-<h3 id="dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-and-budbee">Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic and Budbee<a class="headerlink" href="#dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-and-budbee" title="Permanent link">&para;</a></h3>
+<h3 id="dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee-nova-post-delhivery-and-sunyou">Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou<a class="headerlink" href="#dragonfly-trunkrs-cainiao-hermes-packeta-correos-postnord-sameday-swiss-post-planzer-austrian-post-helthjem-dynalogic-budbee-nova-post-delhivery-and-sunyou" title="Permanent link">&para;</a></h3>
 <p>These, together with GLS above, are the "account-less" carriers in the family: instead of logging into an account, you register individual parcels by tracking number (plus a postal code for GLS and Trunkrs). None of them have a Sent tab except Budbee, since there's no sender/account concept to distinguish outgoing parcels for the rest.</p>
 <table>
 <thead>
@@ -1061,6 +1061,21 @@
 <td><strong>Budbee</strong></td>
 <td><a href="https://github.com/ha-parcel-integrations/ha-budbee">ha-parcel-integrations/ha-budbee</a></td>
 <td>Tracking code only — no account, no postal code. Sweden-based last-mile delivery; unlike every other carrier in this table, it tracks both incoming <em>and</em> outgoing parcels, so the Sent tab works normally</td>
+</tr>
+<tr>
+<td><strong>Nova Post</strong></td>
+<td><a href="https://github.com/ha-parcel-integrations/ha-nova-post">ha-parcel-integrations/ha-nova-post</a></td>
+<td>Tracking code only — no account, no postal code. Ukraine's largest private courier network (Nova Poshta)</td>
+</tr>
+<tr>
+<td><strong>Delhivery</strong></td>
+<td><a href="https://github.com/ha-parcel-integrations/ha-delhivery">ha-parcel-integrations/ha-delhivery</a></td>
+<td>Tracking code only — no account, no postal code. India-based logistics company</td>
+</tr>
+<tr>
+<td><strong>SunYou</strong></td>
+<td><a href="https://github.com/ha-parcel-integrations/ha-sunyou">ha-parcel-integrations/ha-sunyou</a></td>
+<td>Tracking code only — no account, no postal code. China-based cross-border courier (SYPost)</td>
 </tr>
 </tbody>
 </table>
@@ -1165,6 +1180,18 @@
 <td>Budbee</td>
 <td style="text-align: center;">❌ not available yet</td>
 </tr>
+<tr>
+<td>Nova Post</td>
+<td style="text-align: center;">❌ not available yet</td>
+</tr>
+<tr>
+<td>Delhivery</td>
+<td style="text-align: center;">❌ not available yet</td>
+</tr>
+<tr>
+<td>SunYou</td>
+<td style="text-align: center;">❌ not available yet</td>
+</tr>
 </tbody>
 </table>
 <p>Carriers without a proper branded icon yet fall back to a generic <code>mdi:package-variant-closed</code> icon.</p>
@@ -1253,6 +1280,18 @@
 <tr>
 <td>ha-parcel-integrations/ha-budbee</td>
 <td>— (added 2026-08-05)</td>
+</tr>
+<tr>
+<td>ha-parcel-integrations/ha-nova-post</td>
+<td>— (added 2026-08-10)</td>
+</tr>
+<tr>
+<td>ha-parcel-integrations/ha-delhivery</td>
+<td>— (added 2026-08-10)</td>
+</tr>
+<tr>
+<td>ha-parcel-integrations/ha-sunyou</td>
+<td>0.9.0 (added 2026-08-07)</td>
 </tr>
 </tbody>
 </table>
