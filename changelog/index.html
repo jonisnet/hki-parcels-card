@@ -2481,12 +2481,12 @@
 <ul>
 <li><strong>Custom parcel names</strong> — a small "+ Add name" control in each parcel's detail panel lets you
   give it a short label of your own (e.g. "Birthday gift") instead of just a tracking code
-  (requested in <a href="https://github.com/jonisnet/hki-parcels-card/issues/9">#9</a>). There's no backend
-  to write this into — the card can't write back to an integration's own sensor data, and a live
-  dashboard card can't persist into its own stored YAML config either (only the editor can) — so
-  names are saved in the browser's local storage, keyed by carrier and tracking code. This means
-  names are per-device, not synced across a household's phones/tablets. Enabled by default;
-  toggle with the new <code>show_custom_names</code> option.</li>
+  (requested in <a href="https://github.com/jonisnet/hki-parcels-card/issues/9">#9</a>). New <code>custom_name_scope</code>
+  option controls where names are saved: <code>device</code> (default) uses the browser's local storage —
+  simple, but per-device only; <code>shared</code> uses Home Assistant's own per-user storage (the same
+  <code>frontend/get_user_data</code>/<code>frontend/set_user_data</code> websocket calls HA's own frontend uses for
+  small preferences), so a name shows up on every device signed into that HA account — the
+  natural choice for a household sharing one login; <code>off</code> hides the control entirely.</li>
 <li><strong>Nova Post, Delhivery and SunYou carrier support</strong> — three new carrier types (<code>nova_post</code>,
   <code>delhivery</code>, <code>sunyou</code>), all account-less "hub" carriers identical in pattern to
   Helthjem/Dynalogic: tracking code only, no account, no postal code, no outgoing/letters

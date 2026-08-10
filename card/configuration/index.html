@@ -971,10 +971,10 @@
 <td>Show the carrier's own raw status text (e.g. GLS's "Onderweg - geladen voor aflevering") as the main status message instead of the card's generic translated label ("In transit"). Falls back to the generic label when a parcel has no raw status</td>
 </tr>
 <tr>
-<td><code>show_custom_names</code></td>
-<td>boolean</td>
-<td><code>true</code></td>
-<td>Show a "+ Add name" control in each parcel's detail panel, letting you give it a short custom label (e.g. "Birthday gift") instead of just a tracking code. See the note below</td>
+<td><code>custom_name_scope</code></td>
+<td>string</td>
+<td><code>device</code></td>
+<td>Show a "+ Add name" control in each parcel's detail panel, letting you give it a short custom label (e.g. "Birthday gift") instead of just a tracking code. <code>off</code> hides the control entirely; <code>device</code> saves names in this browser only; <code>shared</code> saves them to your Home Assistant account so they show up on every device signed in with it. See the note below</td>
 </tr>
 <tr>
 <td><code>layout_order</code></td>
@@ -992,8 +992,14 @@
 </table>
 <p>* When the card is first added, <code>days_back</code> is pre-filled from your actual delivered-parcel history (the oldest delivered parcel currently visible, across every detected carrier) instead of the flat <code>90</code>. This is a one-time default, not a live setting.</p>
 <div class="admonition note">
-<p class="admonition-title">Custom parcel names are saved per browser, not synced</p>
-<p>There's no backend to write a custom name into — the card can't write back to an integration's own sensor data, and a live dashboard card can't persist into its own stored YAML config either (only the editor can, while you're editing the dashboard). So custom names are saved in the browser's local storage instead, keyed by carrier and tracking code. That means a name you set on your phone won't show up on a tablet or another family member's browser — each device keeps its own labels. Set <code>show_custom_names: false</code> to hide the control entirely.</p>
+<p class="admonition-title">Custom parcel names: only-for-me vs. shared</p>
+<p>There's no backend to write a custom name into an integration's own sensor data, and a live dashboard card can't persist into its own stored YAML config either (only the editor can, while you're editing the dashboard) — so this has to live somewhere else:</p>
+<ul>
+<li><code>custom_name_scope: device</code> (the default) saves names in the browser's local storage. Simple, but a name you set on your phone won't show up on a tablet or another family member's browser — each device keeps its own labels.</li>
+<li><code>custom_name_scope: shared</code> saves names to Home Assistant's own per-user storage instead (the same mechanism HA's own frontend uses for small preferences), via the <code>frontend/get_user_data</code>/<code>frontend/set_user_data</code> websocket calls. That's server-side, so it's the same for every device signed in with that HA account — the natural choice if your household shares one login on every phone and wall tablet. If everyone has their own separate HA account, "shared" only syncs across <em>your own</em> devices, not your housemates'.</li>
+<li><code>custom_name_scope: off</code> hides the control entirely.</li>
+</ul>
+<p>Switching between <code>device</code> and <code>shared</code> starts with a blank set of names — the two stores aren't merged or migrated automatically.</p>
 </div>
 <hr />
 <h2 id="carrier-options">Carrier options<a class="headerlink" href="#carrier-options" title="Permanent link">&para;</a></h2>
