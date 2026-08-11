@@ -558,6 +558,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#changing-how-parcels-are-sorted-and-grouped" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing how parcels are sorted and grouped
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#limiting-the-history-period" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -843,6 +854,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#changing-how-parcels-are-sorted-and-grouped" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing how parcels are sorted and grouped
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#limiting-the-history-period" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1005,7 +1027,10 @@
 <p>For GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou, use the "+ Add parcel" control at the bottom of the card instead of switching to the integration's own Configure dialog — it calls the same <code>track_parcel</code> service directly, so the parcel shows up in the card immediately. See <a href="../overview/#add-parcel-support">Add parcel support</a> for why this isn't available for PostNL/DHL/DPD/Vinted Go.</p>
 <hr />
 <h2 id="naming-a-parcel">Naming a parcel<a class="headerlink" href="#naming-a-parcel" title="Permanent link">&para;</a></h2>
-<p>Open a parcel's detail panel and click "+ Add name" to give it a short label of your own — "Birthday gift" is a lot easier to spot than a bare tracking code. By default the name is saved in your browser only (<code>custom_name_scope: device</code>). Set <code>custom_name_scope: shared</code> instead to save it to your Home Assistant account, so it shows up on every device signed in with it — the better choice if your household shares one login. Set <code>custom_name_scope: off</code> to hide the control entirely.</p>
+<p>Open a parcel's detail panel and click "+ Add name" to give it a short label of your own — "Birthday gift" is a lot easier to spot than a bare tracking code. By default (<code>custom_name_scope: everyone</code>) the name is saved instance-wide with live updates for every Home Assistant user — adding or editing one requires an admin account, though everyone can see the names. Set <code>custom_name_scope: me</code> to save it to your own Home Assistant account instead (synced across your own devices only), <code>device</code> to keep it in this browser only, or <code>off</code> to hide the control entirely.</p>
+<hr />
+<h2 id="changing-how-parcels-are-sorted-and-grouped">Changing how parcels are sorted and grouped<a class="headerlink" href="#changing-how-parcels-are-sorted-and-grouped" title="Permanent link">&para;</a></h2>
+<p>By default, In Transit and Sent show the soonest-arriving parcel first within each carrier's own section (Delivered shows the most recent first), and carrier sections aren't in a fixed order — whichever carrier's next parcel is soonest shows first. Set <code>group_by_carrier: false</code> for one flat list instead, where parcels from different carriers interleave directly by date rather than being grouped — e.g. a PostNL parcel, then two DHL parcels, then three more PostNL parcels, purely in delivery-time order. Set <code>sort_order: newest_first</code> or <code>oldest_first</code> to pin one fixed direction everywhere instead of the automatic soonest/most-recent split.</p>
 <hr />
 <h2 id="limiting-the-history-period">Limiting the history period<a class="headerlink" href="#limiting-the-history-period" title="Permanent link">&para;</a></h2>
 <p>Use <code>days_back</code> to control how far back delivered parcels are shown. A shorter period keeps the Delivered tab manageable.</p>
