@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.4] — 2026-08-12
+
+### Fixed
+
+- **Carrier icon in the flat list sat too low, off-centre with the parcel name** (regression
+  from v1.7.3) — it relied on a hand-tuned `vertical-align` offset on the `ha-icon` element,
+  which doesn't translate reliably since `ha-icon` has its own internal layout. Fixed by
+  flex-centring `.ph-name` itself instead, which doesn't depend on guessing baseline metrics.
+
 ## [1.7.3] — 2026-08-12
 
 ### Added
