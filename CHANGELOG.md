@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.7.2] — 2026-08-11
+
+### Fixed
+
+- **Entity auto-detection broke for non-English/Dutch Home Assistant locales** — a
+  `has_entity_name` integration's entity_id suffix is derived from whatever language HA was
+  displaying when the sensor was first created, not from its (always-English)
+  `translation_key`. The card only knew English/Dutch suffix words to guess against, so any
+  carrier whose integration shipped a language the card hadn't special-cased (surfaced by a
+  German-language GLS account, [ha-parcel-integrations org discussion #3](https://github.com/ha-parcel-integrations/.github/discussions/3#discussioncomment-17980621))
+  went undetected entirely. Account/entity detection now also matches Home Assistant's own
+  entity-registry `translation_key` (never localized) via `hass.entities`, grouped by device,
+  as the primary path — the old text-guessing logic stays as a fallback for older Home
+  Assistant versions without a registry cache, so nothing regresses there. This fixes the
+  problem class for every current and future language any integration adds, not just German.
+
 ## [1.7.1] — 2026-08-11
 
 ### Added
