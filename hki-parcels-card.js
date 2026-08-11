@@ -5781,8 +5781,8 @@ class HkiParcelsCard extends HTMLElement {
             .parcel-header { padding: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; user-select: none; }
             .parcel-header:hover { background: var(--secondary-background-color); }
             .ph-left { display: flex; flex-direction: column; flex: 1; }
-            .ph-name { font-weight: 600; font-size: 1em; margin-bottom: 4px; }
-            .ph-carrier-icon { width: 24px; height: 24px; margin-right: 8px; vertical-align: -6px; flex-shrink: 0; }
+            .ph-name { font-weight: 600; font-size: 1em; margin-bottom: 4px; display: flex; align-items: center; }
+            .ph-carrier-icon { width: 24px; height: 24px; margin-right: 8px; flex-shrink: 0; }
             .ph-status { font-size: 0.85em; color: var(--secondary-text-color); display: flex; align-items: center; gap: 10px; }
             .ph-status-icon { color: var(--carrier-color, var(--accent)); flex-shrink: 0; display: flex; align-items: center; }
             .ph-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
