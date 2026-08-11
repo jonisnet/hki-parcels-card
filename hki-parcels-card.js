@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.7.2';
+const CARD_VERSION = 'v1.7.3';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -5568,13 +5568,21 @@ class HkiParcelsCard extends HTMLElement {
         </div>`;
     }
 
-    _renderParcelItem(item) {
+    _renderParcelItem(item, showCarrierIcon = false) {
         const isDelivered = item.delivered;
         const isLetter    = !!item.is_letter;
         const statusMsg   = item.status_message || (isLetter ? this._t('letterbox_mail') : (isDelivered ? this._t('status_delivered') : this._t('status_in_transit')));
         const dateLabel   = this._parcelDateLabel(item);
         const statusIcon  = isLetter ? 'mdi:email' : (isDelivered ? 'mdi:check-circle' : 'mdi:truck-delivery');
         const isSelected  = this._selectedParcel === item.key;
+        // Only used in the flat (group_by_carrier: false) list — the grouped view already
+        // identifies the carrier via its section header, so repeating it per row there would
+        // just be clutter. A tinted generic status icon alone is too subtle to tell carriers
+        // apart at a glance when their brand colours are close (e.g. PostNL orange vs DHL
+        // yellow/orange) — the carrier's own icon shape is unambiguous regardless of colour.
+        const carrierIconHtml = showCarrierIcon
+            ? `<ha-icon class="ph-carrier-icon" icon="${item.carrier_icon || DEFAULT_CARRIER_ICON}" style="color:${item.carrier_color || DEFAULT_CARRIER_COLOR};"></ha-icon>`
+            : '';
 
         // For placeholder letters: never show an image, always show "no image" text.
         // For real letters: prefer HA image entity picture, fall back to image_url.
@@ -5592,7 +5600,7 @@ class HkiParcelsCard extends HTMLElement {
         <div class="parcel ${isSelected ? 'selected' : ''}" data-key="${item.key}" style="--carrier-color:${item.carrier_color || DEFAULT_CARRIER_COLOR};">
             <div class="parcel-header" data-key="${item.key}">
                 <div class="ph-left">
-                    <span class="ph-name">${item.custom_name ? this._escapeHtml(item.custom_name) : (item.name || this._t('unknown'))}</span>
+                    <span class="ph-name">${carrierIconHtml}${item.custom_name ? this._escapeHtml(item.custom_name) : (item.name || this._t('unknown'))}</span>
                     <span class="ph-status">
                         <ha-icon class="ph-status-icon" icon="${statusIcon}" style="width:16px;height:16px;"></ha-icon>
                         ${statusMsg}
@@ -5631,7 +5639,7 @@ class HkiParcelsCard extends HTMLElement {
             </div>`;
         }
         if (this.config.group_by_carrier === false) {
-            return displayed.map(item => this._renderParcelItem(item)).join('');
+            return displayed.map(item => this._renderParcelItem(item, true)).join('');
         }
         return this._groupByCarrier(displayed).map(group => `
             <div class="carrier-section">
@@ -5774,6 +5782,7 @@ class HkiParcelsCard extends HTMLElement {
             .parcel-header:hover { background: var(--secondary-background-color); }
             .ph-left { display: flex; flex-direction: column; flex: 1; }
             .ph-name { font-weight: 600; font-size: 1em; margin-bottom: 4px; }
+            .ph-carrier-icon { width: 24px; height: 24px; margin-right: 8px; vertical-align: -6px; flex-shrink: 0; }
             .ph-status { font-size: 0.85em; color: var(--secondary-text-color); display: flex; align-items: center; gap: 10px; }
             .ph-status-icon { color: var(--carrier-color, var(--accent)); flex-shrink: 0; display: flex; align-items: center; }
             .ph-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }

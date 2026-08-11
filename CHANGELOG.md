@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.7.3] — 2026-08-12
+
+### Added
+
+- **Carrier icon per parcel in the flat list** — with `group_by_carrier: false`, each row now
+  shows the carrier's own branded icon next to its name (the same `phu:`/`mdi:` icon already
+  used in the banner, carrier popup and grouped-view section headers), instead of relying only
+  on the small status icon's colour tint. Some carrier brand colours sit close enough together
+  that the colour alone wasn't always enough to tell them apart at a glance; the icon's shape
+  is unambiguous regardless of colour. Grouped view is unaffected — it already identifies the
+  carrier via its section header.
+
 ## [1.7.2] — 2026-08-11
 
 ### Fixed
