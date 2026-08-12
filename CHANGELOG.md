@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.7.5] — 2026-08-12
+
+### Fixed
+
+- **A carrier's saved sensor reference could silently go stale and stop showing data** — a
+  `has_entity_name` integration recreating its entities under a newly-added language (or after
+  being removed and re-added) can leave an already-configured carrier's `entity_incoming`/
+  `entity_delivered`/etc. pointing at an entity_id that no longer exists at all — surfaced by a
+  GLS account whose entities were regenerated when German support was added
+  ([ha-gls#2](https://github.com/ha-parcel-integrations/ha-gls/issues/2)). The v1.7.2 fix only
+  covered the editor's auto-detect flow, not an *already-saved* reference going stale later —
+  the card now also repairs a missing entity_id at render time the same way, by matching
+  `translation_key` + integration platform via the entity registry. When more than one account
+  of the same carrier type matches and the carrier's own stored account name doesn't narrow it
+  to exactly one, it deliberately shows nothing rather than risk mixing in a different
+  account's parcels.
+
 ## [1.7.4] — 2026-08-12
 
 ### Fixed

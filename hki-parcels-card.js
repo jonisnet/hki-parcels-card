@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.7.4';
+const CARD_VERSION = 'v1.7.5';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -3936,6 +3936,51 @@ function registryEntitiesByDevice(hass, domain) {
     return byDevice;
 }
 
+// Maps a saved config's entity field to the canonical (unlocalized) translation_key used by
+// every ha-parcel-integrations carrier, for the runtime repair below. 'entity'/
+// 'distribution_entity' (single_entity/legacy schema) are intentionally not covered — that
+// schema predates has_entity_name and has no canonical translation_key to match against.
+const ENTITY_FIELD_TRANSLATION_KEY = {
+    entity_incoming: 'incoming_parcels',
+    entity_delivered: 'delivered_parcels',
+    entity_outgoing: 'outgoing_parcels',
+    entity_outgoing_delivered: 'outgoing_delivered_parcels',
+    entity_letters: 'letters',
+};
+
+// Repairs a saved entity_id that no longer resolves to a live state, by matching Home
+// Assistant's own translation_key + integration platform instead of just showing nothing.
+// A carrier already configured in the card can go stale at any point its integration
+// recreates its entities under a new locale (has_entity_name derives the entity_id from
+// whatever language HA was displaying at creation time — the exact mechanism behind
+// jonisnet/hki-parcels-card#14/#15's detection fix; this is the runtime half of the same
+// problem: a *previously saved* reference has no detection step to go through at all, it just
+// silently stops resolving). Reuses registryEntitiesByDevice (built for the editor's
+// auto-detect flow) since the matching logic is identical either way. Deliberately returns
+// null rather than guessing when more than one account of the same carrier type matches and
+// the carrier's own stored `user` slug doesn't narrow it to exactly one — showing a different
+// account's parcels under this carrier entry would be worse than showing none.
+function repairStaleEntityId(hass, carrier, entityField) {
+    const key = ENTITY_FIELD_TRANSLATION_KEY[entityField];
+    if (!key || !hass?.entities) return null;
+    const preset = CARRIER_PRESETS[carrier.type] || CARRIER_PRESETS.custom;
+    const domain = PLATFORM_DOMAIN[carrier.type] || preset.sensor_slug;
+    if (!domain) return null;
+    const candidates = [];
+    for (const entities of registryEntitiesByDevice(hass, domain).values()) {
+        const match = entities.find(e => e.translationKey === key);
+        if (match && hass.states[match.entityId]) candidates.push(match.entityId);
+    }
+    if (candidates.length === 0) return null;
+    if (candidates.length === 1) return candidates[0];
+    const userSlug = slugifyUserSlug(carrier.user || '');
+    if (userSlug) {
+        const narrowed = candidates.filter(id => id.includes(userSlug));
+        if (narrowed.length === 1) return narrowed[0];
+    }
+    return null;
+}
+
 // Builds a candidate entity_id and, when `hass` is available, verifies it
 // against real state before accepting it. Tries the primary guess
 // (`base` + `suffix`) first, then `base` + every alternate in
@@ -4621,7 +4666,13 @@ class HkiParcelsCard extends HTMLElement {
         }
         const entityId = carrier[entityField];
         if (!entityId || !this._hass) return [];
-        const stateObj = this._hass.states[entityId];
+        let stateObj = this._hass.states[entityId];
+        if (!stateObj) {
+            // Saved entity_id no longer resolves — try to repair it via the registry before
+            // giving up. See repairStaleEntityId() for why this happens at all.
+            const repaired = repairStaleEntityId(this._hass, carrier, entityField);
+            stateObj = repaired ? this._hass.states[repaired] : null;
+        }
         if (!stateObj) return [];
         return this._extractRawList(stateObj.attributes)
             .map(item => this._normalizeItem(item, carrier))
