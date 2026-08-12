@@ -19,6 +19,16 @@
 
 ---
 
+## Development status
+
+This `main` branch (and every `v1.7.x` release on it) now only receives **bug fixes**. New
+carriers and new features are being built on the [`v2.0.0-dev`](https://github.com/jonisnet/hki-parcels-card/tree/v2.0.0-dev)
+branch instead, currently in **beta** — see that branch's own README for what it adds and how to
+point HACS at it if you want to try it early or help test. It's a moving target, not (yet)
+recommended if you just want a stable card.
+
+---
+
 ## Features
 
 - **Multi-carrier** — PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou side by side in one card, each with its own branded logo, van animation and banner
