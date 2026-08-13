@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.7.5';
+const CARD_VERSION = 'v1.7.6';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -4922,11 +4922,53 @@ class HkiParcelsCard extends HTMLElement {
         this.updateContent();
     }
 
+    // Scrolls a just-expanded parcel into view once its .details-panel finishes
+    // animating open — without this, expanding the last parcel in a list (or in
+    // the shorter carrier popup) opens the panel out of sight with nothing on
+    // screen visibly changing (#15). Aims at the *next* parcel-header rather
+    // than the row's own bottom, so one click reveals the panel plus what gets
+    // clicked next; falls back to `minimal` (just the opened panel) when there
+    // is no next header (last parcel, no following section).
+    _revealExpandedParcel(parcelEl) {
+        if (!parcelEl) return;
+        let done = false;
+        const reveal = () => {
+            if (done) return;
+            done = true;
+            const scroller = parcelEl.closest('.carrier-popup-body');
+            if (scroller) {
+                const box  = scroller.getBoundingClientRect();
+                const rect = parcelEl.getBoundingClientRect();
+                const minimal = rect.bottom + 8 - box.bottom;
+                const next = parcelEl.nextElementSibling
+                    ?? parcelEl.parentElement?.nextElementSibling;
+                const target = next?.querySelector?.('.parcel-header') ?? next;
+                const wanted = target
+                    ? target.getBoundingClientRect().bottom + 8 - box.bottom
+                    : minimal;
+                // Never so far that the row just opened leaves the top of the popup.
+                const room = Math.max(rect.top - box.top, 0);
+                const delta = Math.max(minimal, Math.min(wanted, room));
+                if (delta > 0) scroller.scrollBy({ top: delta, behavior: 'smooth' });
+                return;
+            }
+            parcelEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        };
+        parcelEl.querySelector('.details-panel')
+            ?.addEventListener('transitionend', reveal, { once: true });
+        setTimeout(reveal, 350); // reduced motion, or no transition at all
+    }
+
     handleParcelClick(e) {
         const key = e.currentTarget.dataset.key;
         this._selectedParcel = (this._selectedParcel === key) ? null : key;
         this._lastListFingerprint = null; // force re-render on selection change
         this.updateContent();
+        if (this._selectedParcel) {
+            requestAnimationFrame(() => this._revealExpandedParcel(
+                this.shadowRoot?.querySelector(`.parcel[data-key="${CSS.escape(key)}"]`)
+            ));
+        }
     }
 
     handleLetterThumbClick(e) {
@@ -5150,7 +5192,9 @@ class HkiParcelsCard extends HTMLElement {
     // place — the exact same accordion behaviour as the main list (.selected .details-panel is
     // shown via CSS) — without touching _activeTab/_selectedParcel or closing the popup.
     _handleCarrierPopupItemClick(e) {
-        e.currentTarget.closest('.parcel')?.classList.toggle('selected');
+        const parcelEl = e.currentTarget.closest('.parcel');
+        if (!parcelEl) return;
+        if (parcelEl.classList.toggle('selected')) this._revealExpandedParcel(parcelEl);
     }
 
     // ------------------------------------------------------------------
@@ -6021,15 +6065,22 @@ class HkiParcelsCardEditor extends LitElement {
         // Auto-detect account when changing type (use existing user if already set).
         const detected     = !isSingle ? this._detectUsers(type) : [];
         const detectedEntry = detected.length === 1 ? detected[0] : null;
-        const autoUser     = current.user != null ? current.user : (detectedEntry?.user ?? '');
-        const slugFirst    = detectedEntry?.slugFirst ?? false;
-        const templated    = !isSingle && detectedEntry !== null ? buildTemplatedEntities(autoUser, type, slugFirst, this.hass, detectedEntry?.deviceId) : {};
+        // Only keep the carried-over account if it actually resolves for the new
+        // carrier type — otherwise e.g. switching PostNL -> GLS left the PostNL
+        // account behind, pointing every generated entity_id at a sensor that
+        // doesn't exist, with the card then showing nothing and no error (#14).
+        const keptTemplated = !isSingle && current.user ? buildTemplatedEntities(current.user, type, current._slugFirst ?? false, this.hass) : null;
+        const keptUser      = keptTemplated && this.hass?.states?.[keptTemplated.entity_incoming] ? current.user : null;
+        const autoUser      = keptUser ?? (detectedEntry?.user ?? '');
+        const slugFirst     = keptUser ? (current._slugFirst ?? false) : (detectedEntry?.slugFirst ?? false);
+        const templated     = keptUser ? keptTemplated
+            : (!isSingle && detectedEntry !== null ? buildTemplatedEntities(autoUser, type, slugFirst, this.hass, detectedEntry?.deviceId) : {});
         carriers[index] = {
             ...current, type,
             name: preset.label, icon: getDefaultIcon(type), color: preset.color, schema: preset.schema,
             user: autoUser,
             _slugFirst: slugFirst,
-            _manualUser: !!current.user,
+            _manualUser: !!keptUser,
             entity_incoming:    isSingle ? '' : (templated.entity_incoming    ?? current.entity_incoming    ?? ''),
             entity_delivered:   isSingle ? '' : (templated.entity_delivered   ?? current.entity_delivered   ?? ''),
             entity_outgoing:    (isSingle || preset.supports_outgoing === false) ? '' : (templated.entity_outgoing    ?? current.entity_outgoing    ?? ''),
