@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.7.6] — 2026-08-14
+
+### Fixed
+
+- **Switching a carrier's type in the editor kept the previous type's account** — changing e.g.
+  PostNL to GLS (or any account-less carrier) left the PostNL account behind, so every generated
+  `entity_id` pointed at a sensor that doesn't exist for the new carrier; the card then showed
+  nothing, with no error ([#14](https://github.com/jonisnet/hki-parcels-card/issues/14)). The
+  carried-over account is now kept only when it actually resolves for the new carrier type —
+  otherwise auto-detection (or an empty account for account-less carriers) takes over. Reported
+  with a root-cause analysis and fix sketch by BerserkeR-Git.
+- **Expanding the last parcel in a list gave no visible feedback** — its details panel opened out
+  of sight below the bottom edge, with nothing on screen visibly changing, in both the main list
+  and the (shorter) carrier popup
+  ([#15](https://github.com/jonisnet/hki-parcels-card/issues/15)). A newly-expanded parcel now
+  scrolls into view once its details panel finishes animating open, revealing the panel plus the
+  next header. A row that's already fully visible does not move. Reported with a working fix by
+  BerserkeR-Git.
+
 ## [1.7.5] — 2026-08-12
 
 ### Fixed
