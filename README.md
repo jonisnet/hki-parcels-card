@@ -201,6 +201,7 @@ The card automatically follows your Home Assistant UI language — no setting to
 This card is free and maintained in my spare time. If it's useful to you, a small contribution is very welcome and appreciated:
 
 [![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?style=for-the-badge&logo=githubsponsors)](https://github.com/sponsors/jonisnet)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/jonisnet)
 
 ---
 
