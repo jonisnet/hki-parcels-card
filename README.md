@@ -23,10 +23,22 @@
 ## Development status
 
 This `main` branch (and every `v1.7.x` release on it) now only receives **bug fixes**. New
-carriers and new features are being built on the [`v2.0.0-dev`](https://github.com/jonisnet/hki-parcels-card/tree/v2.0.0-dev)
-branch instead, currently in **beta** — see that branch's own README for what it adds and how to
-point HACS at it if you want to try it early or help test. It's a moving target, not (yet)
-recommended if you just want a stable card.
+carriers and new features are being built in a separate repository,
+**[jonisnet/ha-parcels-card](https://github.com/jonisnet/ha-parcels-card)**, currently in
+**beta** — not just a new branch here, but a whole new repo with a new name and card type
+(`custom:ha-parcels-card` instead of `custom:hki-parcels-card`).
+
+**Why a rename, not just a v2 branch:** "HKI" is [jimz011](https://github.com/jimz011)'s own
+trade name — this card started as a fork of his [hki-elements](https://github.com/jimz011/hki-elements)
+project (credit that stays, see [Credits](#credits) below), but was never actually his own
+release. Continuing to call it "HKI Parcels Card" going forward isn't accurate, especially as v2
+moves toward integrating more closely with the broader
+[ha-parcel-integrations](https://github.com/ha-parcel-integrations) family this card already
+depends on. `main`/v1.x keeps the old name and card type unchanged — nothing breaks for existing
+installs — but new development happens under the new name from here on.
+
+See the new repo's own README for install instructions if you want to try v2 early or help test.
+It's a moving target, not (yet) recommended if you just want a stable card.
 
 ---
 
