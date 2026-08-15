@@ -4166,8 +4166,9 @@ function inferDaysBack(hass, carriers) {
     return maxDays > 0 ? maxDays : DEFAULT_DAYS_BACK;
 }
 
-// Both lowercase (DHL/DPD) and uppercase (ha-postnl v4.x) enum values are accepted.
-const CANONICAL_DELIVERED_STATUSES = new Set(['delivered', 'DELIVERED']);
+// _normalizeCanonical() lowercases statusEnum before this check runs, so only the
+// lowercase form is needed here despite ha-postnl v4.x emitting uppercase enums.
+const CANONICAL_DELIVERED_STATUSES = new Set(['delivered']);
 
 // ============================================================
 // Card
@@ -4383,12 +4384,17 @@ class HkiParcelsCard extends HTMLElement {
     }
 
     _normalizeCanonical(item, carrier) {
-        const statusEnum = item.status || 'unknown';
+        // ha-postnl v4.x emits UPPERCASE status enums (OUT_FOR_DELIVERY, DELIVERED, ...) while
+        // DHL/DPD use lowercase - normalise once here so every downstream consumer of `.status`
+        // (STATUS_STEP_ORDER.indexOf() for the step tracker, CANONICAL_DELIVERED_STATUSES,
+        // _canonicalStatusLabel()) can assume lowercase without each needing its own .toLowerCase().
+        const statusEnum = String(item.status || 'unknown').toLowerCase();
         const delivered = typeof item.delivered === 'boolean'
             ? item.delivered
             : CANONICAL_DELIVERED_STATUSES.has(statusEnum);
         return {
             ...item,
+            status: statusEnum,
             key: item.barcode || item.key || item.id,
             name: item.sender ? `${this._t('parcel_from')} ${item.sender}` : (item.name || this._t('unknown')),
             // Off by default: the generic translated label ("Onderweg", "Bezorgd", ...) reads the
