@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.7] — 2026-08-15
+
+### Fixed
+
+- **The 4-step delivery tracker could get stuck on "Sorting centre" and never advance to "Out
+  for delivery"** for `ha-postnl` v4.x specifically
+  ([discussion #17](https://github.com/jonisnet/hki-parcels-card/discussions/17)). `ha-postnl`
+  v4.x reports its status as an UPPERCASE enum (`OUT_FOR_DELIVERY`, `DELIVERED`, ...) while
+  DHL/DPD use lowercase; the tracker matched status case-sensitively, so the uppercase value
+  never matched and the tracker stayed on the last step that did. Status values are now
+  normalized to lowercase once, consistently, so every step is recognized regardless of casing.
+  Reported by BerserkeR-Git.
+
 ## [1.7.6] — 2026-08-14
 
 ### Fixed
