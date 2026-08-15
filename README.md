@@ -24,9 +24,9 @@
 
 This `main` branch (and every `v1.7.x` release on it) now only receives **bug fixes**. New
 carriers and new features are being built in a separate repository,
-**[jonisnet/ha-parcels-card](https://github.com/jonisnet/ha-parcels-card)**, currently in
+**[jonisnet/ha-parcel-card](https://github.com/jonisnet/ha-parcel-card)**, currently in
 **beta** — not just a new branch here, but a whole new repo with a new name and card type
-(`custom:ha-parcels-card` instead of `custom:hki-parcels-card`).
+(`custom:ha-parcel-card` instead of `custom:hki-parcels-card`).
 
 **Why a rename, not just a v2 branch:** "HKI" is [jimz011](https://github.com/jimz011)'s own
 trade name — this card started as a fork of his [hki-elements](https://github.com/jimz011/hki-elements)
