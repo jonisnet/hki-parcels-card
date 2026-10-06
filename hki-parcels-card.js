@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.7.7';
+const CARD_VERSION = 'v1.7.8';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -4145,9 +4145,10 @@ const AUTO_DETECT_CARRIER_TYPES = ['postnl_v4', 'dhl', 'dpd', 'vinted_go', 'gls'
 // approximation, not the integration's own configured delivered-filter
 // setting — a Lovelace card has no supported way to read another
 // integration's stored config-entry options (that only lives in its own
-// options-flow, not in any entity state/attribute a card can see). Falls
-// back to 90 (the long-standing static default) when nothing is known yet
-// (fresh accounts with no delivered history, or hass unavailable).
+// options-flow, not in any entity state/attribute a card can see). Never
+// below 90 (the long-standing static default), which is also the answer when
+// nothing is known yet (fresh accounts with no delivered history, or hass
+// unavailable) — so this can only ever raise the window, never shrink it.
 function inferDaysBack(hass, carriers) {
     const DEFAULT_DAYS_BACK = 90;
     if (!hass?.states) return DEFAULT_DAYS_BACK;
@@ -4163,7 +4164,10 @@ function inferDaysBack(hass, carriers) {
             if (daysAgo > maxDays) maxDays = daysAgo;
         }
     }
-    return maxDays > 0 ? maxDays : DEFAULT_DAYS_BACK;
+    // Never below the default: this is a snapshot, so "the oldest parcel is 3 days old" today
+    // would hide parcels the integration still shows a few days from now. A value that is
+    // too high never hides anything — the integration already filters its own list.
+    return Math.max(maxDays, DEFAULT_DAYS_BACK);
 }
 
 // _normalizeCanonical() lowercases statusEnum before this check runs, so only the
@@ -4396,7 +4400,12 @@ class HkiParcelsCard extends HTMLElement {
             ...item,
             status: statusEnum,
             key: item.barcode || item.key || item.id,
-            name: item.sender ? `${this._t('parcel_from')} ${item.sender}` : (item.name || this._t('unknown')),
+            // Without a sender, fall back to whatever still identifies the parcel: Vinted Go
+            // only knows the item title (raw.content_title), Dragonfly little more than the
+            // barcode (jonisnet/hki-parcels-card#18).
+            name: item.sender
+                ? `${this._t('parcel_from')} ${item.sender}`
+                : (item.name || item.content_title || item.raw?.content_title || item.barcode || this._t('unknown')),
             // Off by default: the generic translated label ("Onderweg", "Bezorgd", ...) reads the
             // same across every carrier. Turning this on shows the carrier's own raw_status text
             // instead (e.g. GLS's "Onderweg - geladen voor aflevering") when the integration
@@ -4760,10 +4769,14 @@ class HkiParcelsCard extends HTMLElement {
                     postUpcoming.push(letter);
                 } else if (d >= todayStart) {
                     postUpcoming.push(letter);
-                } else if (d >= cutoffDate) {
+                } else {
+                    // Deliberately not cut off by days_back: that setting is about delivered
+                    // *parcels*, and an auto-filled card can carry a days_back of just a few
+                    // days. That silently emptied the letters tab once letters were a week
+                    // old (jonisnet/ha-parcel-card#1). The integration already decides how
+                    // far back its letters list reaches.
                     postDelivered.push(letter);
                 }
-                // Older than cutoff: silently drop
             });
         });
 

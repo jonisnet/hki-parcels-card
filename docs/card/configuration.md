@@ -25,7 +25,7 @@ These options apply to the card as a whole.
 | `layout_order` | list | `[header, animation, tabs, list]` | Order of card sections |
 | `carriers` | list | — | **Required.** List of carrier configurations (see below) |
 
-\* When the card is first added, `days_back` is pre-filled from your actual delivered-parcel history (the oldest delivered parcel currently visible, across every detected carrier) instead of the flat `90`. This is a one-time default, not a live setting.
+\* When the card is first added, `days_back` is pre-filled from your actual delivered-parcel history (the oldest delivered parcel currently visible, across every detected carrier) when that is longer than `90`; it never goes below `90`. This is a one-time default, not a live setting. `days_back` applies to delivered parcels only — the Letters tab always shows every letter the integration reports.
 
 !!! note "Custom parcel names: three scopes"
     There's no backend to write a custom name into an integration's own sensor data, and a live dashboard card can't persist into its own stored YAML config either (only the editor can, while you're editing the dashboard) — so this has to live somewhere else:

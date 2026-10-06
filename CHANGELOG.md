@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.7.8] — 2026-10-06
+
+### Fixed
+
+- **The Letters tab could stay empty while letters existed**
+  ([jonisnet/ha-parcel-card#1](https://github.com/jonisnet/ha-parcel-card/issues/1)). Letters
+  were cut off by `days_back`, the setting for how long *delivered parcels* stay visible — and
+  a card added through auto-detection pre-fills `days_back` from the oldest delivered parcel
+  at that moment, which can be just a few days. With a recent delivery, every letter older than
+  that silently disappeared. Letters are no longer subject to `days_back` at all: the tab shows
+  every letter the integration reports. This also fixes cards that already have a short
+  `days_back` saved.
+- **Auto-detection could pre-fill a `days_back` of only a few days.** The inferred value is a
+  snapshot of today's oldest delivered parcel, so it hid parcels the integration still showed
+  a few days later. It now never goes below the default of `90`.
+- **Parcels without a sender showed "Unknown"**
+  ([jonisnet/hki-parcels-card#18](https://github.com/jonisnet/hki-parcels-card/issues/18)) —
+  e.g. Vinted Go and Dragonfly. The name now falls back to the item title (`content_title`),
+  then the barcode, before giving up. Reported by jrnhrmn.
+
 ## [1.7.7] — 2026-08-15
 
 ### Fixed
