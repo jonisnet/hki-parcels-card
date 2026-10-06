@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.9] — 2026-10-06
+
+### Fixed
+
+- **Dutch: "out for delivery" read "Vandaag bezorgd"** (delivered today) while the parcel was
+  still on its way. It now reads "Wordt vandaag bezorgd".
+
 ## [1.7.8] — 2026-10-06
 
 ### Fixed

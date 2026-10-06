@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.7.8';
+const CARD_VERSION = 'v1.7.9';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -289,7 +289,7 @@ const TRANSLATIONS = {
         tab_letters: 'Post',
         status_registered: 'Aangemeld',
         status_in_transit: 'Onderweg',
-        status_out_for_delivery: 'Vandaag bezorgd',
+        status_out_for_delivery: 'Wordt vandaag bezorgd',
         status_ready_for_pickup: 'Te afhalen',
         status_at_pickup_point: 'Bij afhaalpunt',
         status_delivered: 'Bezorgd',
