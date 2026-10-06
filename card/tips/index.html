@@ -1019,7 +1019,7 @@
 <p>Some setups create sensors without a username prefix, for example <code>sensor.postnl_incoming_parcels</code> instead of <code>sensor.john_postnl_incoming_parcels</code>. In this case, leave the <code>user</code> field empty:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">carriers</span><span class="p">:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postnl_v4</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="s">""</span>
 </code></pre></div>
 <p>The editor's auto-detection also handles this case automatically.</p>
 <hr />
@@ -1081,12 +1081,12 @@
 <hr />
 <h2 id="colour-theming">Colour theming<a class="headerlink" href="#colour-theming" title="Permanent link">&para;</a></h2>
 <p>Use CSS variables for colours that automatically adapt to your Home Assistant theme:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">header_color</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;var(--primary-color)&quot;</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nt">header_text_color</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;var(--text-primary-color)&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">header_color</span><span class="p">:</span><span class="w"> </span><span class="s">"var(--primary-color)"</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nt">header_text_color</span><span class="p">:</span><span class="w"> </span><span class="s">"var(--text-primary-color)"</span>
 </code></pre></div>
 <p>Or use explicit hex values for a fixed colour scheme:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">header_color</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#1a1a2e&quot;</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nt">header_text_color</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#e0e0e0&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">header_color</span><span class="p">:</span><span class="w"> </span><span class="s">"#1a1a2e"</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nt">header_text_color</span><span class="p">:</span><span class="w"> </span><span class="s">"#e0e0e0"</span>
 </code></pre></div>
 <hr />
 <h2 id="reordering-card-sections">Reordering card sections<a class="headerlink" href="#reordering-card-sections" title="Permanent link">&para;</a></h2>
