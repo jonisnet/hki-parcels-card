@@ -164,5 +164,13 @@
     "url_banner": "URL de la bannière",
     "url_placeholder": "Laissez vide pour utiliser la valeur par défaut",
     "url_preview_fail": "Image introuvable",
-    "browse_media": "Parcourir"
+    "browse_media": "Parcourir",
+    "pickup_ready_today": "Disponible depuis aujourd'hui",
+    "pickup_ready_one_day": "Disponible depuis 1 jour",
+    "pickup_ready_days": "Disponible depuis {n} jours",
+    "pickup_days_left": "Encore {n} jours pour le retirer",
+    "pickup_one_day_left": "Encore 1 jour pour le retirer",
+    "pickup_last_day": "Dernier jour pour le retirer",
+    "label_ready_since": "Disponible depuis",
+    "label_pickup_deadline": "À retirer avant le"
 }

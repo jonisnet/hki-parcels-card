@@ -163,5 +163,13 @@
     "url_banner": "Banner URL",
     "url_placeholder": "Leave empty to use the built-in default",
     "url_preview_fail": "Image not found",
-    "browse_media": "Browse"
+    "browse_media": "Browse",
+    "pickup_ready_today": "Ready since today",
+    "pickup_ready_one_day": "Waiting for 1 day",
+    "pickup_ready_days": "Waiting for {n} days",
+    "pickup_days_left": "{n} days left to collect",
+    "pickup_one_day_left": "1 day left to collect",
+    "pickup_last_day": "Last day to collect",
+    "label_ready_since": "Ready for pickup since",
+    "label_pickup_deadline": "Collect by"
 }

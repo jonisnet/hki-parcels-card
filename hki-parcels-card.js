@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.7.9';
+const CARD_VERSION = 'v1.7.10';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -281,6 +281,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Leave empty to use the built-in default',
         url_preview_fail: 'Image not found',
         browse_media: 'Browse',
+        pickup_ready_today: 'Ready since today',
+        pickup_ready_one_day: 'Waiting for 1 day',
+        pickup_ready_days: 'Waiting for {n} days',
+        pickup_days_left: '{n} days left to collect',
+        pickup_one_day_left: '1 day left to collect',
+        pickup_last_day: 'Last day to collect',
+        label_ready_since: 'Ready for pickup since',
+        label_pickup_deadline: 'Collect by',
     },
     nl: {
         tab_in_transit: 'Onderweg',
@@ -448,6 +456,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Laat leeg voor de standaard afbeelding',
         url_preview_fail: 'Afbeelding niet gevonden',
         browse_media: 'Bladeren',
+        pickup_ready_today: 'Ligt sinds vandaag klaar',
+        pickup_ready_one_day: 'Ligt 1 dag klaar',
+        pickup_ready_days: 'Ligt {n} dagen klaar',
+        pickup_days_left: 'Nog {n} dagen om op te halen',
+        pickup_one_day_left: 'Nog 1 dag om op te halen',
+        pickup_last_day: 'Laatste dag om op te halen',
+        label_ready_since: 'Klaar om op te halen sinds',
+        label_pickup_deadline: 'Ophalen uiterlijk',
     },
     // bg: machine-drafted, not yet reviewed by a native speaker (see translations/bg.json)
     bg: {
@@ -616,6 +632,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Оставете празно, за да използвате стойността по подразбиране',
         url_preview_fail: 'Изображението не е намерено',
         browse_media: 'Разгледай',
+        pickup_ready_today: 'Готова от днес',
+        pickup_ready_one_day: 'Чака от 1 ден',
+        pickup_ready_days: 'Чака от {n} дни',
+        pickup_days_left: 'Остават {n} дни за получаване',
+        pickup_one_day_left: 'Остава 1 ден за получаване',
+        pickup_last_day: 'Последен ден за получаване',
+        label_ready_since: 'Готова за получаване от',
+        label_pickup_deadline: 'Получете до',
     },
     // cs: machine-drafted, not yet reviewed by a native speaker (see translations/cs.json)
     cs: {
@@ -784,6 +808,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Ponechte prázdné pro použití výchozí hodnoty',
         url_preview_fail: 'Obrázek nenalezen',
         browse_media: 'Procházet',
+        pickup_ready_today: 'Připraveno od dnes',
+        pickup_ready_one_day: 'Čeká 1 den',
+        pickup_ready_days: 'Čeká {n} dní',
+        pickup_days_left: 'Zbývá {n} dní na vyzvednutí',
+        pickup_one_day_left: 'Zbývá 1 den na vyzvednutí',
+        pickup_last_day: 'Poslední den na vyzvednutí',
+        label_ready_since: 'Připraveno k vyzvednutí od',
+        label_pickup_deadline: 'Vyzvedněte do',
     },
     // da: machine-drafted, not yet reviewed by a native speaker (see translations/da.json)
     da: {
@@ -952,6 +984,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Lad stå tomt for at bruge standardværdien',
         url_preview_fail: 'Billede ikke fundet',
         browse_media: 'Gennemse',
+        pickup_ready_today: 'Klar siden i dag',
+        pickup_ready_one_day: 'Klar i 1 dag',
+        pickup_ready_days: 'Klar i {n} dage',
+        pickup_days_left: '{n} dage tilbage til afhentning',
+        pickup_one_day_left: '1 dag tilbage til afhentning',
+        pickup_last_day: 'Sidste dag for afhentning',
+        label_ready_since: 'Klar til afhentning siden',
+        label_pickup_deadline: 'Afhentes senest',
     },
     // de: machine-drafted, not yet reviewed by a native speaker (see translations/de.json)
     de: {
@@ -1120,6 +1160,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Leer lassen für den Standard',
         url_preview_fail: 'Bild nicht gefunden',
         browse_media: 'Durchsuchen',
+        pickup_ready_today: 'Seit heute abholbereit',
+        pickup_ready_one_day: 'Seit 1 Tag abholbereit',
+        pickup_ready_days: 'Seit {n} Tagen abholbereit',
+        pickup_days_left: 'Noch {n} Tage zum Abholen',
+        pickup_one_day_left: 'Noch 1 Tag zum Abholen',
+        pickup_last_day: 'Letzter Abholtag',
+        label_ready_since: 'Abholbereit seit',
+        label_pickup_deadline: 'Abholen bis',
     },
     // es: machine-drafted, not yet reviewed by a native speaker (see translations/es.json)
     es: {
@@ -1288,6 +1336,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Deja vacío para usar el valor predeterminado',
         url_preview_fail: 'Imagen no encontrada',
         browse_media: 'Explorar',
+        pickup_ready_today: 'Listo desde hoy',
+        pickup_ready_one_day: 'Listo desde hace 1 día',
+        pickup_ready_days: 'Listo desde hace {n} días',
+        pickup_days_left: 'Quedan {n} días para recogerlo',
+        pickup_one_day_left: 'Queda 1 día para recogerlo',
+        pickup_last_day: 'Último día para recogerlo',
+        label_ready_since: 'Listo para recoger desde',
+        label_pickup_deadline: 'Recoger antes del',
     },
     // fi: machine-drafted, not yet reviewed by a native speaker (see translations/fi.json)
     fi: {
@@ -1456,6 +1512,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Jätä tyhjäksi käyttääksesi oletusarvoa',
         url_preview_fail: 'Kuvaa ei löytynyt',
         browse_media: 'Selaa',
+        pickup_ready_today: 'Valmiina tänään alkaen',
+        pickup_ready_one_day: 'Odottanut 1 päivän',
+        pickup_ready_days: 'Odottanut {n} päivää',
+        pickup_days_left: '{n} päivää aikaa noutaa',
+        pickup_one_day_left: '1 päivä aikaa noutaa',
+        pickup_last_day: 'Viimeinen noutopäivä',
+        label_ready_since: 'Valmis noudettavaksi alkaen',
+        label_pickup_deadline: 'Noudettava viimeistään',
     },
     // fr: machine-drafted, not yet reviewed by a native speaker (see translations/fr.json)
     fr: {
@@ -1624,6 +1688,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Laissez vide pour utiliser la valeur par défaut',
         url_preview_fail: 'Image introuvable',
         browse_media: 'Parcourir',
+        pickup_ready_today: 'Disponible depuis aujourd\'hui',
+        pickup_ready_one_day: 'Disponible depuis 1 jour',
+        pickup_ready_days: 'Disponible depuis {n} jours',
+        pickup_days_left: 'Encore {n} jours pour le retirer',
+        pickup_one_day_left: 'Encore 1 jour pour le retirer',
+        pickup_last_day: 'Dernier jour pour le retirer',
+        label_ready_since: 'Disponible depuis',
+        label_pickup_deadline: 'À retirer avant le',
     },
     // hi: machine-drafted, not yet reviewed by a native speaker (see translations/hi.json)
     hi: {
@@ -1792,6 +1864,14 @@ const TRANSLATIONS = {
         url_placeholder: 'डिफ़ॉल्ट का उपयोग करने के लिए खाली छोड़ें',
         url_preview_fail: 'छवि नहीं मिली',
         browse_media: 'ब्राउज़ करें',
+        pickup_ready_today: 'आज से तैयार',
+        pickup_ready_one_day: '1 दिन से इंतज़ार में',
+        pickup_ready_days: '{n} दिनों से इंतज़ार में',
+        pickup_days_left: 'लेने के लिए {n} दिन बाकी',
+        pickup_one_day_left: 'लेने के लिए 1 दिन बाकी',
+        pickup_last_day: 'लेने का आखिरी दिन',
+        label_ready_since: 'पिकअप के लिए तैयार कब से',
+        label_pickup_deadline: 'इस तारीख तक लें',
     },
     // hu: machine-drafted, not yet reviewed by a native speaker (see translations/hu.json)
     hu: {
@@ -1960,6 +2040,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Hagyja üresen az alapértelmezett használatához',
         url_preview_fail: 'Kép nem található',
         browse_media: 'Tallózás',
+        pickup_ready_today: 'Ma óta átvehető',
+        pickup_ready_one_day: '1 napja átvehető',
+        pickup_ready_days: '{n} napja átvehető',
+        pickup_days_left: 'Még {n} nap az átvételre',
+        pickup_one_day_left: 'Még 1 nap az átvételre',
+        pickup_last_day: 'Utolsó nap az átvételre',
+        label_ready_since: 'Átvehető ekkortól',
+        label_pickup_deadline: 'Átvételi határidő',
     },
     // it: machine-drafted, not yet reviewed by a native speaker (see translations/it.json)
     it: {
@@ -2128,6 +2216,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Lascia vuoto per usare il valore predefinito',
         url_preview_fail: 'Immagine non trovata',
         browse_media: 'Sfoglia',
+        pickup_ready_today: 'Pronto da oggi',
+        pickup_ready_one_day: 'Pronto da 1 giorno',
+        pickup_ready_days: 'Pronto da {n} giorni',
+        pickup_days_left: 'Ancora {n} giorni per ritirarlo',
+        pickup_one_day_left: 'Ancora 1 giorno per ritirarlo',
+        pickup_last_day: 'Ultimo giorno per il ritiro',
+        label_ready_since: 'Pronto per il ritiro dal',
+        label_pickup_deadline: 'Ritirare entro il',
     },
     // nb: machine-drafted, not yet reviewed by a native speaker (see translations/nb.json)
     nb: {
@@ -2296,6 +2392,14 @@ const TRANSLATIONS = {
         url_placeholder: 'La stå tomt for å bruke standardverdien',
         url_preview_fail: 'Bilde ikke funnet',
         browse_media: 'Bla gjennom',
+        pickup_ready_today: 'Klar siden i dag',
+        pickup_ready_one_day: 'Klar i 1 dag',
+        pickup_ready_days: 'Klar i {n} dager',
+        pickup_days_left: '{n} dager igjen til henting',
+        pickup_one_day_left: '1 dag igjen til henting',
+        pickup_last_day: 'Siste dag for henting',
+        label_ready_since: 'Klar for henting siden',
+        label_pickup_deadline: 'Hentes innen',
     },
     // pl: machine-drafted, not yet reviewed by a native speaker (see translations/pl.json)
     pl: {
@@ -2464,6 +2568,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Pozostaw puste, aby użyć wartości domyślnej',
         url_preview_fail: 'Nie znaleziono obrazu',
         browse_media: 'Przeglądaj',
+        pickup_ready_today: 'Gotowa od dziś',
+        pickup_ready_one_day: 'Czeka od 1 dnia',
+        pickup_ready_days: 'Czeka od {n} dni',
+        pickup_days_left: 'Zostało {n} dni na odbiór',
+        pickup_one_day_left: 'Został 1 dzień na odbiór',
+        pickup_last_day: 'Ostatni dzień na odbiór',
+        label_ready_since: 'Gotowa do odbioru od',
+        label_pickup_deadline: 'Odbierz do',
     },
     // pt: machine-drafted, not yet reviewed by a native speaker (see translations/pt.json)
     pt: {
@@ -2632,6 +2744,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Deixe vazio para usar a predefinição',
         url_preview_fail: 'Imagem não encontrada',
         browse_media: 'Procurar',
+        pickup_ready_today: 'Disponível desde hoje',
+        pickup_ready_one_day: 'Disponível há 1 dia',
+        pickup_ready_days: 'Disponível há {n} dias',
+        pickup_days_left: 'Faltam {n} dias para levantar',
+        pickup_one_day_left: 'Falta 1 dia para levantar',
+        pickup_last_day: 'Último dia para levantar',
+        label_ready_since: 'Pronto para levantamento desde',
+        label_pickup_deadline: 'Levantar até',
     },
     // ro: machine-drafted, not yet reviewed by a native speaker (see translations/ro.json)
     ro: {
@@ -2800,6 +2920,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Lăsați gol pentru a utiliza valoarea implicită',
         url_preview_fail: 'Imaginea nu a fost găsită',
         browse_media: 'Răsfoiește',
+        pickup_ready_today: 'Gata de azi',
+        pickup_ready_one_day: 'Gata de 1 zi',
+        pickup_ready_days: 'Gata de {n} zile',
+        pickup_days_left: 'Mai sunt {n} zile pentru ridicare',
+        pickup_one_day_left: 'Mai este 1 zi pentru ridicare',
+        pickup_last_day: 'Ultima zi pentru ridicare',
+        label_ready_since: 'Gata de ridicare din',
+        label_pickup_deadline: 'De ridicat până la',
     },
     // sk: machine-drafted, not yet reviewed by a native speaker (see translations/sk.json)
     sk: {
@@ -2968,6 +3096,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Ponechajte prázdne pre použitie predvolenej hodnoty',
         url_preview_fail: 'Obrázok nenájdený',
         browse_media: 'Prehľadávať',
+        pickup_ready_today: 'Pripravené od dnes',
+        pickup_ready_one_day: 'Čaká 1 deň',
+        pickup_ready_days: 'Čaká {n} dní',
+        pickup_days_left: 'Zostáva {n} dní na vyzdvihnutie',
+        pickup_one_day_left: 'Zostáva 1 deň na vyzdvihnutie',
+        pickup_last_day: 'Posledný deň na vyzdvihnutie',
+        label_ready_since: 'Pripravené na vyzdvihnutie od',
+        label_pickup_deadline: 'Vyzdvihnite do',
     },
     // sv: machine-drafted, not yet reviewed by a native speaker (see translations/sv.json)
     sv: {
@@ -3136,6 +3272,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Lämna tomt för att använda standardvärdet',
         url_preview_fail: 'Bilden hittades inte',
         browse_media: 'Bläddra',
+        pickup_ready_today: 'Klart sedan i dag',
+        pickup_ready_one_day: 'Klart i 1 dag',
+        pickup_ready_days: 'Klart i {n} dagar',
+        pickup_days_left: '{n} dagar kvar att hämta',
+        pickup_one_day_left: '1 dag kvar att hämta',
+        pickup_last_day: 'Sista dagen att hämta',
+        label_ready_since: 'Klart för upphämtning sedan',
+        label_pickup_deadline: 'Hämtas senast',
     },
     // uk: machine-drafted, not yet reviewed by a native speaker (see translations/uk.json)
     uk: {
@@ -3304,6 +3448,14 @@ const TRANSLATIONS = {
         url_placeholder: 'Залиште порожнім, щоб використати значення за замовчуванням',
         url_preview_fail: 'Зображення не знайдено',
         browse_media: 'Огляд',
+        pickup_ready_today: 'Готово з сьогодні',
+        pickup_ready_one_day: 'Чекає 1 день',
+        pickup_ready_days: 'Чекає {n} днів',
+        pickup_days_left: 'Залишилось {n} днів, щоб забрати',
+        pickup_one_day_left: 'Залишився 1 день, щоб забрати',
+        pickup_last_day: 'Останній день, щоб забрати',
+        label_ready_since: 'Готово до отримання з',
+        label_pickup_deadline: 'Забрати до',
     },
 };
 // GENERATED:TRANSLATIONS:END
@@ -4414,8 +4566,32 @@ class HkiParcelsCard extends HTMLElement {
             delivered,
             delivery_date: item.delivered_at || item.planned_from || item.delivery_date,
             planned_date: item.planned_from,
+            // When a parcel waiting at a pickup point or locker became ready, so the list can say
+            // how long it has been lying there (jonisnet/hki-parcels-card#19). No integration
+            // reports the collection deadline itself; an optional `pickup_deadline` is used if one does.
+            ready_since: statusEnum === 'at_pickup_point' ? this._readySince(item) : null,
             ...this._carrierBranding(carrier)
         };
+    }
+
+    // Start of the trailing run of at_pickup_point history entries. Most integrations leave
+    // history[].status empty, and nothing else happens between "ready" and "collected", so the
+    // newest entry stands in then. DHL Germany without "include history" still has its own
+    // status date in the raw payload.
+    _readySince(item) {
+        const history = (Array.isArray(item.history) ? item.history : [])
+            .filter(h => h?.timestamp && !isNaN(new Date(h.timestamp)))
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        let since = null;
+        history.forEach(h => {
+            const status = String(h.status || '').toLowerCase();
+            if (status === 'at_pickup_point') { if (!since) since = h.timestamp; }
+            else if (status) since = null;
+        });
+        return since
+            || history[history.length - 1]?.timestamp
+            || item.raw?.sendungsdetails?.sendungsverlauf?.datumAktuellerStatus
+            || null;
     }
 
     _normalizeLegacy(item, carrier) {
@@ -4780,6 +4956,19 @@ class HkiParcelsCard extends HTMLElement {
             });
         });
 
+        // Several accounts of one carrier (e.g. a PostNL account per household member) can each
+        // report the same shipment or letter — keep it once, preferring the copy that already
+        // counts as delivered (jonisnet/ha-parcel-card#2).
+        const parcels = this._dedupeAcrossAccounts(onderweg.concat(bezorgd));
+        onderweg = parcels.filter(i => !i.delivered);
+        bezorgd  = parcels.filter(i => i.delivered);
+        verzondenDelivered = this._dedupeAcrossAccounts(verzondenDelivered);
+        const sentDeliveredIds = new Set(verzondenDelivered.map(i => this._accountDedupeId(i)).filter(Boolean));
+        verzondenUpcoming = this._dedupeAcrossAccounts(verzondenUpcoming)
+            .filter(i => !sentDeliveredIds.has(this._accountDedupeId(i)));
+        postUpcoming  = this._dedupeAcrossAccounts(postUpcoming);
+        postDelivered = this._dedupeAcrossAccounts(postDelivered);
+
         // If a letter appears in both entity_delivered (parcels flow → bezorgd) and entity_letters
         // (post flow → postDelivered), remove the duplicate from bezorgd.
         const postKeys = new Set([...postUpcoming, ...postDelivered].map(l => l.key).filter(Boolean));
@@ -4792,6 +4981,30 @@ class HkiParcelsCard extends HTMLElement {
             verzonden: { upcoming: verzondenUpcoming, delivered: verzondenDelivered },
             post: { upcoming: postUpcoming, delivered: postDelivered }
         };
+    }
+
+    // Carrier type + tracking code. Items without a key of their own from the integration
+    // (generated letter keys) are never merged.
+    _accountDedupeId(item) {
+        if (!item.key || item.key_generated) return null;
+        return `${item.carrier_type}|${item.key}`;
+    }
+
+    _dedupeAcrossAccounts(items) {
+        const indexById = new Map();
+        const result = [];
+        items.forEach(item => {
+            const id = this._accountDedupeId(item);
+            if (!id) { result.push(item); return; }
+            const idx = indexById.get(id);
+            if (idx === undefined) {
+                indexById.set(id, result.length);
+                result.push(item);
+            } else if (item.delivered && !result[idx].delivered) {
+                result[idx] = item;
+            }
+        });
+        return result;
     }
 
     // ------------------------------------------------------------------
@@ -4825,6 +5038,7 @@ class HkiParcelsCard extends HTMLElement {
                 is_letter: true,
                 delivered: true,
                 key: item.id || item.key || `letter-${carrier.name}-${idx}`,
+                key_generated: !(item.id || item.key),
                 name: item.title || (dateStr ? `${this._t('mail_from')} ${dateStr}` : this._t('letterbox_mail')),
                 status_message: item.unread ? this._t('unread') : this._t('letterbox_mail'),
                 delivery_date: dateStr,
@@ -5541,11 +5755,40 @@ class HkiParcelsCard extends HTMLElement {
     // 2 days, "Expected on 12 Jul between 16:00 and 18:00". Delivered parcels are unaffected —
     // they show their actual delivery timestamp, never an "expected" one.
     _parcelDateLabel(item) {
+        if (!item.delivered && item.status === 'at_pickup_point') {
+            const waiting = this._pickupWaitLabel(item);
+            if (waiting) return waiting;
+        }
         if (!item.delivered) {
             const parts = this._expectedDeliveryParts(item);
             if (parts) return `${parts.dayPart} ${parts.timePart}`;
         }
         return this.formatDate(item.delivery_date || item.planned_date || item.planned_to);
+    }
+
+    // "1 day left to collect" when the integration reports a deadline, otherwise how long the
+    // parcel has been ready ("Waiting for 3 days"). Counted in calendar days.
+    _pickupWaitLabel(item) {
+        const daysFromToday = (dateStr) => {
+            const d = new Date(dateStr);
+            if (!dateStr || isNaN(d)) return null;
+            d.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return Math.round((d - today) / 86400000);
+        };
+        const left = daysFromToday(item.pickup_deadline);
+        if (left !== null) {
+            if (left <= 0) return this._t('pickup_last_day');
+            return left === 1 ? this._t('pickup_one_day_left') : this._t('pickup_days_left').replace('{n}', left);
+        }
+        const since = daysFromToday(item.ready_since);
+        if (since !== null) {
+            const waited = -since;
+            if (waited <= 0) return this._t('pickup_ready_today');
+            return waited === 1 ? this._t('pickup_ready_one_day') : this._t('pickup_ready_days').replace('{n}', waited);
+        }
+        return null;
     }
 
     updateAnimation(displayed) {
@@ -5709,6 +5952,10 @@ class HkiParcelsCard extends HTMLElement {
         const deliveryDetail = typeof item.pickup === 'boolean'
             ? `<div class="detail-row"><strong>${this._t('label_delivery')}:</strong> ${item.pickup ? `${this._t('pickup_point')}${item.pickup_point ? ` (${item.pickup_point})` : ''}` : this._t('home_delivery')}</div>`
             : (item.pickup_point ? `<div class="detail-row"><strong>${this._t('label_pickup_point')}:</strong> ${item.pickup_point}</div>` : '');
+        const pickupWaitDetail = !isDelivered && item.status === 'at_pickup_point'
+            ? (item.ready_since ? `<div class="detail-row"><strong>${this._t('label_ready_since')}:</strong> ${this.formatDate(item.ready_since)}</div>` : '')
+              + (item.pickup_deadline ? `<div class="detail-row"><strong>${this._t('label_pickup_deadline')}:</strong> ${this.formatDate(item.pickup_deadline)}</div>` : '')
+            : '';
 
         return `
         <div class="parcel ${isSelected ? 'selected' : ''}" data-key="${item.key}" style="--carrier-color:${item.carrier_color || DEFAULT_CARRIER_COLOR};">
@@ -5734,6 +5981,7 @@ class HkiParcelsCard extends HTMLElement {
                 ${!isLetter && item.key && this._customNameScope() !== 'off' ? this._renderCustomNameRow(item) : ''}
                 ${item.raw_status ? `<div class="detail-row"><strong>${this._t('label_status')}:</strong> ${item.raw_status}</div>` : ''}
                 ${deliveryDetail}
+                ${pickupWaitDetail}
                 <div class="detail-row"><strong>${this._t('label_type')}:</strong> ${isLetter ? this._t('type_letter') : this._t('type_parcel')}</div>
                 ${item.url && this.config.show_tracking_link !== false ? `<a href="${item.url}" target="_blank" class="btn-track">${this._t('open_tracking')}</a>` : ''}
             </div>

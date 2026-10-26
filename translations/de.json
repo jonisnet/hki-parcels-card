@@ -164,5 +164,13 @@
     "url_banner": "Banner-URL",
     "url_placeholder": "Leer lassen für den Standard",
     "url_preview_fail": "Bild nicht gefunden",
-    "browse_media": "Durchsuchen"
+    "browse_media": "Durchsuchen",
+    "pickup_ready_today": "Seit heute abholbereit",
+    "pickup_ready_one_day": "Seit 1 Tag abholbereit",
+    "pickup_ready_days": "Seit {n} Tagen abholbereit",
+    "pickup_days_left": "Noch {n} Tage zum Abholen",
+    "pickup_one_day_left": "Noch 1 Tag zum Abholen",
+    "pickup_last_day": "Letzter Abholtag",
+    "label_ready_since": "Abholbereit seit",
+    "label_pickup_deadline": "Abholen bis"
 }

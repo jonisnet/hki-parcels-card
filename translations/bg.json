@@ -164,5 +164,13 @@
     "url_banner": "URL на банер",
     "url_placeholder": "Оставете празно, за да използвате стойността по подразбиране",
     "url_preview_fail": "Изображението не е намерено",
-    "browse_media": "Разгледай"
+    "browse_media": "Разгледай",
+    "pickup_ready_today": "Готова от днес",
+    "pickup_ready_one_day": "Чака от 1 ден",
+    "pickup_ready_days": "Чака от {n} дни",
+    "pickup_days_left": "Остават {n} дни за получаване",
+    "pickup_one_day_left": "Остава 1 ден за получаване",
+    "pickup_last_day": "Последен ден за получаване",
+    "label_ready_since": "Готова за получаване от",
+    "label_pickup_deadline": "Получете до"
 }

@@ -164,5 +164,13 @@
     "url_banner": "Banner-URL",
     "url_placeholder": "Lad stå tomt for at bruge standardværdien",
     "url_preview_fail": "Billede ikke fundet",
-    "browse_media": "Gennemse"
+    "browse_media": "Gennemse",
+    "pickup_ready_today": "Klar siden i dag",
+    "pickup_ready_one_day": "Klar i 1 dag",
+    "pickup_ready_days": "Klar i {n} dage",
+    "pickup_days_left": "{n} dage tilbage til afhentning",
+    "pickup_one_day_left": "1 dag tilbage til afhentning",
+    "pickup_last_day": "Sidste dag for afhentning",
+    "label_ready_since": "Klar til afhentning siden",
+    "label_pickup_deadline": "Afhentes senest"
 }

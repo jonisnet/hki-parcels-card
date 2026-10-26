@@ -164,5 +164,13 @@
     "url_banner": "बैनर URL",
     "url_placeholder": "डिफ़ॉल्ट का उपयोग करने के लिए खाली छोड़ें",
     "url_preview_fail": "छवि नहीं मिली",
-    "browse_media": "ब्राउज़ करें"
+    "browse_media": "ब्राउज़ करें",
+    "pickup_ready_today": "आज से तैयार",
+    "pickup_ready_one_day": "1 दिन से इंतज़ार में",
+    "pickup_ready_days": "{n} दिनों से इंतज़ार में",
+    "pickup_days_left": "लेने के लिए {n} दिन बाकी",
+    "pickup_one_day_left": "लेने के लिए 1 दिन बाकी",
+    "pickup_last_day": "लेने का आखिरी दिन",
+    "label_ready_since": "पिकअप के लिए तैयार कब से",
+    "label_pickup_deadline": "इस तारीख तक लें"
 }

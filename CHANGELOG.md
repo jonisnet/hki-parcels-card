@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.7.10] — 2026-10-26
+
+### Added
+
+- **How long a parcel has been waiting at a pickup point**
+  ([jonisnet/hki-parcels-card#19](https://github.com/jonisnet/hki-parcels-card/issues/19)).
+  A parcel ready for pickup (status `at_pickup_point`) now shows "Waiting for 3 days" in the
+  list instead of a stale expected-delivery date, and its details show since when it has been
+  ready. The moment comes from the parcel's history (turn on the integration's history option
+  for the most accurate value) and, for DHL Germany, from its own status date. No integration
+  reports the collection deadline yet; when one sends an optional `pickup_deadline`, the card
+  shows "2 days left to collect" instead.
+
+### Fixed
+
+- **The same parcel or letter showed up twice with more than one account of a carrier**
+  ([jonisnet/ha-parcel-card#2](https://github.com/jonisnet/ha-parcel-card/issues/2)). With, say,
+  a PostNL account per household member, a shipment both accounts can see was listed once per
+  account. Items are now shown once per carrier and tracking code; when one account already
+  reports it delivered and the other still in transit, the delivered copy wins.
+
 ## [1.7.9] — 2026-10-06
 
 ### Fixed

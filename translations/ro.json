@@ -164,5 +164,13 @@
     "url_banner": "URL banner",
     "url_placeholder": "Lăsați gol pentru a utiliza valoarea implicită",
     "url_preview_fail": "Imaginea nu a fost găsită",
-    "browse_media": "Răsfoiește"
+    "browse_media": "Răsfoiește",
+    "pickup_ready_today": "Gata de azi",
+    "pickup_ready_one_day": "Gata de 1 zi",
+    "pickup_ready_days": "Gata de {n} zile",
+    "pickup_days_left": "Mai sunt {n} zile pentru ridicare",
+    "pickup_one_day_left": "Mai este 1 zi pentru ridicare",
+    "pickup_last_day": "Ultima zi pentru ridicare",
+    "label_ready_since": "Gata de ridicare din",
+    "label_pickup_deadline": "De ridicat până la"
 }

@@ -164,5 +164,13 @@
     "url_banner": "Banner-URL",
     "url_placeholder": "La stå tomt for å bruke standardverdien",
     "url_preview_fail": "Bilde ikke funnet",
-    "browse_media": "Bla gjennom"
+    "browse_media": "Bla gjennom",
+    "pickup_ready_today": "Klar siden i dag",
+    "pickup_ready_one_day": "Klar i 1 dag",
+    "pickup_ready_days": "Klar i {n} dager",
+    "pickup_days_left": "{n} dager igjen til henting",
+    "pickup_one_day_left": "1 dag igjen til henting",
+    "pickup_last_day": "Siste dag for henting",
+    "label_ready_since": "Klar for henting siden",
+    "label_pickup_deadline": "Hentes innen"
 }

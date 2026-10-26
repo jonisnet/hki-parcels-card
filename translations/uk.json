@@ -164,5 +164,13 @@
     "url_banner": "URL банера",
     "url_placeholder": "Залиште порожнім, щоб використати значення за замовчуванням",
     "url_preview_fail": "Зображення не знайдено",
-    "browse_media": "Огляд"
+    "browse_media": "Огляд",
+    "pickup_ready_today": "Готово з сьогодні",
+    "pickup_ready_one_day": "Чекає 1 день",
+    "pickup_ready_days": "Чекає {n} днів",
+    "pickup_days_left": "Залишилось {n} днів, щоб забрати",
+    "pickup_one_day_left": "Залишився 1 день, щоб забрати",
+    "pickup_last_day": "Останній день, щоб забрати",
+    "label_ready_since": "Готово до отримання з",
+    "label_pickup_deadline": "Забрати до"
 }

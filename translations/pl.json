@@ -164,5 +164,13 @@
     "url_banner": "URL banera",
     "url_placeholder": "Pozostaw puste, aby użyć wartości domyślnej",
     "url_preview_fail": "Nie znaleziono obrazu",
-    "browse_media": "Przeglądaj"
+    "browse_media": "Przeglądaj",
+    "pickup_ready_today": "Gotowa od dziś",
+    "pickup_ready_one_day": "Czeka od 1 dnia",
+    "pickup_ready_days": "Czeka od {n} dni",
+    "pickup_days_left": "Zostało {n} dni na odbiór",
+    "pickup_one_day_left": "Został 1 dzień na odbiór",
+    "pickup_last_day": "Ostatni dzień na odbiór",
+    "label_ready_since": "Gotowa do odbioru od",
+    "label_pickup_deadline": "Odbierz do"
 }

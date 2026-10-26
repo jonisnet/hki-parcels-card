@@ -164,5 +164,13 @@
     "url_banner": "Banner-URL",
     "url_placeholder": "Lämna tomt för att använda standardvärdet",
     "url_preview_fail": "Bilden hittades inte",
-    "browse_media": "Bläddra"
+    "browse_media": "Bläddra",
+    "pickup_ready_today": "Klart sedan i dag",
+    "pickup_ready_one_day": "Klart i 1 dag",
+    "pickup_ready_days": "Klart i {n} dagar",
+    "pickup_days_left": "{n} dagar kvar att hämta",
+    "pickup_one_day_left": "1 dag kvar att hämta",
+    "pickup_last_day": "Sista dagen att hämta",
+    "label_ready_since": "Klart för upphämtning sedan",
+    "label_pickup_deadline": "Hämtas senast"
 }

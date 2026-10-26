@@ -164,5 +164,13 @@
     "url_banner": "Bannerin URL",
     "url_placeholder": "Jätä tyhjäksi käyttääksesi oletusarvoa",
     "url_preview_fail": "Kuvaa ei löytynyt",
-    "browse_media": "Selaa"
+    "browse_media": "Selaa",
+    "pickup_ready_today": "Valmiina tänään alkaen",
+    "pickup_ready_one_day": "Odottanut 1 päivän",
+    "pickup_ready_days": "Odottanut {n} päivää",
+    "pickup_days_left": "{n} päivää aikaa noutaa",
+    "pickup_one_day_left": "1 päivä aikaa noutaa",
+    "pickup_last_day": "Viimeinen noutopäivä",
+    "label_ready_since": "Valmis noudettavaksi alkaen",
+    "label_pickup_deadline": "Noudettava viimeistään"
 }

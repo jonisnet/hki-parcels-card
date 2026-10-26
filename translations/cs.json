@@ -164,5 +164,13 @@
     "url_banner": "URL banneru",
     "url_placeholder": "Ponechte prázdné pro použití výchozí hodnoty",
     "url_preview_fail": "Obrázek nenalezen",
-    "browse_media": "Procházet"
+    "browse_media": "Procházet",
+    "pickup_ready_today": "Připraveno od dnes",
+    "pickup_ready_one_day": "Čeká 1 den",
+    "pickup_ready_days": "Čeká {n} dní",
+    "pickup_days_left": "Zbývá {n} dní na vyzvednutí",
+    "pickup_one_day_left": "Zbývá 1 den na vyzvednutí",
+    "pickup_last_day": "Poslední den na vyzvednutí",
+    "label_ready_since": "Připraveno k vyzvednutí od",
+    "label_pickup_deadline": "Vyzvedněte do"
 }

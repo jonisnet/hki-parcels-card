@@ -164,5 +164,13 @@
     "url_banner": "URL del banner",
     "url_placeholder": "Lascia vuoto per usare il valore predefinito",
     "url_preview_fail": "Immagine non trovata",
-    "browse_media": "Sfoglia"
+    "browse_media": "Sfoglia",
+    "pickup_ready_today": "Pronto da oggi",
+    "pickup_ready_one_day": "Pronto da 1 giorno",
+    "pickup_ready_days": "Pronto da {n} giorni",
+    "pickup_days_left": "Ancora {n} giorni per ritirarlo",
+    "pickup_one_day_left": "Ancora 1 giorno per ritirarlo",
+    "pickup_last_day": "Ultimo giorno per il ritiro",
+    "label_ready_since": "Pronto per il ritiro dal",
+    "label_pickup_deadline": "Ritirare entro il"
 }

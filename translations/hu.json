@@ -164,5 +164,13 @@
     "url_banner": "Banner URL",
     "url_placeholder": "Hagyja üresen az alapértelmezett használatához",
     "url_preview_fail": "Kép nem található",
-    "browse_media": "Tallózás"
+    "browse_media": "Tallózás",
+    "pickup_ready_today": "Ma óta átvehető",
+    "pickup_ready_one_day": "1 napja átvehető",
+    "pickup_ready_days": "{n} napja átvehető",
+    "pickup_days_left": "Még {n} nap az átvételre",
+    "pickup_one_day_left": "Még 1 nap az átvételre",
+    "pickup_last_day": "Utolsó nap az átvételre",
+    "label_ready_since": "Átvehető ekkortól",
+    "label_pickup_deadline": "Átvételi határidő"
 }

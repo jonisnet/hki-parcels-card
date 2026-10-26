@@ -163,5 +163,13 @@
     "url_banner": "Banner URL",
     "url_placeholder": "Laat leeg voor de standaard afbeelding",
     "url_preview_fail": "Afbeelding niet gevonden",
-    "browse_media": "Bladeren"
+    "browse_media": "Bladeren",
+    "pickup_ready_today": "Ligt sinds vandaag klaar",
+    "pickup_ready_one_day": "Ligt 1 dag klaar",
+    "pickup_ready_days": "Ligt {n} dagen klaar",
+    "pickup_days_left": "Nog {n} dagen om op te halen",
+    "pickup_one_day_left": "Nog 1 dag om op te halen",
+    "pickup_last_day": "Laatste dag om op te halen",
+    "label_ready_since": "Klaar om op te halen sinds",
+    "label_pickup_deadline": "Ophalen uiterlijk"
 }
