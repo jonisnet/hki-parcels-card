@@ -68,7 +68,7 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.7.10';
+const CARD_VERSION = 'v1.7.11';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
@@ -4983,11 +4983,16 @@ class HkiParcelsCard extends HTMLElement {
         };
     }
 
-    // Carrier type + tracking code. Items without a key of their own from the integration
-    // (generated letter keys) are never merged.
+    // Carrier + tracking code. The barcode comes first because an older integration's `key` can
+    // carry account-specific parts, and PostNL's type variants (postnl, postnl_v4, postnl_legacy)
+    // count as one carrier: two accounts set up as different variants still report the same
+    // parcel. Items without a key of their own from the integration (generated letter keys)
+    // are never merged.
     _accountDedupeId(item) {
-        if (!item.key || item.key_generated) return null;
-        return `${item.carrier_type}|${item.key}`;
+        const code = item.barcode || item.key;
+        if (!code || item.key_generated) return null;
+        const carrier = String(item.carrier_type || '').replace(/^postnl(_v4|_legacy)?$/, 'postnl');
+        return `${carrier}|${code}`;
     }
 
     _dedupeAcrossAccounts(items) {
