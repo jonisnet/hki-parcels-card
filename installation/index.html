@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -349,10 +349,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#via-hacs-recommended" class="md-nav__link">
+  <a href="#via-the-marketplace-recommended" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Via HACS (recommended)
+        Via the Marketplace (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#via-hacs-home-assistant-before-202611" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Via HACS (Home Assistant before 2026.11)
       
     </span>
   </a>
@@ -759,10 +770,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#via-hacs-recommended" class="md-nav__link">
+  <a href="#via-the-marketplace-recommended" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Via HACS (recommended)
+        Via the Marketplace (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#via-hacs-home-assistant-before-202611" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Via HACS (Home Assistant before 2026.11)
       
     </span>
   </a>
@@ -878,13 +900,23 @@
 
 
 <h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h1>
-<h2 id="via-hacs-recommended">Via HACS (recommended)<a class="headerlink" href="#via-hacs-recommended" title="Permanent link">&para;</a></h2>
+<h2 id="via-the-marketplace-recommended">Via the Marketplace (recommended)<a class="headerlink" href="#via-the-marketplace-recommended" title="Permanent link">&para;</a></h2>
+<p>Home Assistant 2026.11 and newer have HACS built in as the <strong>Marketplace</strong>.</p>
+<p><a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=jonisnet&amp;repository=hki-parcels-card&amp;category=plugin"><img alt="Open in the Marketplace" src="https://my.home-assistant.io/badges/hacs_repository.svg" /></a></p>
 <ol>
-<li>In Home Assistant go to <strong>HACS → Dashboard → ⋮ → Custom repositories</strong></li>
-<li>Add <code>https://github.com/jonisnet/hki-parcels-card</code> as category <strong>Dashboard</strong></li>
-<li>Search for <strong>HKI Parcels Card</strong> and install</li>
-<li>Restart Home Assistant or do a hard refresh (Ctrl+Shift+R)</li>
+<li>Click the button above, or go to <strong>Settings → Marketplace → Add from link</strong> and enter <code>https://github.com/jonisnet/hki-parcels-card</code> (this needs the Marketplace's GitHub connection)</li>
+<li>Install <strong>HKI Parcels Card</strong></li>
+<li>Reload your browser — no restart needed</li>
 </ol>
+<hr />
+<h2 id="via-hacs-home-assistant-before-202611">Via HACS (Home Assistant before 2026.11)<a class="headerlink" href="#via-hacs-home-assistant-before-202611" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Go to <strong>HACS → Dashboard → ⋮ → Custom repositories</strong></li>
+<li>Add <code>https://github.com/jonisnet/hki-parcels-card</code> with category <strong>Dashboard</strong></li>
+<li>Search for <strong>HKI Parcels Card</strong> and click Install</li>
+<li>Reload your browser (Ctrl+Shift+R)</li>
+</ol>
+<p>On updating to Home Assistant 2026.11, an installation from HACS moves to the Marketplace by itself.</p>
 <hr />
 <h2 id="manual">Manual<a class="headerlink" href="#manual" title="Permanent link">&para;</a></h2>
 <ol>
@@ -1094,7 +1126,7 @@
 <p>For all of these, the card's "+ Add parcel" control can register a new parcel directly from the dashboard by calling the integration's own <code>track_parcel</code> service — no need to open the integration's own Configure dialog. See <a href="../card/overview/#add-parcel-support">Add parcel support</a> for why PostNL/DHL/DPD/Vinted Go don't have this control.</p>
 <hr />
 <h2 id="optional-phu-carrier-icons">Optional: PHU carrier icons<a class="headerlink" href="#optional-phu-carrier-icons" title="Permanent link">&para;</a></h2>
-<p>Install <a href="https://github.com/elax46/custom-brand-icons">custom-brand-icons</a> via HACS to get branded <code>phu:</code> carrier icons. The card detects this automatically — no configuration needed.</p>
+<p>Install <a href="https://github.com/elax46/custom-brand-icons">custom-brand-icons</a> from the Marketplace (or HACS) to get branded <code>phu:</code> carrier icons. The card detects this automatically — no configuration needed.</p>
 <p>Coverage varies by carrier:</p>
 <table>
 <thead>
@@ -1425,10 +1457,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.instant", "navigation.instant.progress", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.action.edit", "content.tabs.link"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.instant", "navigation.instant.progress", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.action.edit", "content.tabs.link"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>
