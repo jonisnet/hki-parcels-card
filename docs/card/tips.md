@@ -89,7 +89,7 @@ show_raw_status: true
 
 ## Using PHU carrier icons
 
-If you have [custom-brand-icons](https://github.com/elax46/custom-brand-icons) installed via HACS, the card automatically uses branded carrier icons where available. No configuration is needed — icons are resolved at render time. Coverage currently varies by carrier; see [Installation](../installation.md#optional-phu-carrier-icons) for the full breakdown.
+If you have [custom-brand-icons](https://github.com/elax46/custom-brand-icons) installed (from the Marketplace or HACS), the card automatically uses branded carrier icons where available. No configuration is needed — icons are resolved at render time. Coverage currently varies by carrier; see [Installation](../installation.md#optional-phu-carrier-icons) for the full breakdown.
 
 ---
 

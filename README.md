@@ -1,7 +1,7 @@
 # HKI Parcels Card
 
-[![Version](https://img.shields.io/badge/version-v1.7.11-blue?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/releases/latest)
-[![HACS](https://img.shields.io/badge/HACS-Custom-orange?style=flat-square)](https://hacs.xyz)
+[![Version](https://img.shields.io/github/v/release/jonisnet/hki-parcels-card?style=flat-square&label=version)](https://github.com/jonisnet/hki-parcels-card/releases/latest)
+[![Marketplace](https://img.shields.io/badge/Marketplace-custom_repository-orange?style=flat-square)](https://www.home-assistant.io/integrations/marketplace/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/jonisnet/hki-parcels-card/blob/main/LICENSE)
 [![HA](https://img.shields.io/badge/Home%20Assistant-2026.7%2B-41bdf5?style=flat-square)](https://www.home-assistant.io)
 [![Downloads](https://img.shields.io/github/downloads/jonisnet/hki-parcels-card/total?style=flat-square&label=downloads)](https://github.com/jonisnet/hki-parcels-card/releases)
@@ -138,12 +138,24 @@ The card's "+ Add parcel" control only appears for carriers whose integration is
 
 ## Installation
 
-### Via HACS (recommended)
+### Via the Marketplace (recommended)
+
+Home Assistant 2026.11 and newer have HACS built in as the **Marketplace**.
+
+[![Open in the Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jonisnet&repository=hki-parcels-card&category=plugin)
+
+1. Click the button above, or go to **Settings → Marketplace → Add from link** and enter `https://github.com/jonisnet/hki-parcels-card` (this needs the Marketplace's GitHub connection)
+2. Install **HKI Parcels Card**
+3. Reload your browser — no restart needed
+
+### Via HACS (Home Assistant before 2026.11)
 
 1. Go to **HACS → Dashboard → ⋮ → Custom repositories**
 2. Add `https://github.com/jonisnet/hki-parcels-card` with category **Dashboard**
 3. Search for **HKI Parcels Card** and click Install
-4. Restart Home Assistant (or do a hard refresh: Ctrl+Shift+R)
+4. Reload your browser (Ctrl+Shift+R)
+
+On updating to Home Assistant 2026.11, an installation from HACS moves to the Marketplace by itself.
 
 ### Manual
 
@@ -152,7 +164,7 @@ The card's "+ Add parcel" control only appears for carriers whose integration is
 3. Go to **Settings → Dashboards → Resources** and add `/local/hki-parcels-card.js` (type: JavaScript module)
 4. Hard refresh your browser
 
-Optional: install [custom-brand-icons](https://github.com/elax46/custom-brand-icons) via HACS for branded PHU carrier icons — detected automatically, no configuration needed.
+Optional: install [custom-brand-icons](https://github.com/elax46/custom-brand-icons) from the Marketplace for branded PHU carrier icons — detected automatically, no configuration needed.
 
 Full installation guide: [jonisnet.github.io/hki-parcels-card/installation](https://jonisnet.github.io/hki-parcels-card/installation/).
 

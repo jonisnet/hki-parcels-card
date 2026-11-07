@@ -1,11 +1,25 @@
 # Installation
 
-## Via HACS (recommended)
+## Via the Marketplace (recommended)
 
-1. In Home Assistant go to **HACS → Dashboard → ⋮ → Custom repositories**
-2. Add `https://github.com/jonisnet/hki-parcels-card` as category **Dashboard**
-3. Search for **HKI Parcels Card** and install
-4. Restart Home Assistant or do a hard refresh (Ctrl+Shift+R)
+Home Assistant 2026.11 and newer have HACS built in as the **Marketplace**.
+
+[![Open in the Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jonisnet&repository=hki-parcels-card&category=plugin)
+
+1. Click the button above, or go to **Settings → Marketplace → Add from link** and enter `https://github.com/jonisnet/hki-parcels-card` (this needs the Marketplace's GitHub connection)
+2. Install **HKI Parcels Card**
+3. Reload your browser — no restart needed
+
+---
+
+## Via HACS (Home Assistant before 2026.11)
+
+1. Go to **HACS → Dashboard → ⋮ → Custom repositories**
+2. Add `https://github.com/jonisnet/hki-parcels-card` with category **Dashboard**
+3. Search for **HKI Parcels Card** and click Install
+4. Reload your browser (Ctrl+Shift+R)
+
+On updating to Home Assistant 2026.11, an installation from HACS moves to the Marketplace by itself.
 
 ---
 
@@ -104,7 +118,7 @@ For all of these, the card's "+ Add parcel" control can register a new parcel di
 
 ## Optional: PHU carrier icons
 
-Install [custom-brand-icons](https://github.com/elax46/custom-brand-icons) via HACS to get branded `phu:` carrier icons. The card detects this automatically — no configuration needed.
+Install [custom-brand-icons](https://github.com/elax46/custom-brand-icons) from the Marketplace (or HACS) to get branded `phu:` carrier icons. The card detects this automatically — no configuration needed.
 
 Coverage varies by carrier:
 
