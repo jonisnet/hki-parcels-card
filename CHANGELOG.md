@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.7.12] — 2026-11-08
+
+### Changed
+
+- **HKI Parcels Card no longer gets updates; this is the last release.** Its successor is
+  [HA Parcel Card](https://github.com/jonisnet/ha-parcel-card), the same card, still
+  maintained. Both cards can be installed side by side and most settings carry over; see
+  [how to move to HA Parcel Card](https://jonisnet.github.io/ha-parcel-card/migrating/). The card editor now shows this notice at the top,
+  and the browser console logs it once when the card loads. The dashboard itself is unchanged.
+
 ## [1.7.11] — 2026-10-27
 
 ### Fixed

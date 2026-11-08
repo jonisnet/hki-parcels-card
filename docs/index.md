@@ -1,5 +1,10 @@
 # HKI Parcels Card
 
+!!! warning "HKI Parcels Card no longer gets updates"
+    Its successor is [HA Parcel Card](https://github.com/jonisnet/ha-parcel-card): the same card,
+    still maintained. Both cards can be installed side by side, and most settings carry over.
+    [How to move to HA Parcel Card](https://jonisnet.github.io/ha-parcel-card/migrating/)
+
 **Track parcels from PostNL, DHL, DPD, Vinted Go, GLS, Dragonfly, Trunkrs, Cainiao, Hermes, Packeta, Correos, PostNord, Sameday, Swiss Post, Planzer, Austrian Post, Helthjem, Dynalogic, Budbee, Nova Post, Delhivery and SunYou in a single Home Assistant card.**
 
 Automatic sensor detection, animated banners, a 4-step delivery tracker, letterbox mail with scan images, a carrier overview popup, and a complete visual editor — no YAML required.

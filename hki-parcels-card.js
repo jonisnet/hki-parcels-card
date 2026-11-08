@@ -68,8 +68,10 @@ window.HKI.getSelectValue = window.HKI.getSelectValue || ((ev, options = null) =
 
 (() => {
 const { LitElement, html, css } = window.HKI.getLit();
-const CARD_VERSION = 'v1.7.11';
+const CARD_VERSION = 'v1.7.12';
+const SUCCESSOR_URL = 'https://jonisnet.github.io/ha-parcel-card/migrating/';
 console.info(`%c HKI-PARCELS-CARD %c ${CARD_VERSION} `, 'color: white; background: #ed8c00; font-weight: bold;', 'color: #ed8c00; background: white; font-weight: bold;');
+console.warn(`HKI Parcels Card no longer gets updates. Its successor is HA Parcel Card: ${SUCCESSOR_URL}`);
 
 const DEFAULT_CARRIER_ICON = 'mdi:package-variant-closed';
 const DEFAULT_CARRIER_COLOR = '#ed8c00';
@@ -179,6 +181,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Multi-carrier parcel card',
         editor_intro1: 'Add one or more carriers below (PostNL, DHL, DPD, ...). Each carrier can have up to 4 sensors.',
         editor_intro2: 'Pick the right PostNL type: PostNL (current ≥4.x integration), PostNL (<v4.x, being phased out), or PostNL (ArjenBos, being phased out).',
+        editor_deprecated_title: 'HKI Parcels Card no longer gets updates',
+        editor_deprecated_body: 'Its successor, HA Parcel Card, is still maintained. Both cards can be installed side by side, and most settings carry over.',
+        editor_deprecated_link: 'How to move to HA Parcel Card',
         section_basic: 'Basic Settings',
         label_card_title: 'Card title',
         label_days_back: 'Days to show delivery history',
@@ -354,6 +359,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Multi-carrier pakketten kaart',
         editor_intro1: 'Voeg hieronder één of meer carriers toe (PostNL, DHL, DPD, ...). Elke carrier kan tot 4 sensoren hebben.',
         editor_intro2: 'Kies het juiste PostNL-type: PostNL (huidige ≥4.x integratie), PostNL (<v4.x, wordt uitgefaseerd) of PostNL (ArjenBos, wordt uitgefaseerd).',
+        editor_deprecated_title: 'HKI Parcels Card krijgt geen updates meer',
+        editor_deprecated_body: 'De opvolger, HA Parcel Card, wordt wel onderhouden. Beide kaarten kunnen naast elkaar geïnstalleerd zijn en de meeste instellingen gaan mee.',
+        editor_deprecated_link: 'Zo stap je over naar HA Parcel Card',
         section_basic: 'Basis Instellingen',
         label_card_title: 'Kaartnaam',
         label_days_back: 'Aantal dagen geschiedenis (bezorgd)',
@@ -530,6 +538,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Карта за пратки с множество превозвачи',
         editor_intro1: 'Добавете един или повече превозвачи по-долу (PostNL, DHL, DPD, ...). Всеки превозвач може да има до 4 сензора.',
         editor_intro2: 'Изберете правилния тип PostNL: PostNL (текуща интеграция ≥4.x), PostNL (<v4.x, извежда се от употреба) или PostNL (ArjenBos, извежда се от употреба).',
+        editor_deprecated_title: 'HKI Parcels Card вече не получава актуализации',
+        editor_deprecated_body: 'Наследникът ѝ, HA Parcel Card, продължава да се поддържа. Двете карти могат да бъдат инсталирани едновременно и повечето настройки се запазват.',
+        editor_deprecated_link: 'Как да преминете към HA Parcel Card',
         section_basic: 'Основни настройки',
         label_card_title: 'Заглавие на картата',
         label_days_back: 'Дни за показване на историята на доставките',
@@ -706,6 +717,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Karta zásilek od více dopravců',
         editor_intro1: 'Níže přidejte jednoho nebo více dopravců (PostNL, DHL, DPD, ...). Každý dopravce může mít až 4 senzory.',
         editor_intro2: 'Vyberte správný typ PostNL: PostNL (aktuální integrace ≥4.x), PostNL (<v4.x, postupně rušeno), nebo PostNL (ArjenBos, postupně rušeno).',
+        editor_deprecated_title: 'HKI Parcels Card už nedostává aktualizace',
+        editor_deprecated_body: 'Její nástupce, HA Parcel Card, je dál udržován. Obě karty mohou být nainstalovány současně a většinu nastavení lze převzít.',
+        editor_deprecated_link: 'Jak přejít na HA Parcel Card',
         section_basic: 'Základní nastavení',
         label_card_title: 'Název karty',
         label_days_back: 'Počet dní historie doručení',
@@ -882,6 +896,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Pakkekort for flere transportører',
         editor_intro1: 'Tilføj en eller flere transportører nedenfor (PostNL, DHL, DPD, ...). Hver transportør kan have op til 4 sensorer.',
         editor_intro2: 'Vælg den korrekte PostNL-type: PostNL (nuværende ≥4.x-integration), PostNL (<v4.x, udfases) eller PostNL (ArjenBos, udfases).',
+        editor_deprecated_title: 'HKI Parcels Card får ikke længere opdateringer',
+        editor_deprecated_body: 'Efterfølgeren, HA Parcel Card, vedligeholdes stadig. Begge kort kan være installeret samtidig, og de fleste indstillinger kan genbruges.',
+        editor_deprecated_link: 'Sådan skifter du til HA Parcel Card',
         section_basic: 'Grundlæggende indstillinger',
         label_card_title: 'Kortets titel',
         label_days_back: 'Antal dage der vises leveringshistorik for',
@@ -1058,6 +1075,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Multi-Zustelldienst-Paketkarte',
         editor_intro1: 'Füge unten einen oder mehrere Zustelldienste hinzu (PostNL, DHL, DPD, ...). Jeder Zustelldienst kann bis zu 4 Sensoren haben.',
         editor_intro2: 'Wähle den richtigen PostNL-Typ: PostNL (aktuelle ≥4.x-Integration), PostNL (<v4.x, wird ausgemustert) oder PostNL (ArjenBos, wird ausgemustert).',
+        editor_deprecated_title: 'HKI Parcels Card erhält keine Updates mehr',
+        editor_deprecated_body: 'Der Nachfolger, HA Parcel Card, wird weiter gepflegt. Beide Karten können gleichzeitig installiert sein, und die meisten Einstellungen lassen sich übernehmen.',
+        editor_deprecated_link: 'So wechselst du zu HA Parcel Card',
         section_basic: 'Grundeinstellungen',
         label_card_title: 'Kartentitel',
         label_days_back: 'Anzahl Tage Zustellverlauf',
@@ -1234,6 +1254,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Tarjeta de paquetes multitransportista',
         editor_intro1: 'Añade a continuación uno o más transportistas (PostNL, DHL, DPD, ...). Cada transportista puede tener hasta 4 sensores.',
         editor_intro2: 'Elige el tipo de PostNL correcto: PostNL (integración actual ≥4.x), PostNL (<v4.x, en proceso de retirada) o PostNL (ArjenBos, en proceso de retirada).',
+        editor_deprecated_title: 'HKI Parcels Card ya no recibe actualizaciones',
+        editor_deprecated_body: 'Su sucesora, HA Parcel Card, sigue manteniéndose. Ambas tarjetas pueden instalarse a la vez y la mayoría de los ajustes se conservan.',
+        editor_deprecated_link: 'Cómo pasar a HA Parcel Card',
         section_basic: 'Ajustes básicos',
         label_card_title: 'Título de la tarjeta',
         label_days_back: 'Días de historial de entregas a mostrar',
@@ -1410,6 +1433,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Usean kuljetusyhtiön pakettikortti',
         editor_intro1: 'Lisää yksi tai useampi kuljetusyhtiö alle (PostNL, DHL, DPD, ...). Jokaisella kuljetusyhtiöllä voi olla enintään 4 anturia.',
         editor_intro2: 'Valitse oikea PostNL-tyyppi: PostNL (nykyinen ≥4.x-integraatio), PostNL (<v4.x, poistumassa käytöstä) tai PostNL (ArjenBos, poistumassa käytöstä).',
+        editor_deprecated_title: 'HKI Parcels Card ei enää saa päivityksiä',
+        editor_deprecated_body: 'Sen seuraajaa, HA Parcel Cardia, ylläpidetään edelleen. Molemmat kortit voivat olla asennettuina yhtä aikaa, ja useimmat asetukset siirtyvät mukana.',
+        editor_deprecated_link: 'Näin siirryt HA Parcel Cardiin',
         section_basic: 'Perusasetukset',
         label_card_title: 'Kortin otsikko',
         label_days_back: 'Toimitushistorian näyttöpäivien määrä',
@@ -1586,6 +1612,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Carte de colis multi-transporteurs',
         editor_intro1: 'Ajoutez ci-dessous un ou plusieurs transporteurs (PostNL, DHL, DPD, ...). Chaque transporteur peut avoir jusqu\'à 4 capteurs.',
         editor_intro2: 'Choisissez le bon type PostNL : PostNL (intégration actuelle ≥4.x), PostNL (<v4.x, en cours d\'abandon) ou PostNL (ArjenBos, en cours d\'abandon).',
+        editor_deprecated_title: 'HKI Parcels Card ne reçoit plus de mises à jour',
+        editor_deprecated_body: 'Son successeur, HA Parcel Card, est toujours maintenu. Les deux cartes peuvent être installées en même temps et la plupart des réglages sont repris.',
+        editor_deprecated_link: 'Comment passer à HA Parcel Card',
         section_basic: 'Paramètres de base',
         label_card_title: 'Titre de la carte',
         label_days_back: 'Nombre de jours d\'historique de livraison',
@@ -1762,6 +1791,9 @@ const TRANSLATIONS = {
         editor_title: '📦 मल्टी-कैरियर पार्सल कार्ड',
         editor_intro1: 'नीचे एक या अधिक कैरियर जोड़ें (PostNL, DHL, DPD, ...)। प्रत्येक कैरियर में अधिकतम 4 सेंसर हो सकते हैं।',
         editor_intro2: 'सही PostNL प्रकार चुनें: PostNL (मौजूदा ≥4.x इंटीग्रेशन), PostNL (<v4.x, चरणबद्ध रूप से हटाया जा रहा है), या PostNL (ArjenBos, चरणबद्ध रूप से हटाया जा रहा है)।',
+        editor_deprecated_title: 'HKI Parcels Card को अब अपडेट नहीं मिलते',
+        editor_deprecated_body: 'इसका उत्तराधिकारी, HA Parcel Card, अब भी अपडेट होता है। दोनों कार्ड एक साथ इंस्टॉल किए जा सकते हैं, और ज़्यादातर सेटिंग्स साथ आ जाती हैं।',
+        editor_deprecated_link: 'HA Parcel Card पर कैसे जाएँ',
         section_basic: 'मूल सेटिंग्स',
         label_card_title: 'कार्ड शीर्षक',
         label_days_back: 'डिलीवरी इतिहास दिखाने के दिन',
@@ -1938,6 +1970,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Több szolgáltatós csomagkártya',
         editor_intro1: 'Adjon hozzá alább egy vagy több szolgáltatót (PostNL, DHL, DPD, ...). Minden szolgáltatóhoz akár 4 érzékelő tartozhat.',
         editor_intro2: 'Válassza ki a megfelelő PostNL típust: PostNL (jelenlegi ≥4.x integráció), PostNL (<v4.x, kivezetés alatt), vagy PostNL (ArjenBos, kivezetés alatt).',
+        editor_deprecated_title: 'A HKI Parcels Card már nem kap frissítéseket',
+        editor_deprecated_body: 'Utódját, a HA Parcel Cardot továbbra is karbantartjuk. A két kártya egyszerre is telepítve lehet, és a legtöbb beállítás átvihető.',
+        editor_deprecated_link: 'Átállás a HA Parcel Cardra',
         section_basic: 'Alapbeállítások',
         label_card_title: 'Kártya címe',
         label_days_back: 'Kézbesítési előzmény napjai',
@@ -2114,6 +2149,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Scheda pacchi multi-corriere',
         editor_intro1: 'Aggiungi qui sotto uno o più corrieri (PostNL, DHL, DPD, ...). Ogni corriere può avere fino a 4 sensori.',
         editor_intro2: 'Scegli il tipo PostNL corretto: PostNL (integrazione attuale ≥4.x), PostNL (<v4.x, in dismissione) o PostNL (ArjenBos, in dismissione).',
+        editor_deprecated_title: 'HKI Parcels Card non riceve più aggiornamenti',
+        editor_deprecated_body: 'Il suo successore, HA Parcel Card, è ancora mantenuto. Entrambe le schede possono essere installate insieme e la maggior parte delle impostazioni viene mantenuta.',
+        editor_deprecated_link: 'Come passare a HA Parcel Card',
         section_basic: 'Impostazioni di base',
         label_card_title: 'Titolo della scheda',
         label_days_back: 'Giorni di cronologia consegne da mostrare',
@@ -2290,6 +2328,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Pakkekort for flere transportører',
         editor_intro1: 'Legg til én eller flere transportører nedenfor (PostNL, DHL, DPD, ...). Hver transportør kan ha opptil 4 sensorer.',
         editor_intro2: 'Velg riktig PostNL-type: PostNL (nåværende ≥4.x-integrasjon), PostNL (<v4.x, fases ut) eller PostNL (ArjenBos, fases ut).',
+        editor_deprecated_title: 'HKI Parcels Card får ikke lenger oppdateringer',
+        editor_deprecated_body: 'Etterfølgeren, HA Parcel Card, vedlikeholdes fortsatt. Begge kortene kan være installert samtidig, og de fleste innstillingene kan brukes videre.',
+        editor_deprecated_link: 'Slik bytter du til HA Parcel Card',
         section_basic: 'Grunnleggende innstillinger',
         label_card_title: 'Korttittel',
         label_days_back: 'Antall dager leveringshistorikk skal vises',
@@ -2466,6 +2507,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Karta paczek wielu przewoźników',
         editor_intro1: 'Dodaj poniżej jednego lub więcej przewoźników (PostNL, DHL, DPD, ...). Każdy przewoźnik może mieć do 4 czujników.',
         editor_intro2: 'Wybierz właściwy typ PostNL: PostNL (aktualna integracja ≥4.x), PostNL (<v4.x, wycofywana) lub PostNL (ArjenBos, wycofywana).',
+        editor_deprecated_title: 'HKI Parcels Card nie otrzymuje już aktualizacji',
+        editor_deprecated_body: 'Jej następca, HA Parcel Card, jest nadal rozwijany. Obie karty mogą być zainstalowane jednocześnie, a większość ustawień można przenieść.',
+        editor_deprecated_link: 'Jak przejść na HA Parcel Card',
         section_basic: 'Ustawienia podstawowe',
         label_card_title: 'Tytuł karty',
         label_days_back: 'Liczba dni historii dostaw do pokazania',
@@ -2642,6 +2686,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Cartão de encomendas multi-transportadora',
         editor_intro1: 'Adicione abaixo uma ou mais transportadoras (PostNL, DHL, DPD, ...). Cada transportadora pode ter até 4 sensores.',
         editor_intro2: 'Escolha o tipo de PostNL correto: PostNL (integração atual ≥4.x), PostNL (<v4.x, em descontinuação) ou PostNL (ArjenBos, em descontinuação).',
+        editor_deprecated_title: 'O HKI Parcels Card já não recebe atualizações',
+        editor_deprecated_body: 'O seu sucessor, HA Parcel Card, continua a ser mantido. Ambos os cartões podem ser instalados ao mesmo tempo e a maioria das definições mantém-se.',
+        editor_deprecated_link: 'Como mudar para o HA Parcel Card',
         section_basic: 'Definições básicas',
         label_card_title: 'Título do cartão',
         label_days_back: 'Número de dias de histórico de entregas a mostrar',
@@ -2818,6 +2865,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Card colete multi-curier',
         editor_intro1: 'Adăugați unul sau mai mulți curieri mai jos (PostNL, DHL, DPD, ...). Fiecare curier poate avea până la 4 senzori.',
         editor_intro2: 'Alegeți tipul corect de PostNL: PostNL (integrarea actuală ≥4.x), PostNL (<v4.x, în curs de eliminare) sau PostNL (ArjenBos, în curs de eliminare).',
+        editor_deprecated_title: 'HKI Parcels Card nu mai primește actualizări',
+        editor_deprecated_body: 'Succesorul său, HA Parcel Card, este în continuare întreținut. Ambele carduri pot fi instalate simultan, iar majoritatea setărilor se păstrează.',
+        editor_deprecated_link: 'Cum treci la HA Parcel Card',
         section_basic: 'Setări de bază',
         label_card_title: 'Titlul cardului',
         label_days_back: 'Zile de afișat din istoricul livrărilor',
@@ -2994,6 +3044,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Karta zásielok od viacerých dopravcov',
         editor_intro1: 'Nižšie pridajte jedného alebo viacerých dopravcov (PostNL, DHL, DPD, ...). Každý dopravca môže mať až 4 senzory.',
         editor_intro2: 'Vyberte správny typ PostNL: PostNL (aktuálna integrácia ≥4.x), PostNL (<v4.x, postupne rušené), alebo PostNL (ArjenBos, postupne rušené).',
+        editor_deprecated_title: 'HKI Parcels Card už nedostáva aktualizácie',
+        editor_deprecated_body: 'Jej nástupca, HA Parcel Card, sa naďalej udržiava. Obe karty môžu byť nainštalované súčasne a väčšinu nastavení možno prevziať.',
+        editor_deprecated_link: 'Ako prejsť na HA Parcel Card',
         section_basic: 'Základné nastavenia',
         label_card_title: 'Názov karty',
         label_days_back: 'Počet dní histórie doručenia',
@@ -3170,6 +3223,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Paketkort för flera transportörer',
         editor_intro1: 'Lägg till en eller flera transportörer nedan (PostNL, DHL, DPD, ...). Varje transportör kan ha upp till 4 sensorer.',
         editor_intro2: 'Välj rätt PostNL-typ: PostNL (nuvarande ≥4.x-integration), PostNL (<v4.x, fasas ut) eller PostNL (ArjenBos, fasas ut).',
+        editor_deprecated_title: 'HKI Parcels Card får inte längre några uppdateringar',
+        editor_deprecated_body: 'Efterföljaren, HA Parcel Card, underhålls fortfarande. Båda korten kan vara installerade samtidigt och de flesta inställningar följer med.',
+        editor_deprecated_link: 'Så byter du till HA Parcel Card',
         section_basic: 'Grundinställningar',
         label_card_title: 'Kortets titel',
         label_days_back: 'Antal dagar att visa leveranshistorik',
@@ -3346,6 +3402,9 @@ const TRANSLATIONS = {
         editor_title: '📦 Картка посилок від кількох перевізників',
         editor_intro1: 'Додайте одного або кількох перевізників нижче (PostNL, DHL, DPD, ...). Кожен перевізник може мати до 4 сенсорів.',
         editor_intro2: 'Виберіть правильний тип PostNL: PostNL (поточна інтеграція ≥4.x), PostNL (<v4.x, поступово припиняється) або PostNL (ArjenBos, поступово припиняється).',
+        editor_deprecated_title: 'HKI Parcels Card більше не отримує оновлень',
+        editor_deprecated_body: 'Її наступник, HA Parcel Card, і далі підтримується. Обидві картки можна встановити одночасно, і більшість налаштувань зберігається.',
+        editor_deprecated_link: 'Як перейти на HA Parcel Card',
         section_basic: 'Основні налаштування',
         label_card_title: 'Заголовок картки',
         label_days_back: 'Кількість днів історії доставки',
@@ -7210,6 +7269,10 @@ class HkiParcelsCardEditor extends LitElement {
 
         return html`
             <div class="card-config">
+                <ha-alert alert-type="warning" .title=${this._t('editor_deprecated_title')}>
+                    ${this._t('editor_deprecated_body')}
+                    <a href=${SUCCESSOR_URL} target="_blank" rel="noopener noreferrer">${this._t('editor_deprecated_link')}</a>
+                </ha-alert>
                 <details class="warning-box-details" open>
                     <summary class="warning-title">${this._t('editor_title')}</summary>
                     <div style="margin-top:8px;">${this._t('editor_intro1')}</div>
